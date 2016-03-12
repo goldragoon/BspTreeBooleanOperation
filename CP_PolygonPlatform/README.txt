@@ -1,0 +1,11 @@
+工程文件夹中是源代码
+1. 现在默认的是优化后的版本
+如果想改成简单实现的版本，直接在CP_Polygon.cpp文件中，找到gb_partitionBspt函数，将其内部调用的gb_t_p_Position3函数改为gb_t_p_Position函数即可达到近似的效果。
+2. 现在默认将debugBsptree函数注释了，如果想启用debugBsptree函数，将函数内部全部改为不注释即可。
+debugBsptree函数在程序根目录生成debug.txt文件，记录了结果BpsTree的结构
+
+
+
+cases_tests文件夹中是结果文档使用的案例文件和测试文件。
+
+

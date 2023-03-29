@@ -511,12 +511,10 @@ void gb_subtractOneAboveID(CP_Polygon& pn, int id)
             {
                 if (pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray[iLv]>=id)
                     pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray[iLv]--;
-            } // for(iLv)结束
-        } // for(iL)结束
-    } // for(ir)结束
-} // 函数gb_subtractOneAboveID结束
-
-
+            }
+        }
+    }
+}
 
 //my code
 //合法性检查
@@ -562,8 +560,6 @@ bool gb_checkRegion(CP_Region& rn)
 		if(!gb_checkLoopSelfIntersection(rn.m_loopArray[iL]))
 			return false;
 	}
-	
-
 
 	//判断环之间的边是否相交（主要是为了判断重合）
 	for(int iL1 = 0; iL1 < nl - 1; iL1++)
@@ -724,7 +720,6 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 				return false;
 		}
 	}
-	
 
 	//判断合法性
 	vector<int> concavePoint;
@@ -1139,6 +1134,7 @@ bool gb_checkLoop1NotInLoop2(CP_Loop& lnin, CP_Loop& lnout){
 
 //BspTree
 void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
+	printf("\n\ngb_getLoopPartition\n");
 	CP_Polygon *polygon = ln.m_polygon;
 	int size = ln.m_pointIDArray.size();
 	int direction = -1;
@@ -1147,6 +1143,7 @@ void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
 
 	for(int i = 0; i < size; i++){
 		int j = (i + direction + size) % size;
+		printf("- (i,j) = (%d, %d)\n", i, j);
 		CP_Partition *p = new CP_Partition();
 		p->begin->m_x = polygon->m_pointArray[ln.m_pointIDArray[i]].m_x;
 		p->begin->m_y = polygon->m_pointArray[ln.m_pointIDArray[i]].m_y;
@@ -1179,6 +1176,7 @@ CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
 }
 
 CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
+	printf("gb_buildRegionBSPTree\n");
 	int nl = rn.m_loopArray.size();
 	vector<CP_BSPNode *> bsptrees;
 	CP_BSPNode* result;
@@ -1200,6 +1198,7 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 }
 
 CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
+	printf("\tgb_buildLoopBSPTree\n");
 	vector<CP_Partition*> partitionArray;
 	gb_getLoopPartition(ln, partitionArray);
 	CP_BSPNode *tree = NULL;
@@ -1500,7 +1499,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, ch
 		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
 		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
 	}
-	//if(left)
+
 	return tree;
 }
 
@@ -1517,14 +1516,13 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, char op){
 		CP_BSPNodeList.push_back(tree);
 
 		tree->partition = A->partition;
-		for(unsigned int i = 0; i < A->pos_coincident.size(); i++){
-			tree->pos_coincident.push_back(A->pos_coincident[i]);
-		}
-		for(unsigned int i = 0; i < A->neg_coincident.size(); i++){
-			tree->neg_coincident.push_back(A->neg_coincident[i]);
-		}
-		CP_Point pBegin, pEnd;
+		for(auto &pc : A->pos_coincident)
+			tree->pos_coincident.push_back(pc);
 
+		for(auto &nc : A->neg_coincident)
+			tree->neg_coincident.push_back(nc);
+
+		CP_Point pBegin, pEnd;
 		double dx = tree->partition->end->m_x - tree->partition->begin->m_x;
 		double dy = tree->partition->end->m_y - tree->partition->begin->m_y;
 		double length = sqrt(dx * dx + dy * dy);
@@ -1548,6 +1546,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, char op){
 
 CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
 	if(gb_treeIsCell(T1)){
+		// Same as the Figure 5.1 in Naylor's paper.
 		if(T1->position == REGION_IN){
 			switch(op){
 			case OP_UNION:
@@ -1570,20 +1569,21 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
 			}
 		}
 	}
-	else{ //else if(gb_treeIsCell(T2)){
+	//if (gb_treeIsCell(T2)) return gb_mergeTreeWithCell(T2, T1, op);
+	else{
 		if(T2->position == REGION_IN){
 			switch(op){
 			case OP_UNION:
 				return T2;
 			case OP_INTERSECTION:
 				return T1;
-			case OP_DIFFERENCE:  //?????
+			case OP_DIFFERENCE:
 				CP_BSPNode *node = new CP_BSPNode();
 				CP_BSPNodeList.push_back(node);
 				node->position = REGION_OUT;
 				return node;
-				/*gb_complement(T1);
-				return T1;*/			
+				//gb_complement(T1);
+				//return T1;
 			}
 		}
 		else{
@@ -1592,7 +1592,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
 				return T1;
 			case OP_INTERSECTION:
 				return T2;
-			case OP_DIFFERENCE:///??????
+			case OP_DIFFERENCE:
 				return T1;
 				//return T2;
 			}
@@ -1602,7 +1602,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
 }
 
 void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd){
-	// if is cell
+	// if T is cell
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
 		CP_BSPNodeList.push_back(B_inLeft);
@@ -1611,7 +1611,8 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		return;
 	}
 
-	//7 cases
+	// if T is not cell
+	
 	CP_Point *cross_point = NULL;
 	CP_Partition *partitionPush = NULL;
 	CP_Partition *leftPartition = partition;
@@ -1625,6 +1626,8 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 	pRBegin.m_y = partitionBegin.m_y;
 	pREnd.m_x = partitionEnd.m_x;
 	pREnd.m_y = partitionEnd.m_y;
+
+	// pos has 7 cases
 	char pos = gb_t_p_Position3(T, partition, cross_point, pLBegin, pLEnd, pRBegin, pREnd);
 	switch(pos){
 	case P_T_ON_POS:
@@ -1893,9 +1896,9 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_po
 	pb =partition->begin->m_x - partition->end->m_x;
 	pc = - pa * partition->begin->m_x - pb * partition->begin->m_y;
 
-	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){//平行
+	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){ // parallel
 		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) //重合
+			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) // concide
 		{
 			if(ta * pa > 0 || tb * pb > 0){
 				return P_T_ON_POS;
@@ -2077,8 +2080,12 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_po
 
 }
 
-char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
+// classify 
+char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_point, 
+	CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
+
 	CP_Partition *t_bp = A->partition;
+
 	double pa, pb, pc, ta, tb, tc;
 	ta =t_bp->end->m_y - t_bp->begin->m_y;
 	tb =t_bp->begin->m_x - t_bp->end->m_x;
@@ -2088,13 +2095,12 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_p
 	pb =partition->begin->m_x - partition->end->m_x;
 	pc = - pa * partition->begin->m_x - pb * partition->begin->m_y;
 
-
-	bool not_in_region = false;
-	if(pa * pa > pb * pb){ //y方向
+	bool not_in_region = false; // 
+	if(pa * pa > pb * pb){ // y规氢
 		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
 			not_in_region = true;
 	}
-	else{//x方向
+	else{ // x规氢
 		if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
 			not_in_region = true;
 	}
@@ -2108,9 +2114,9 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point* &cross_p
 		}
 	}
 	else{
-		if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){//平行
+		if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){ // parallel
 			if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-				(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) //重合
+				(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) // coincide
 			{
 				if(ta * pa > 0 || tb * pb > 0){
 					return P_T_ON_POS;
@@ -3040,15 +3046,12 @@ bool gb_generateBSPTreeFaces(CP_BSPNode *node){
 }
 
 bool gb_generateBSPTreeFace(CP_BSPNode *node){
-	if(node->leftIn.size() * node->rightOut.size() == 0){
-	}
-	else{
+	if(node->leftIn.size() * node->rightOut.size() != 0){
 		for(unsigned int i = 0; i < node->leftIn.size(); i++){
 			CP_Partition *p =  node->leftIn[i];
 			CP_Partition *f;
 			for(unsigned int j = 0; j < node->rightOut.size(); j++){
 				f = node->rightOut[j];
-				//取出f与p重合的部分
 				CP_Partition *result = new CP_Partition();
 				CP_PartitionList.push_back(result);
 			
@@ -3059,10 +3062,7 @@ bool gb_generateBSPTreeFace(CP_BSPNode *node){
 		}
 	}
 
-	if(node->leftOut.size() * node->rightIn.size() == 0){
-
-	}
-	else{
+	if(node->leftOut.size() * node->rightIn.size() != 0){
 		for(unsigned int i = 0; i < node->leftOut.size(); i++){
 			CP_Partition *p =  node->leftOut[i];
 			CP_Partition *f;

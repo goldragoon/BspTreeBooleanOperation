@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "CP_Triangle.h"
+#include "CP_Polygon.h"
 
 class CCP_PolygonPlatformDoc : public CDocument
 {
@@ -35,7 +35,7 @@ public:
 	// //////////////////////////////////////////////////////////////
     // 下面变量不被保存
     CP_Polygon m_result;
-    CP_TriagleMesh m_triagleMesh;
+    //CP_TriagleMesh m_triagleMesh;
     bool m_flagBuildA; // true: A; false B。
     bool m_flagSelect; // true: 已经拾取到; false: 没有拾取任何东西。
     int  m_flagSelectType;
@@ -55,7 +55,7 @@ public:
      // true: 显示; false: 不显示。
 
     bool m_flagMoveSame; // true: 移动重合的点; false: 重合点分开移动。
-    bool m_flagShowTriangleFace;  // true: 显示; false: 不显示。
+//    bool m_flagShowTriangleFace;  // true: 显示; false: 不显示。
 
  // 下面是一些临时性变量
     CP_Point m_basePoint;

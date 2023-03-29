@@ -1,25 +1,33 @@
-// Õâ¶Î MFC Ê¾ÀıÔ´´úÂëÑİÊ¾ÈçºÎÊ¹ÓÃ MFC Microsoft Office Fluent ÓÃ»§½çÃæ 
-// (¡°Fluent UI¡±)¡£¸ÃÊ¾Àı½ö¹©²Î¿¼£¬
-// ÓÃÒÔ²¹³ä¡¶Microsoft »ù´¡Àà²Î¿¼¡·ºÍ 
-// MFC C++ ¿âÈí¼şËæ¸½µÄÏà¹Øµç×ÓÎÄµµ¡£
-// ¸´ÖÆ¡¢Ê¹ÓÃ»ò·Ö·¢ Fluent UI µÄĞí¿ÉÌõ¿îÊÇµ¥¶ÀÌá¹©µÄ¡£
-// ÈôÒªÁË½âÓĞ¹Ø Fluent UI Ğí¿É¼Æ»®µÄÏêÏ¸ĞÅÏ¢£¬Çë·ÃÎÊ  
-// http://go.microsoft.com/fwlink/?LinkId=238214¡£
+ï»¿// ä¾¶ë™ˆ MFC åˆ»ì ˆéƒ½ëœì¯¤ï¤åˆ»í”ë¶€è³ˆç—° MFC Microsoft Office Fluent ç—°ë¹µì¹ì¶© 
+// (â€œFluent UIâ€)ã€‚ë§¡åˆ»ì ˆì­ë¬©ê½ì˜˜ï¼Œ
+// ç—°ï¥€ê»¸ë…ã€ŠMicrosoft ìƒ˜ë‡Ÿìšê½ì˜˜ã€‹ëµ¨ 
+// MFC C++ ìš‹í¡ìˆ­è¸ë§’ë¨å®®ë°‘ë“ ç¶¾åŒ¡ë„ã€‚
+// ë¦¿é½¡ã€è³ˆç—°ìƒ€ë¡¸ë™ Fluent UI ë¨å†€ì˜µä¿‚ìš´è§’ë°ë—Œç“Šë¬©ë¨ã€‚
+// í¼ï¤«ì£„ì©å”ë°‘ Fluent UI å†€ì˜µì…•ëºë¨åœˆç–æ–¤å£ï¼Œí—ë ¨ç‹‚  
+// http://go.microsoft.com/fwlink/?LinkId=238214ã€‚
 //
-// °æÈ¨ËùÓĞ(C) Microsoft Corporation
-// ±£ÁôËùÓĞÈ¨Àû¡£
+// ê²½í™ˆæ°å”(C) Microsoft Corporation
+// ê´ì¦›æ°å”í™ˆì ã€‚
 
-// CP_PolygonPlatformDoc.cpp : CCP_PolygonPlatformDoc ÀàµÄÊµÏÖ
+// CP_PolygonPlatformDoc.cpp : CCP_PolygonPlatformDoc ìšë¨èŒ„å›
 //
 
 #include "stdafx.h"
-// SHARED_HANDLERS ¿ÉÒÔÔÚÊµÏÖÔ¤ÀÀ¡¢ËõÂÔÍ¼ºÍËÑË÷É¸Ñ¡Æ÷¾ä±úµÄ
-// ATL ÏîÄ¿ÖĞ½øĞĞ¶¨Òå£¬²¢ÔÊĞíÓë¸ÃÏîÄ¿¹²ÏíÎÄµµ´úÂë¡£
+// SHARED_HANDLERS ì˜µï¥€ç³èŒ„å›æ¸¡ì‘ã€éµì« æš ëµ¨é§ä¹î€—æœí¬ì–Œê¹¨ë¨
+// ATL æ·ƒì»¤æ«“ìµï¤‰ë•ï¥‹ï¼Œê¹»è±šå†€å®…ë§¡æ·ƒì»¤ë¬¾æ¬ŠåŒ¡ë„ëœì¯¤ã€‚
 #ifndef SHARED_HANDLERS
 #include "CP_PolygonPlatform.h"
 #endif
 
 #include "CP_PolygonPlatformDoc.h"
+
+#ifdef __INTELLISENSE__
+#include <afxole.h>
+#include <afxtabctrl.h>
+#include <afxmdichildwndex.h>
+#include <afxoutlookbartabctrl.h>
+#include <afxpanecontainermanager.h>
+#endif
 
 #include <propkey.h>
 #include <sstream>
@@ -37,11 +45,11 @@ BEGIN_MESSAGE_MAP(CCP_PolygonPlatformDoc, CDocument)
 END_MESSAGE_MAP()
 
 
-// CCP_PolygonPlatformDoc ¹¹Ôì/Îö¹¹
+// CCP_PolygonPlatformDoc ë­èŠš/é©•ë­
 
 CCP_PolygonPlatformDoc::CCP_PolygonPlatformDoc()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÒ»´ÎĞÔ¹¹Ôì´úÂë
+	// TODO: ç³ëŠªè­¦ì†å¯§ëŠ´æ˜‘ë­èŠšëœì¯¤
 	mb_initData( );
 }
 
@@ -53,20 +61,20 @@ void CCP_PolygonPlatformDoc::mb_initData( )
 {
     m_a.mb_clear( );
     m_b.mb_clear( );
-    m_tolerance = 1e-6; // Î»ÖÃÈİ²î
-    m_scale = 1.0; // Ëõ·Å±ÈÀı
-    m_translation.m_x = 0.0; // ×ø±êÆ½ÒÆÁ¿
-    m_translation.m_y = 0.0; // ×ø±êÆ½ÒÆÁ¿
+    m_tolerance = 1e-6; // è²«é›¶íœ­ë€Œ
+    m_scale = 1.0; // éµë ´ê¶ì ˆ
+    m_translation.m_x = 0.0; // éºŸê¹ƒí‹±ï¤³ì¢†
+    m_translation.m_y = 0.0; // éºŸê¹ƒí‹±ï¤³ì¢†
     m_result.mb_clear( );
-    m_flagBuildA = true; // true: A; false B¡£
+    m_flagBuildA = true; // true: A; false Bã€‚
     m_flagSelect = false; 
     m_flagSelectType = 0; 
     m_flagSelectPolygon = 0;
     m_flagSelectRegion = 0;
-    m_flagSelectID = 0; // ¶¨Î»Ê°È¡µÄÄÚÈİ
-	m_flagShowSelect = false; // true:Ö»ÏÔÊ¾Ñ¡Ôñ¼¯¡£
-    m_edgeNumber = 3; // Õı¶à±ßĞÎµÄ±ßÊı¡£
-    m_flagMouseDown = false; // true: °´ÏÂÊó±ê×ó¼ü
+    m_flagSelectID = 0; // ë•è²«æ­Œí˜¤ë¨ì½”íœ­
+	m_flagShowSelect = false; // true:æ€œé«åˆ»æœå¶ì„ã€‚
+    m_edgeNumber = 3; // æ”£ëœ©ê¸‹è¿‘ë¨ê¸‹é‘’ã€‚
+    m_flagMouseDown = false; // true: ê°è‹ŸæŸ‘ê¹ƒç’˜ìˆ©
     m_flagAdd = 0;
     m_flagShowA = true;
     m_flagShowB = true;
@@ -74,35 +82,33 @@ void CCP_PolygonPlatformDoc::mb_initData( )
     m_flagMoveSame = false;
     m_flagSelectIDSetInA.clear( );
     m_flagSelectIDSetInB.clear( );
-    m_triagleMesh.mb_clear( );
-    m_flagShowTriangleFace = false;  // true: ÏÔÊ¾; false: ²»ÏÔÊ¾¡£
-	//sunsiyuan
+
 	m_showBsptree = false;
 	m_bspTree = NULL;
-} // ÀàCCP_PolygonPlatformDocµÄ³ÉÔ±º¯Êımb_initData½áÊø
+} // ìšCCP_PolygonPlatformDocë¨ëƒ¥é€ƒë³€é‘’mb_initDataì¨ç›£
 
 BOOL CCP_PolygonPlatformDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
-	// TODO: ÔÚ´ËÌí¼ÓÖØĞÂ³õÊ¼»¯´úÂë
-	// (SDI ÎÄµµ½«ÖØÓÃ¸ÃÎÄµµ)
 	mb_initData( );
 	CString string;
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //»ñÈ¡Ribbon bar ¾ä±ú
+    auto window = (CFrameWndEx*)(AfxGetApp()->GetMainWnd());
+
+    CMFCRibbonBar* robbon_bar = window->GetRibbonBar(); //ì‚¿í˜¤Ribbon bar ì–Œê¹¨
     if (robbon_bar==NULL)
         return TRUE;
-    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // »ñÈ¡±à¼­¿ò¾ä±ú
+    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // ì‚¿í˜¤ê¸ì„œì›€ì–Œê¹¨
     if (slider==NULL)
         return TRUE;
     string.Format("%g", m_tolerance);
     slider->SetEditText(string);
-    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // »ñÈ¡±à¼­¿ò¾ä±ú
+    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // ì‚¿í˜¤ê¸ì„œì›€ì–Œê¹¨
     if (pbox==NULL)
         return TRUE;
-    pbox->AddItem("¶à±ßĞÎA");
-    pbox->AddItem("¶à±ßĞÎB");
+    pbox->AddItem("ëœ©ê¸‹è¿‘A");
+    pbox->AddItem("ëœ©ê¸‹è¿‘B");
     pbox->SelectItem(0);
 
 	return TRUE;
@@ -111,7 +117,7 @@ BOOL CCP_PolygonPlatformDoc::OnNewDocument()
 
 
 
-// CCP_PolygonPlatformDoc ĞòÁĞ»¯
+// CCP_PolygonPlatformDoc åŸ¼ì£—ëº
 
 void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 {
@@ -119,9 +125,9 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-		// TODO: ÔÚ´ËÌí¼Ó´æ´¢´úÂë
-		ar.WriteString("# Polygon Data(Óº¿¡º£: ¼ÆËã»ú¸¨Öú¼¸ºÎÔìĞÍ(Çå»ª´óÑ§, 2014Çï))\r\n");
-        ar.WriteString("# ÎÄ¼ş´´½¨Ê±¼ä: ");
+		// TODO: ç³ëŠªè­¦ì†ë‹¸ë‡¨ëœì¯¤
+		ar.WriteString("# Polygon Data(å•–ì—ë² : ì…•ç‚¬ìƒ™ë¦…ç‡ì„¯ë¶€èŠšè¬¹(í—Œë¹½ëŒ•æ¬º, 2014í—¬))\r\n");
+        ar.WriteString("# åŒ¡ìˆ­ëˆ¼ì‰”ç‚ì‡Œ: ");
         SYSTEMTIME st;
         CString strDate,strTime;
         GetLocalTime(&st);
@@ -142,7 +148,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 	}
 	else
 	{
-		// TODO: ÔÚ´ËÌí¼Ó¼ÓÔØ´úÂë
+		// TODO: ç³ëŠªè­¦ì†ì†æ½¼ëœì¯¤
 		mb_initData( );
         while(ar.ReadString(line))
         {
@@ -157,7 +163,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 
 		while(ar.ReadString(line))
         {
@@ -172,7 +178,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 
 		while(ar.ReadString(line))
         {
@@ -184,7 +190,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 
 		while(ar.ReadString(line))
         {
@@ -196,26 +202,26 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 		CString string;
-        CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //»ñÈ¡Ribbon bar ¾ä±ú
+        CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //ì‚¿í˜¤Ribbon bar ì–Œê¹¨
         if (robbon_bar==NULL)
             return;
-        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // »ñÈ¡±à¼­¿ò¾ä±ú
+        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // ì‚¿í˜¤ê¸ì„œì›€ì–Œê¹¨
         if (slider==NULL)
             return;
         string.Format("%g", m_tolerance);
         slider->SetEditText(string);
-        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // »ñÈ¡±à¼­¿ò¾ä±ú
+        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // ì‚¿í˜¤ê¸ì„œì›€ì–Œê¹¨
         if (pbox==NULL)
             return;
-        pbox->AddItem("¶à±ßĞÎA");
-        pbox->AddItem("¶à±ßĞÎB");
+        pbox->AddItem("ëœ©ê¸‹è¿‘A");
+        pbox->AddItem("ëœ©ê¸‹è¿‘B");
         pbox->SelectItem(0);
 	}
 }
 
-// CCP_PolygonPlatformDoc ÃüÁî
+// CCP_PolygonPlatformDoc ì¸±ì¦ˆ
 void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
 {
     CString line;
@@ -228,7 +234,7 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
         {
             line.Format("%g %g\r\n", p.m_pointArray[i].m_x, p.m_pointArray[i].m_y);
             ar.WriteString(line.GetString());
-        } // for½áÊø
+        } // forì¨ç›£
         line.Format("\r\nRegionsize %d\r\n", p.m_regionArray.size( ));
         ar.WriteString(line.GetString()); 
 		for (i=0; i<p.m_regionArray.size( ); i++)
@@ -247,14 +253,14 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                 {
                     line.Format("%d ", p.m_regionArray[i].m_loopArray[j].m_pointIDArray[k]);
                     ar.WriteString(line.GetString());
-                } // for½áÊø
+                } // forì¨ç›£
                 if (p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( )>0)
                 {
                     line.Format("\r\n");
                     ar.WriteString(line.GetString());
                 }
-            } // for½áÊø
-        } // for½áÊø
+            } // forì¨ç›£
+        } // forì¨ç›£
         line.Format("\r\n");
         ar.WriteString(line.GetString());
     }
@@ -275,7 +281,7 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 		if (i==0)
             return;
         p.m_pointArray.resize(i);
@@ -285,7 +291,7 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
             stringstream ss(line.GetString());
             ss >> p.m_pointArray[i].m_x;
             ss >> p.m_pointArray[i].m_y;
-        } // for½áÊø
+        } // forì¨ç›£
 		while(ar.ReadString(line))
         {
             if (!line.IsEmpty())
@@ -299,7 +305,7 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                     break;
                 }
             }
-        } // while½áÊø
+        } // whileì¨ç›£
 		if (i==0)
             return;
         p.m_regionArray.resize(i);
@@ -333,19 +339,19 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                     for (k=0; k<p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( ); k++)
                     {
                         ss >> p.m_regionArray[i].m_loopArray[j].m_pointIDArray[k];
-                    } // for½áÊø
-                } // if½áÊø
-            } // for½áÊø
-        } // for½áÊø
-    } // ÍâÎ§if/else½áÊø
-} // º¯Êıgb_SerializePolygon½áÊø
+                    } // forì¨ç›£
+                } // ifì¨ç›£
+            } // forì¨ç›£
+        } // forì¨ç›£
+    } // æ£é‹if/elseì¨ç›£
+} // ë³€é‘’gb_SerializePolygonì¨ç›£
 
 #ifdef SHARED_HANDLERS
 
-// ËõÂÔÍ¼µÄÖ§³Ö
+// éµì« æš ë¨é€£ë„£
 void CCP_PolygonPlatformDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
 {
-	// ĞŞ¸Ä´Ë´úÂëÒÔ»æÖÆÎÄµµÊı¾İ
+	// éŒ¦ë§£ëŠªëœì¯¤ï¥€ì‚¥é½¡åŒ¡ë„é‘’ì•´
 	dc.FillSolidRect(lprcBounds, RGB(255, 255, 255));
 
 	CString strText = _T("TODO: implement thumbnail drawing here");
@@ -363,14 +369,14 @@ void CCP_PolygonPlatformDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
 	dc.SelectObject(pOldFont);
 }
 
-// ËÑË÷´¦Àí³ÌĞòµÄÖ§³Ö
+// é§ä¹ë‡¹ì¿ë„‹åŸ¼ë¨é€£ë„£
 void CCP_PolygonPlatformDoc::InitializeSearchContent()
 {
 	CString strSearchContent;
-	// ´ÓÎÄµµÊı¾İÉèÖÃËÑË÷ÄÚÈİ¡£
-	// ÄÚÈİ²¿·ÖÓ¦ÓÉ¡°;¡±·Ö¸ô
+	// ë‹’åŒ¡ë„é‘’ì•´î‡é›¶é§ä¹ì½”íœ­ã€‚
+	// ì½”íœ­ê¼¬ë¡¸å£‡è­šâ€œ;â€ë¡¸ëª°
 
-	// ÀıÈç:  strSearchContent = _T("point;rectangle;circle;ole object;")£»
+	// ì ˆí”:  strSearchContent = _T("point;rectangle;circle;ole object;")ï¼›
 	SetSearchContent(strSearchContent);
 }
 
@@ -394,7 +400,7 @@ void CCP_PolygonPlatformDoc::SetSearchContent(const CString& value)
 
 #endif // SHARED_HANDLERS
 
-// CCP_PolygonPlatformDoc Õï¶Ï
+// CCP_PolygonPlatformDoc é–­ë™¤
 
 #ifdef _DEBUG
 void CCP_PolygonPlatformDoc::AssertValid() const
@@ -409,4 +415,4 @@ void CCP_PolygonPlatformDoc::Dump(CDumpContext& dc) const
 #endif //_DEBUG
 
 
-// CCP_PolygonPlatformDoc ÃüÁî
+// CCP_PolygonPlatformDoc ì¸±ì¦ˆ

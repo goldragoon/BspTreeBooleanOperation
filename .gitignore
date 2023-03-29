@@ -5,3 +5,10 @@ CP_PolygonPlatform/Debug
 CP_PolygonPlatformp/Release
 CP_PolygonPlatform/CP_PolygonPlatform/Release
 CP_PolygonPlatform/CP_PolygonPlatform/Debug
+CP_PolygonPlatform/.vs
+**/*.vcxproj.user
+**/*.vcxproj.*
+~*
+debug.txt
+*.exe
+*.pdb

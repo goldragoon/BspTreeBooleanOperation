@@ -1,16 +1,17 @@
-// Õâ¶Î MFC Ê¾ÀıÔ´´úÂëÑİÊ¾ÈçºÎÊ¹ÓÃ MFC Microsoft Office Fluent ÓÃ»§½çÃæ 
-// (¡°Fluent UI¡±)¡£¸ÃÊ¾Àı½ö¹©²Î¿¼£¬
-// ÓÃÒÔ²¹³ä¡¶Microsoft »ù´¡Àà²Î¿¼¡·ºÍ 
-// MFC C++ ¿âÈí¼şËæ¸½µÄÏà¹Øµç×ÓÎÄµµ¡£
-// ¸´ÖÆ¡¢Ê¹ÓÃ»ò·Ö·¢ Fluent UI µÄĞí¿ÉÌõ¿îÊÇµ¥¶ÀÌá¹©µÄ¡£
-// ÈôÒªÁË½âÓĞ¹Ø Fluent UI Ğí¿É¼Æ»®µÄÏêÏ¸ĞÅÏ¢£¬Çë·ÃÎÊ  
-// http://go.microsoft.com/fwlink/?LinkId=238214¡£
+ï»¿// è¿™æ®µ MFC ç¤ºä¾‹æºä»£ç æ¼”ç¤ºå¦‚ä½•ä½¿ç”¨ MFC Microsoft Office Fluent ç”¨æˆ·ç•Œé¢ 
+// (â€œFluent UIâ€)ã€‚è¯¥ç¤ºä¾‹ä»…ä¾›å‚è€ƒï¼Œ
+// ç”¨ä»¥è¡¥å……ã€ŠMicrosoft åŸºç¡€ç±»å‚è€ƒã€‹å’Œ 
+// MFC C++ åº“è½¯ä»¶éšé™„çš„ç›¸å…³ç”µå­æ–‡æ¡£ã€‚
+// å¤åˆ¶ã€ä½¿ç”¨æˆ–åˆ†å‘ Fluent UI çš„è®¸å¯æ¡æ¬¾æ˜¯å•ç‹¬æä¾›çš„ã€‚
+// è‹¥è¦äº†è§£æœ‰å…³ Fluent UI è®¸å¯è®¡åˆ’çš„è¯¦ç»†ä¿¡æ¯ï¼Œè¯·è®¿é—®  
+// http://go.microsoft.com/fwlink/?LinkId=238214ã€‚
 //
-// °æÈ¨ËùÓĞ(C) Microsoft Corporation
-// ±£ÁôËùÓĞÈ¨Àû¡£
+// ç‰ˆæƒæ‰€æœ‰(C) Microsoft Corporation
+// ä¿ç•™æ‰€æœ‰æƒåˆ©ã€‚
 
-// CP_PolygonPlatform.cpp : ¶¨ÒåÓ¦ÓÃ³ÌĞòµÄÀàĞĞÎª¡£
+// CP_PolygonPlatform.cpp : å®šä¹‰åº”ç”¨ç¨‹åºçš„ç±»è¡Œä¸ºã€‚
 //
+
 
 #include "stdafx.h"
 #include "afxwinappex.h"
@@ -30,58 +31,58 @@
 
 BEGIN_MESSAGE_MAP(CCP_PolygonPlatformApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CCP_PolygonPlatformApp::OnAppAbout)
-	// »ùÓÚÎÄ¼şµÄ±ê×¼ÎÄµµÃüÁî
+	// ìƒ˜é»¨åŒ¡ìˆ­ë¨ê¹ƒç¡«åŒ¡ë„ì¸±ì¦ˆ
 	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
-	// ±ê×¼´òÓ¡ÉèÖÃÃüÁî
+	// ê¹ƒç¡«ëŒ”ä¸¹î‡é›¶ì¸±ì¦ˆ
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 END_MESSAGE_MAP()
 
 
-// CCP_PolygonPlatformApp ¹¹Ôì
+// CCP_PolygonPlatformApp ë­èŠš
 
 CCP_PolygonPlatformApp::CCP_PolygonPlatformApp()
 {
-	// Ö§³ÖÖØĞÂÆô¶¯¹ÜÀíÆ÷
+	// é€£ë„£è·¯åŠ¤í˜ë•¡ë°—ì¿í¬
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
 #ifdef _MANAGED
-	// Èç¹ûÓ¦ÓÃ³ÌĞòÊÇÀûÓÃ¹«¹²ÓïÑÔÔËĞĞÊ±Ö§³Ö(/clr)¹¹½¨µÄ£¬Ôò:
-	//     1) ±ØĞëÓĞ´Ë¸½¼ÓÉèÖÃ£¬¡°ÖØĞÂÆô¶¯¹ÜÀíÆ÷¡±Ö§³Ö²ÅÄÜÕı³£¹¤×÷¡£
-	//     2) ÔÚÄúµÄÏîÄ¿ÖĞ£¬Äú±ØĞë°´ÕÕÉú³ÉË³ĞòÏò System.Windows.Forms Ìí¼ÓÒıÓÃ¡£
+	// í”ë²å£‡ç—°ë„‹åŸ¼è§’ì ç—°ë¬´ë¬¾åˆ€ï¤‹é “ï¤‰ç‚é€£ë„£(/clr)ë­ì‰”ë¨ï¼Œæ©™:
+	//     1) ê·¹ä¼å”ëŠªë§’ì†î‡é›¶ï¼Œâ€œè·¯åŠ¤í˜ë•¡ë°—ì¿í¬â€é€£ë„£ê¼½ì½˜æ”£ë½ë¬é±—ã€‚
+	//     2) ç³í€­ë¨æ·ƒì»¤æ«“ï¼Œí€­ê·¹ä¼ê°äº®î™ëƒ¥ç³ åŸ¼è•¨ System.Windows.Forms è­¦ì†å¤šç—°ã€‚
 	System::Windows::Forms::Application::SetUnhandledExceptionMode(System::Windows::Forms::UnhandledExceptionMode::ThrowException);
 #endif
 
-	// TODO: ½«ÒÔÏÂÓ¦ÓÃ³ÌĞò ID ×Ö·û´®Ìæ»»ÎªÎ¨Ò»µÄ ID ×Ö·û´®£»½¨ÒéµÄ×Ö·û´®¸ñÊ½
-	//Îª CompanyName.ProductName.SubProduct.VersionInformation
+	// TODO: ì‰¥ï¥€è‹Ÿå£‡ç—°ë„‹åŸ¼ ID ä¿šë¥œëˆ”ç«¶ë»£æ§¨é¡†å¯§ë¨ ID ä¿šë¥œëˆ”ï¼›ì‰”ï¥ë¨ä¿šë¥œëˆ”ëª©é§•
+	//æ§¨ CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("CP_PolygonPlatform.AppID.NoVersion"));
 
-	// TODO: ÔÚ´Ë´¦Ìí¼Ó¹¹Ôì´úÂë£¬
-	// ½«ËùÓĞÖØÒªµÄ³õÊ¼»¯·ÅÖÃÔÚ InitInstance ÖĞ
+	// TODO: ç³ëŠªë‡¹è­¦ì†ë­èŠšëœì¯¤ï¼Œ
+	// ì‰¥æ°å”è·¯ï¤«ë¨ë†“è¿¦ëºë ´é›¶ç³ InitInstance æ«“
 }
 
-// Î¨Ò»µÄÒ»¸ö CCP_PolygonPlatformApp ¶ÔÏó
+// é¡†å¯§ë¨å¯§ëª¸ CCP_PolygonPlatformApp ëš¤è¹¶
 
 CCP_PolygonPlatformApp theApp;
 
 
-// CCP_PolygonPlatformApp ³õÊ¼»¯
+// CCP_PolygonPlatformApp ë†“è¿¦ëº
 
 BOOL CCP_PolygonPlatformApp::InitInstance()
 {
-	// Èç¹ûÒ»¸öÔËĞĞÔÚ Windows XP ÉÏµÄÓ¦ÓÃ³ÌĞòÇåµ¥Ö¸¶¨Òª
-	// Ê¹ÓÃ ComCtl32.dll °æ±¾ 6 »ò¸ü¸ß°æ±¾À´ÆôÓÃ¿ÉÊÓ»¯·½Ê½£¬
-	//ÔòĞèÒª InitCommonControlsEx()¡£·ñÔò£¬½«ÎŞ·¨´´½¨´°¿Ú¡£
+	// í”ë²å¯§ëª¸é “ï¤‰ç³ Windows XP î€®ë¨å£‡ç—°ë„‹åŸ¼í—Œë°ï¥Ÿë•ï¤«
+	// è³ˆç—° ComCtl32.dll ê²½êµ¶ 6 ìƒ€ë«˜ë©•ê²½êµ¶ìœ±í˜ç—°ì˜µæŸ¬ëºë ˜é§•ï¼Œ
+	//æ©™çŸœï¤« InitCommonControlsEx()ã€‚ë¤ æ©™ï¼Œì‰¥è½Ÿë¬ëˆ¼ì‰”ëˆ—ì™¯ã€‚
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// ½«ËüÉèÖÃÎª°üÀ¨ËùÓĞÒªÔÚÓ¦ÓÃ³ÌĞòÖĞÊ¹ÓÃµÄ
-	// ¹«¹²¿Ø¼şÀà¡£
+	// ì‰¥åŠî‡é›¶æ§¨ê´€ìœ…æ°å”ï¤«ç³å£‡ç—°ë„‹åŸ¼æ«“è³ˆç—°ë¨
+	// ë¬´ë¬¾ì™ ìˆ­ìšã€‚
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
 	CWinAppEx::InitInstance();
 
 
-	// ³õÊ¼»¯ OLE ¿â
+	// ë†“è¿¦ëº OLE ìš‹
 	if (!AfxOleInit())
 	{
 		AfxMessageBox(IDP_OLE_INIT_FAILED);
@@ -92,18 +93,18 @@ BOOL CCP_PolygonPlatformApp::InitInstance()
 
 	EnableTaskbarInteraction(FALSE);
 
-	// Ê¹ÓÃ RichEdit ¿Ø¼şĞèÒª  AfxInitRichEdit2()	
+	// è³ˆç—° RichEdit ì™ ìˆ­çŸœï¤«  AfxInitRichEdit2()	
 	// AfxInitRichEdit2();
 
-	// ±ê×¼³õÊ¼»¯
-	// Èç¹ûÎ´Ê¹ÓÃÕâĞ©¹¦ÄÜ²¢Ï£Íû¼õĞ¡
-	// ×îÖÕ¿ÉÖ´ĞĞÎÄ¼şµÄ´óĞ¡£¬ÔòÓ¦ÒÆ³ıÏÂÁĞ
-	// ²»ĞèÒªµÄÌØ¶¨³õÊ¼»¯Àı³Ì
-	// ¸ü¸ÄÓÃÓÚ´æ´¢ÉèÖÃµÄ×¢²á±íÏî
-	// TODO: Ó¦ÊÊµ±ĞŞ¸Ä¸Ã×Ö·û´®£¬
-	// ÀıÈçĞŞ¸ÄÎª¹«Ë¾»ò×éÖ¯Ãû
-	SetRegistryKey(_T("Ó¦ÓÃ³ÌĞòÏòµ¼Éú³ÉµÄ±¾µØÓ¦ÓÃ³ÌĞò"));
-	LoadStdProfileSettings(4);  // ¼ÓÔØ±ê×¼ INI ÎÄ¼şÑ¡Ïî(°üÀ¨ MRU)
+	// ê¹ƒç¡«ë†“è¿¦ëº
+	// í”ë²çŒè³ˆç—°ä¾¶ç¡…ë¬˜ì½˜ê¹»å¥å¯¡ìˆ‘é¬¼
+	// é›¢è€ì˜µçµï¤‰åŒ¡ìˆ­ë¨ëŒ•é¬¼ï¼Œæ©™å£‡ï¤³ë‡œè‹Ÿì£—
+	// ê¼‡çŸœï¤«ë¨æ™¯ë•ë†“è¿¦ëºì ˆë„‹
+	// ë«˜ë§£ç—°é»¨ë‹¸ë‡¨î‡é›¶ë¨é¬§ê¿ê¹Šæ·ƒ
+	// TODO: å£‡åˆŠë éŒ¦ë§£ë§¡ä¿šë¥œëˆ”ï¼Œ
+	// ì ˆí”éŒ¦ë§£æ§¨ë¬´é±‡ìƒ€è‰å»‰ì¸°
+	SetRegistryKey(_T("å£‡ç—°ë„‹åŸ¼è•¨ë”î™ëƒ¥ë¨êµ¶ë’ˆå£‡ç—°ë„‹åŸ¼"));
+	LoadStdProfileSettings(4);  // ì†æ½¼ê¹ƒç¡« INI åŒ¡ìˆ­æœæ·ƒ(ê´€ìœ… MRU)
 
 
 	InitContextMenuManager();
@@ -116,68 +117,68 @@ BOOL CCP_PolygonPlatformApp::InitInstance()
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
-	// ×¢²áÓ¦ÓÃ³ÌĞòµÄÎÄµµÄ£°å¡£ÎÄµµÄ£°å
-	// ½«ÓÃ×÷ÎÄµµ¡¢¿ò¼Ü´°¿ÚºÍÊÓÍ¼Ö®¼äµÄÁ¬½Ó
+	// é¬§ê¿å£‡ç—°ë„‹åŸ¼ë¨åŒ¡ë„ì¹œê²¼ã€‚åŒ¡ë„ì¹œê²¼
+	// ì‰¥ç—°é±—åŒ¡ë„ã€ì›€ì†¥ëˆ—ì™¯ëµ¨æŸ¬æš è£‚ì‡Œë¨ì ¯ìŒˆ
 	CSingleDocTemplate* pDocTemplate;
 	pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
 		RUNTIME_CLASS(CCP_PolygonPlatformDoc),
-		RUNTIME_CLASS(CMainFrame),       // Ö÷ SDI ¿ò¼Ü´°¿Ú
+		RUNTIME_CLASS(CMainFrame),       // å¯® SDI ì›€ì†¥ëˆ—ì™¯
 		RUNTIME_CLASS(CCP_PolygonPlatformView));
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
 
 
-	// ·ÖÎö±ê×¼ shell ÃüÁî¡¢DDE¡¢´ò¿ªÎÄ¼ş²Ù×÷µÄÃüÁîĞĞ
+	// ë¡¸é©•ê¹ƒç¡« shell ì¸±ì¦ˆã€DDEã€ëŒ”ì—­åŒ¡ìˆ­ê¾¸é±—ë¨ì¸±ì¦ˆï¤‰
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
 
-	// ÆôÓÃ¡°DDE Ö´ĞĞ¡±
+	// í˜ç—°â€œDDE çµï¤‰â€
 	EnableShellOpen();
 	RegisterShellFileTypes(TRUE);
 
 
-	// µ÷¶ÈÔÚÃüÁîĞĞÖĞÖ¸¶¨µÄÃüÁî¡£Èç¹û
-	// ÓÃ /RegServer¡¢/Register¡¢/Unregserver »ò /Unregister Æô¶¯Ó¦ÓÃ³ÌĞò£¬Ôò·µ»Ø FALSE¡£
+	// ë”§ë˜‘ç³ì¸±ì¦ˆï¤‰æ«“ï¥Ÿë•ë¨ì¸±ì¦ˆã€‚í”ë²
+	// ç—° /RegServerã€/Registerã€/Unregserver ìƒ€ /Unregister í˜ë•¡å£‡ç—°ë„‹åŸ¼ï¼Œæ©™ëŸ¿ì€¼ FALSEã€‚
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
-	// Î¨Ò»µÄÒ»¸ö´°¿ÚÒÑ³õÊ¼»¯£¬Òò´ËÏÔÊ¾Ëü²¢¶ÔÆä½øĞĞ¸üĞÂ
+	// é¡†å¯§ë¨å¯§ëª¸ëˆ—ì™¯ï¤½ë†“è¿¦ëºï¼Œï¥”ëŠªé«åˆ»åŠê¹»ëš¤í˜ìµï¤‰ë«˜åŠ¤
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
-	// ½öµ±¾ßÓĞºó×ºÊ±²Åµ÷ÓÃ DragAcceptFiles
-	//  ÔÚ SDI Ó¦ÓÃ³ÌĞòÖĞ£¬ÕâÓ¦ÔÚ ProcessShellCommand Ö®ºó·¢Éú
-	// ÆôÓÃÍÏ/·Å
+	// ì­ë ì•¼å”ë¹ˆç•™ç‚ê¼½ë”§ç—° DragAcceptFiles
+	//  ç³ SDI å£‡ç—°ë„‹åŸ¼æ«“ï¼Œä¾¶å£‡ç³ ProcessShellCommand è£‚ë¹ˆë™î™
+	// í˜ç—°ï¤ƒ/ë ´
 	m_pMainWnd->DragAcceptFiles();
 	return TRUE;
 }
 
 int CCP_PolygonPlatformApp::ExitInstance()
 {
-	//TODO: ´¦Àí¿ÉÄÜÒÑÌí¼ÓµÄ¸½¼Ó×ÊÔ´
+	//TODO: ë‡¹ì¿ì˜µì½˜ï¤½è­¦ì†ë¨ë§’ì†æ —éƒ½
 	AfxOleTerm(FALSE);
 
 	return CWinAppEx::ExitInstance();
 }
 
-// CCP_PolygonPlatformApp ÏûÏ¢´¦Àí³ÌĞò
+// CCP_PolygonPlatformApp ï¤†å£ë‡¹ì¿ë„‹åŸ¼
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç—°é»¨å£‡ç—°ë„‹åŸ¼â€œë°‘é»¨â€ê½‰ë°æ·ƒë¨ CAboutDlg ëš¤ëºì›€
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// ëš¤ëºì›€é‘’ì•´
 	enum { IDD = IDD_ABOUTBOX };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV é€£ë„£
 
-// ÊµÏÖ
+// èŒ„å›
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -194,14 +195,14 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-// ÓÃÓÚÔËĞĞ¶Ô»°¿òµÄÓ¦ÓÃ³ÌĞòÃüÁî
+// ç—°é»¨é “ï¤‰ëš¤ëºì›€ë¨å£‡ç—°ë„‹åŸ¼ì¸±ì¦ˆ
 void CCP_PolygonPlatformApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
 
-// CCP_PolygonPlatformApp ×Ô¶¨Òå¼ÓÔØ/±£´æ·½·¨
+// CCP_PolygonPlatformApp è±ë•ï¥‹ì†æ½¼/ê´ë‹¸ë ˜ë¬
 
 void CCP_PolygonPlatformApp::PreLoadState()
 {
@@ -220,7 +221,7 @@ void CCP_PolygonPlatformApp::SaveCustomState()
 {
 }
 
-// CCP_PolygonPlatformApp ÏûÏ¢´¦Àí³ÌĞò
+// CCP_PolygonPlatformApp ï¤†å£ë‡¹ì¿ë„‹åŸ¼
 
 
 

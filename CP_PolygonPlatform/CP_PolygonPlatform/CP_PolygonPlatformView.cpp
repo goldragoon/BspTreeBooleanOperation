@@ -124,20 +124,10 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 
-	// TODO: 在此处为本机数据添加绘制代码
 	CRect r;
     GetClientRect(& r);
 
-	//CBitmap memBitmap;
-	//CBitmap* pOldBmp = NULL;
-	//CDC memDC;
-	//memDC.CreateCompatibleDC(pDC);
-	//memBitmap.CreateCompatibleBitmap(pDC, r.right, r.bottom);
-	//pOldBmp = memDC.SelectObject(&memBitmap);
-	//memDC.FillSolidRect(r, pDC->GetBkColor());
-	//CDC *old_pDC = pDC;
-	//pDC = &memDC;
-
+    /*
     if (pDoc->m_flagShowTriangleFace)
     {
         CBrush brush(RGB(155, 155, 50));
@@ -154,6 +144,7 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
         pDC->FillRgn(&rgn, &brush); 
         pDC->SelectObject(brushOld);
     } // if (pDoc->m_flagShowTriangleFace)结束
+    */
     if (!pDoc->m_flagShowSelect)
     {
         if (pDoc->m_flagShowA)
@@ -294,8 +285,9 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
         case 5: // 剖分三角形。
             break;
         } // switch结束
-    } // if(pDoc->m_flagSelect)结束
-    if (pDoc->m_flagAdd == 1) // 外环
+    }
+
+    if (pDoc->m_flagAdd == 1)
     {
         gb_drawPointArrayLine(pDC, pDoc->m_flagAddPointArray,
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
@@ -305,8 +297,9 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
             0, 0, 0,
             6);
-    } // if (pDoc->m_flagAdd == 1)结束
-    if (pDoc->m_flagAdd == 2) // 内环
+    }
+
+    if (pDoc->m_flagAdd == 2)
     {
         gb_drawPointArrayLine(pDC, pDoc->m_flagAddPointArray,
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
@@ -316,39 +309,29 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
             0, 0, 0,
             6);
-    } // if (pDoc->m_flagAdd == 2)结束
+    }
 
 	if(pDoc->m_showBsptree){
-		if(pDoc->m_bspTree == NULL){
-			//MessageBoxA("BSP Tree 为空");
-		}
-		else{
+		//if(pDoc->m_bspTree == NULL) {}
+		//else{
+            //pDoc->m_bspTree = gb_mergeBSPTree(gb_buildPolygonBSPTree(pDoc->m_a), gb_buildPolygonBSPTree(pDoc->m_b), OP_UNION);
 			gb_drawBspTree(pDC, pDoc->m_bspTree,
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
             0, 200, 255, 4);
-			
-		}
+		//}
 	}
 	releaseMemory();
 	
-
-	 //显示过程时间
+    //display process time
     CRect rect;
     GetClientRect(&rect);
     CString textout;
-	textout.Format("建立BspTree时间：%.2lf ms.", m_buildTime);
+    textout.Format("Build BspTree time: %.2lf ms.", m_buildTime);
     pDC->TextOutA(rect.right - 250, rect.top + 30, textout.GetString());
-	textout.Format("merge时间：%.2lf ms.", m_mergeTime);
+    textout.Format("merge time: %.2lf ms.", m_mergeTime);
     pDC->TextOutA(rect.right - 250, rect.top + 50, textout.GetString());
-	textout.Format("生成边时间：%.2lf ms.", m_generateEdgeTime);
+    textout.Format("Generate edge time: %.2lf ms.", m_generateEdgeTime);
     pDC->TextOutA(rect.right - 250, rect.top + 70, textout.GetString());
-
-	//old_pDC->BitBlt(r.left, r.top, r.right, r.bottom, &memDC, 0, 0, SRCCOPY);
-	//memDC.SelectObject(pOldBmp);
-	//memDC.DeleteDC();
-	//memBitmap.DeleteObject();
-	//DeleteDC(memDC);
-	//ReleaseDC(old_pDC);
 }
 
 
@@ -504,6 +487,9 @@ void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
         double scale, CP_Point translation, int screenX, int screenY,
         int r, int g, int b, int size)
 {
+    if (tree == NULL)
+        return;
+
 	if(gb_treeIsCell(tree)){
 		return;
 	}
@@ -1914,7 +1900,7 @@ void CCP_PolygonPlatformView::OnViewTFace()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-    pDoc->m_flagShowTriangleFace ^= true;
+    //pDoc->m_flagShowTriangleFace ^= true;
     Invalidate(); // 刷新
 }
 
@@ -1926,7 +1912,7 @@ void CCP_PolygonPlatformView::OnUpdateViewTFace(CCmdUI *pCmdUI)
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-    pCmdUI->SetCheck(pDoc->m_flagShowTriangleFace);
+    //pCmdUI->SetCheck(pDoc->m_flagShowTriangleFace);
 
 }
 
@@ -1992,35 +1978,40 @@ void CCP_PolygonPlatformView::OnPolygonUnion()
 		return;
 	clock_t start, median1, median2, end;
 	start = clock();
+
 	CP_BSPNode *a_tree = gb_buildPolygonBSPTree(pDoc->m_a);
 	CP_BSPNode *b_tree = gb_buildPolygonBSPTree(pDoc->m_b);
+
 	median1 = clock();
+
 	if(a_tree == NULL && b_tree == NULL){
-		MessageBox("A和B都不存在");
 		return;
 	}
 	else if(a_tree == NULL){
-		MessageBox("A不存在，显示B");
 		pDoc->m_bspTree = b_tree;
 	}
 	else if(b_tree == NULL){
-		MessageBox("B不存在，显示A");
 		pDoc->m_bspTree = a_tree;
 	}
-	else 
-		pDoc->m_bspTree = gb_mergeBSPTree(a_tree, b_tree, OP_UNION);
+    else {
+        pDoc->m_bspTree = gb_mergeBSPTree(a_tree, b_tree, OP_UNION);
+    }
 
 	median2 = clock();
+
 	gb_generateCellPolygons(pDoc->m_bspTree);
 	gb_generateBSPTreeFaces(pDoc->m_bspTree);
-	debugBsptree(pDoc->m_bspTree);
 
 	end = clock();
+
+    debugBsptree(pDoc->m_bspTree);
+    pDoc->m_showBsptree = true;
+
 	m_buildTime = median1 - start;
 	m_generateEdgeTime = end - median2;
 	m_mergeTime = median2 - median1;
-	//releaseMemory();
-	Invalidate(); // 刷新
+
+	Invalidate();
 }
 
 void CCP_PolygonPlatformView::OnPolygonIntersection()

@@ -2765,10 +2765,10 @@ void gb_complement(CP_BSPNode* T){
 
 ofstream fout;
 void debugBsptree(CP_BSPNode* T){	
-	//char filename[] = "debug.txt";
-	//fout.open(filename);
-	//debugFoutBsptree(T, 0);
-	//fout.close();
+	char filename[] = "debug.txt";
+	fout.open(filename);
+	debugFoutBsptree(T, 0);
+	fout.close();
 }
 
 void debugFoutBsptree(CP_BSPNode* T, int floor){
@@ -2791,6 +2791,8 @@ void debugFoutBsptree(CP_BSPNode* T, int floor){
 }
 
 void releaseMemory(){
+	// erroneous
+	/*
 	for(unsigned int i = 0; i < CP_PointList.size(); i++){
 		delete CP_PointList[i];
 	}
@@ -2805,7 +2807,7 @@ void releaseMemory(){
 		delete CP_BSPNodeList[i];
 	}
 	CP_BSPNodeList.clear();
-
+	*/
 }
 
 bool gb_generateCellPolygon(CP_BSPNode *cell){

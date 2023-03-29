@@ -2,9 +2,8 @@
 #define CP_POLYGON_H
 
 #include <iostream>
-using namespace std;
 #include <vector>
-
+using namespace std;
 
 #define DOUBLE_PI           6.28318530717958647692
 #define PI                            3.14159265358979323846
@@ -16,29 +15,14 @@ public:
     double m_x, m_y;
 public:
     CP_Point(void):m_x(0.0),m_y(0.0){}
-	~CP_Point(){
-		for(unsigned int i = 0; i < point_list.size(); i++)
-			delete point_list[i];
+	~CP_Point(){}
+	CP_Point& operator= (const CP_Point& _rhs){
+		this->m_x = _rhs.m_x;
+		this->m_y = _rhs.m_y;
+		return *this;
 	}
-    vector<CP_Point*> point_list;
-	CP_Point* operator = (CP_Point* a){
-		CP_Point *r = new CP_Point();
-		r->m_x = a->m_x;
-		r->m_y = a->m_y;
-		point_list.push_back(r);
-		return r;
-	}
-	//CP_Point operator = (CP_Point a){
-	//	//CP_Point *r = new CP_Point();
-	//	//r->m_x = a.m_x;
-	//	//r->m_y = a.m_y;
-	//	//point_list.push_back(r);
-	//	CP_Point r;
-	//	r.m_x = a.m_x;
-	//	r.m_y = a.m_y;
-	//	return r;
-	//}
-}; // 类CP_Point定义结束
+};
+
 typedef vector<CP_Point> VT_PointArray;
 
 class CP_Polygon;
@@ -124,7 +108,6 @@ extern bool     gb_checkReginInRegin(CP_Region &in, CP_Region &region);
 extern bool     gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2);
 extern bool     gb_checkLoopSelfIntersection(CP_Loop& ln);
 extern bool     gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2);
-extern bool     gb_checkLoop1NotInLoop2(CP_Loop& lnin, CP_Loop& lnout);
 extern bool     gb_checkLineSegmentCross(CP_Point* a1, CP_Point* a2, CP_Point* b1, CP_Point* b2);
 extern CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn);
 extern CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn);
@@ -133,44 +116,39 @@ extern CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln);
 //bsptree
 class CP_Partition{
 public:
-	CP_Point *begin;
-	CP_Point *end;
-    vector<CP_Point*> point_list;
+	CP_Point begin;
+	CP_Point end;
+    vector<CP_Point> point_list;
 	vector<CP_Partition*> partition_list;
 
-	CP_Partition(CP_Point *b, CP_Point *e){
-		begin = new CP_Point();
-		end = new CP_Point();
-		begin->m_x = b->m_x;
-		begin->m_y = b->m_y;
-		end->m_x = e->m_x;
-		end->m_y = e->m_y;
+	CP_Partition() {
+		begin = CP_Point();
+		end = CP_Point();
 		point_list.push_back(begin);
 		point_list.push_back(end);
 	}
-	CP_Partition(){
-		begin = new CP_Point();
-		end = new CP_Point();
+
+	CP_Partition(CP_Point &b, CP_Point &e){
+		begin = CP_Point();
+		end = CP_Point();
+		begin = b;
+		end = e;
 		point_list.push_back(begin);
 		point_list.push_back(end);
 	}
+
 	~CP_Partition(){
-		for(unsigned int i = 0; i < point_list.size(); i++)
-			delete point_list[i];
 		for(unsigned int i = 0; i < partition_list.size(); i++)
 			delete partition_list[i];
 	}
 
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();
-		r->begin->m_x = p->begin->m_x;
-		r->begin->m_y = p->begin->m_y;
-		r->end->m_x = p->end->m_x;
-		r->end->m_y = p->end->m_y;
+		r->begin = p->begin;
+		r->end = p->end;
 		partition_list.push_back(r);
 		return r;
 	}
-	
 };
 
 typedef vector<CP_Partition> VT_PartitionArray;
@@ -241,15 +219,15 @@ extern bool gb_treeIsCell(CP_BSPNode* node);
 extern void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd);
 
 // The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)
-extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point*& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
-extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point*& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
 extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
 extern void gb_complement(CP_BSPNode* T);
-extern char gb_coincidentPos(CP_Partition *p, CP_Point * point);
-extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point *begin, CP_Point* end, CP_Point *cross, double &pmin, double &pmax, double &pcross);
+extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
+extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, CP_Point *cross, double &pmin, double &pmax, double &pcross);
 
 extern bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition);
 extern bool gb_parent_t_sameDirection(CP_Partition *p1, CP_Partition *p2);
@@ -258,12 +236,12 @@ extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
 extern bool gb_changePartitionDir(CP_Partition *p);
-extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point *begin, CP_Point* end);
+extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end);
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
-extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point *pos, CP_Point *cross, double &pmin, double &pmax, double &pcross);
-extern bool gb_t_p_left(CP_Point *point, CP_Partition* partition);
+extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, double &pmin, double &pmax, double &pcross);
+extern bool gb_t_p_left(CP_Point &point, CP_Partition* partition);
 //extern bool gb_generateBSP(CP_BSPNode *node);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);

@@ -56,7 +56,7 @@ public:
 
 public:
     CP_Loop(void):m_loopIDinRegion(0),m_regionIDinPolygon(0),m_polygon(NULL) { }
-}; // 类CP_Loop定义结束
+};
 typedef vector<CP_Loop> VT_LoopArray;
 
 class CP_Region
@@ -136,6 +136,8 @@ public:
 	CP_Point *begin;
 	CP_Point *end;
     vector<CP_Point*> point_list;
+	vector<CP_Partition*> partition_list;
+
 	CP_Partition(CP_Point *b, CP_Point *e){
 		begin = new CP_Point();
 		end = new CP_Point();
@@ -152,16 +154,13 @@ public:
 		point_list.push_back(begin);
 		point_list.push_back(end);
 	}
-
 	~CP_Partition(){
-		//delete begin;
-		//delete end;
 		for(unsigned int i = 0; i < point_list.size(); i++)
 			delete point_list[i];
 		for(unsigned int i = 0; i < partition_list.size(); i++)
 			delete partition_list[i];
 	}
-	vector<CP_Partition*> partition_list;
+
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();
 		r->begin->m_x = p->begin->m_x;
@@ -241,11 +240,11 @@ extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op)
 extern bool gb_treeIsCell(CP_BSPNode* node);
 extern void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd);
 
-/////////////////////////////原来的分割Bsptree时判断T和P位置关系的方法，耗时为O(n^2)
-extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point* &point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+// The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)
+extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point*& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
-/////////////////////////////新改进的分割Bsptree时判断T和P位置关系的方法，耗时为O(n)
-extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point* &point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+// New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
+extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point*& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
 extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
 extern void gb_complement(CP_BSPNode* T);

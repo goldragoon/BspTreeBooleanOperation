@@ -154,6 +154,11 @@ public:
 typedef vector<CP_Partition> VT_PartitionArray;
 extern void     gb_getLoopPartition(CP_Loop& ln, VT_PartitionArray& vp);
 
+enum class CP_BSPOp {
+	UNION,
+	INTERSECTION,
+	SUBTRACTION
+};
 
 class CP_BSPNode{
 public:
@@ -205,16 +210,19 @@ extern bool     gb_treeHasInCell(CP_BSPNode* tree);
 extern bool     gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
 extern bool     gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
 
+// BSP Merge Related
+extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
+extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
+extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
 
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, char op, bool left);
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, char op);
 extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char childInfo);
 #define CHILDINFO_NO 0
 #define CHILDINFO_LEFT 1
 #define CHILDINFO_RIGHT 2
+
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
 extern char getPatitionPos(vector<CP_Partition*> &vp, int pos, CP_Partition *H);
-extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op);
+
 extern bool gb_treeIsCell(CP_BSPNode* node);
 extern void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd);
 
@@ -254,9 +262,6 @@ extern void releaseMemory();
 extern bool gb_cutPByRegionOfT(CP_BSPNode* T, CP_Partition* partition, CP_Point &pBegin, CP_Point& pEnd);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define OP_UNION 0
-#define OP_INTERSECTION 1
-#define OP_DIFFERENCE 2
 
 #define POS_LEFT 0
 #define POS_POS_ON 1

@@ -33,11 +33,11 @@ void gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
                     d = dt;
                     idRegion = i;
                     idLoop = j;
-                } // if结束
-            } // for(k)结束
-        } // for(j)结束
-    } // for(i)结束
-} // 函数gb_distanceMinPointPolygon结束
+                }
+            }
+        }
+    }
+}
 
 void gb_distanceMinPointPolygon(double&d,int& id,CP_Point& pt,CP_Polygon& pn)
 {
@@ -894,18 +894,16 @@ bool gb_treeHasInCell(CP_BSPNode* tree){
 	return false;
 }
 
-//判断bsptree之间是否有相互覆盖
 bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
-	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, OP_INTERSECTION);
+	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, CP_BSPOp::INTERSECTION);
 	if(gb_treeHasInCell(result))
 		return true;
 	else
 		return false;
 }
 
-//判断tree1是否在tree2的内部
 bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
-	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, OP_DIFFERENCE);
+	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, CP_BSPOp::SUBTRACTION);
 	if(gb_treeHasInCell(result))
 		return false;
 	else
@@ -1103,7 +1101,7 @@ CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
 	else{
 		result = bsptrees[0];
 		for(int iR = 1; iR < nr; iR++){
-			result = gb_mergeBSPTree(result, bsptrees[iR], OP_UNION);
+			result = gb_mergeBSPTree(result, bsptrees[iR], CP_BSPOp::UNION);
 		}
 	}
 	return result;
@@ -1123,7 +1121,7 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 
 		result = bsptrees[0];
 		for(int iL = 1; iL < nl; iL++)
-			result = gb_mergeBSPTree(result, bsptrees[iL], OP_DIFFERENCE);
+			result = gb_mergeBSPTree(result, bsptrees[iL], CP_BSPOp::SUBTRACTION);
 
 	}
 	return result;
@@ -1348,42 +1346,37 @@ char getPatitionPos(vector<CP_Partition*> &vp, int pos, CP_Partition *H){
 	}
 }
 
-CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, char op, bool left){
+CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left){
 
 	CP_BSPNode* tree = NULL;
 	CP_BSPNode* B_inRight = NULL;
 	CP_BSPNode* B_inLeft = NULL;
+
 	if(gb_treeIsCell(A) || gb_treeIsCell(B)){
 		tree = gb_mergeTreeWithCell(A, B, op);
 		tree->parent = parent;
-		if(left){
-			tree->parent->leftChild = tree;
-		}
-		else 
-			tree->parent->rightChild = tree;
+		if(left) tree->parent->leftChild = tree;
+		else tree->parent->rightChild = tree;
 	}
 	else{
 		tree = new CP_BSPNode();
 		CP_BSPNodeList.push_back(tree);
 		tree->parent = parent;
-		
 		tree->partition = A->partition;
-		for(unsigned int i = 0; i < A->pos_coincident.size(); i++){
-			tree->pos_coincident.push_back(A->pos_coincident[i]);
-		}
-		for(unsigned int i = 0; i < A->neg_coincident.size(); i++){
-			tree->neg_coincident.push_back(A->neg_coincident[i]);
-		}
+
+		for(auto &pc : A->pos_coincident)
+			tree->pos_coincident.push_back(pc);
+
+		for (auto& nc : A->neg_coincident)
+			tree->neg_coincident.push_back(nc);
 
 		CP_Point pBegin, pEnd;
 		double pmin, pmax, pcross;
 		CP_Point point;
 
 		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, &point, pmin, pmax, pcross)){
-			pBegin.m_x = tree->partition->end.m_x;
-			pBegin.m_y = tree->partition->end.m_y;
-			pEnd.m_x = tree->partition->begin.m_x;
-			pEnd.m_y = tree->partition->begin.m_y;
+			pBegin = tree->partition->end;
+			pEnd = tree->partition->begin;
 		}
 		else{
 			double vx = tree->partition->end.m_x - tree->partition->begin.m_x;
@@ -1410,18 +1403,13 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, ch
 				pEnd.m_y = pmax * mean_xy[1] + tree->partition->begin.m_y;
 				//pBegin.m_y = pmin * mean_xy[0] + tree->partition->begin.m_x;
 				pBegin.m_x = (pBegin.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
-
 				pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
 			}
 		}
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
 
-		if(left){
-			tree->parent->leftChild = tree;
-		}
-		else {
-			tree->parent->rightChild = tree;
-		}
+		if (left) tree->parent->leftChild = tree;
+		else tree->parent->rightChild = tree;
 
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
@@ -1434,7 +1422,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, ch
 	return tree;
 }
 
-CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, char op){
+CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 
 	CP_BSPNode* tree = NULL;
 	CP_BSPNode* B_inRight = NULL;
@@ -1475,27 +1463,27 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, char op){
 	return tree;
 }
 
-CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
+CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 	if(gb_treeIsCell(T1)){
 		// Same as the Figure 5.1 in Naylor's paper.
 		if(T1->position == REGION_IN){
 			switch(op){
-			case OP_UNION:
+			case CP_BSPOp::UNION:
 				return T1;
-			case OP_INTERSECTION:
+			case CP_BSPOp::INTERSECTION:
 				return T2;
-			case OP_DIFFERENCE:
+			case CP_BSPOp::SUBTRACTION:
 				gb_complement(T2);
 				return T2;
 			}
 		}
 		else{
 			switch(op){
-			case OP_UNION:
+			case CP_BSPOp::UNION:
 				return T2;
-			case OP_INTERSECTION:
+			case CP_BSPOp::INTERSECTION:
 				return T1;
-			case OP_DIFFERENCE:
+			case CP_BSPOp::SUBTRACTION:
 				return T1;
 			}
 		}
@@ -1505,28 +1493,30 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, char op){
 	else{
 		if(T2->position == REGION_IN){
 			switch(op){
-			case OP_UNION:
+			case CP_BSPOp::UNION:
 				return T2;
-			case OP_INTERSECTION:
+			case CP_BSPOp::INTERSECTION:
 				return T1;
-			case OP_DIFFERENCE:
+			case CP_BSPOp::SUBTRACTION:
 				CP_BSPNode *node = new CP_BSPNode();
 				CP_BSPNodeList.push_back(node);
 				node->position = REGION_OUT;
 				return node;
+
+				//(Q : why naylor's algorithm not working?
 				//gb_complement(T1);
 				//return T1;
 			}
 		}
 		else{
 			switch(op){
-			case OP_UNION:
+			case CP_BSPOp::UNION:
 				return T1;
-			case OP_INTERSECTION:
+			case CP_BSPOp::INTERSECTION:
 				return T2;
-			case OP_DIFFERENCE:
+			case CP_BSPOp::SUBTRACTION:
 				return T1;
-				//return T2;
+				//return T2; (Q : why naylor's algorithm not working?
 			}
 		}
 	}

@@ -3,7 +3,6 @@
 #include <cmath>
 #include <fstream>
 using namespace std;
-vector<CP_BSPNode*> CP_BSPNodeList;
 vector<CP_Partition*> CP_PartitionList;
 vector<CP_Point> CP_PointList;
 void gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
@@ -1145,7 +1144,6 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	CP_Partition *H = vp[0];
 	CP_BSPNode *tree = new CP_BSPNode();
-	CP_BSPNodeList.push_back(tree);
 	tree->partition = vp[0];
 	tree->parent = parent;
 	if(childInfo == CHILDINFO_LEFT)
@@ -1232,7 +1230,6 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	if(F_left.size() == 0){
 		tree->leftChild = new CP_BSPNode();
-		CP_BSPNodeList.push_back(tree->leftChild);
 		tree->leftChild->position = REGION_IN;
 		tree->leftChild->parent = tree;
 	}
@@ -1243,7 +1240,6 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	if(F_right.size() == 0){
 		tree->rightChild = new CP_BSPNode();
-		CP_BSPNodeList.push_back(tree->rightChild);
 		tree->rightChild->position = REGION_OUT;
 		tree->rightChild->parent = tree;
 	}
@@ -1360,7 +1356,6 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 	}
 	else{
 		tree = new CP_BSPNode();
-		CP_BSPNodeList.push_back(tree);
 		tree->parent = parent;
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
@@ -1427,26 +1422,22 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 	}
 	else{
 		tree = new CP_BSPNode();
-		CP_BSPNodeList.push_back(tree);
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Point pBegin, pEnd;
-		double dx = tree->partition->end.m_x - tree->partition->begin.m_x;
-		double dy = tree->partition->end.m_y - tree->partition->begin.m_y;
-		double length = sqrt(dx * dx + dy * dy);
-		dx = dx / length;
-		dy = dy / length;
-		pBegin.m_x = tree->partition->begin.m_x - dx * DBL_MAX / 2;
-		pBegin.m_y = tree->partition->begin.m_y - dy * DBL_MAX / 2;
-		pEnd.m_x = tree->partition->begin.m_x + dx * DBL_MAX / 2;
-		pEnd.m_y = tree->partition->begin.m_y + dy * DBL_MAX / 2;
+		CP_Vec2 pDiff = tree->partition->end - tree->partition->begin;
+		pDiff.normalize();
+
+		CP_Vec2 sub(pDiff * (DBL_MAX / 2));
+		CP_Point pBegin(tree->partition->begin - sub);
+		CP_Point pEnd(tree->partition->begin + sub);
 
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
 		tree->leftChild = B_inLeft;
 		tree->rightChild = B_inRight;
+
 		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
 		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
 	}
@@ -1489,7 +1480,6 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 				return T1;
 			case CP_BSPOp::SUBTRACTION:
 				CP_BSPNode *node = new CP_BSPNode();
-				CP_BSPNodeList.push_back(node);
 				node->position = REGION_OUT;
 				return node;
 
@@ -1517,9 +1507,7 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 	// if T is cell
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
-		CP_BSPNodeList.push_back(B_inLeft);
 		B_inRight = new CP_BSPNode(T);	
-		CP_BSPNodeList.push_back(B_inRight);
 		return;
 	}
 
@@ -1556,7 +1544,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		return;
 	case P_T_POS_NEG:
 		B_inRight = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inRight);
 		B_inRight->rightChild = T->rightChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
@@ -1564,7 +1551,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		break;
 	case P_T_POS_POS:
 		B_inLeft = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inLeft);
 		B_inLeft->rightChild = T->rightChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
@@ -1572,7 +1558,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inLeft);
 		B_inLeft->leftChild = T->leftChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
@@ -1580,7 +1565,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inRight);
 		B_inRight->leftChild = T->leftChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
@@ -1588,9 +1572,7 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		break;
 	case P_T_BOTH_POS:
 		B_inLeft = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inLeft);
 		B_inRight = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inRight);
 		B_inRight->partition = T->partition;
 		B_inLeft->partition = T->partition;
 
@@ -1649,9 +1631,7 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inLeft);
 		B_inRight = new CP_BSPNode();
-		CP_BSPNodeList.push_back(B_inRight);
 		B_inRight->partition = T->partition;
 		B_inLeft->partition = T->partition;
 
@@ -1663,7 +1643,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 				right = new CP_Partition();
 				left = new CP_Partition();
 				CP_PartitionList.push_back(left);
-
 				CP_PartitionList.push_back(right);
 
 				left->begin = cross_point;
@@ -1689,7 +1668,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 				right = new CP_Partition();
 				left = new CP_Partition();
 				CP_PartitionList.push_back(left);
-
 				CP_PartitionList.push_back(right);
 
 				left->begin = T->neg_coincident[i]->begin;

@@ -9,13 +9,93 @@ using namespace std;
 #define PI                            3.14159265358979323846
 #define HALF_PI                1.57079632679489661923
 
-class CP_Point
-{
+class CP_Vec2 {
 public:
-    double m_x, m_y;
+	double m_x, m_y;
+
+	CP_Vec2() : m_x(0.0), m_y(0.0) {};
+	CP_Vec2(const CP_Vec2& v) : m_x(v.m_x), m_y(v.m_y) {};
+	//CP_Vec2(const CP_Point& v) : m_x(v.m_x), m_y(v.m_y) {};
+
+	CP_Vec2& operator+ (const CP_Vec2& _rhs) {
+		CP_Vec2 v;
+		v.m_x = m_x + _rhs.m_x;
+		v.m_y = m_y + _rhs.m_y;
+		return v;
+	}
+
+	CP_Vec2& operator- (const CP_Vec2& _rhs) {
+		CP_Vec2 v;
+		v.m_x = m_x - _rhs.m_x;
+		v.m_y = m_y - _rhs.m_y;
+		return v;
+	}
+
+	CP_Vec2& operator* (const CP_Vec2& _rhs) {
+		CP_Vec2 v;
+		v.m_x = m_x * _rhs.m_x;
+		v.m_y = m_y * _rhs.m_y;
+		return v;
+	}
+
+	CP_Vec2& operator* (const double& _rhs) {
+		CP_Vec2 v;
+		v.m_x = m_x * _rhs;
+		v.m_y = m_y * _rhs;
+		return v;
+	}
+
+	CP_Vec2& operator/ (const double& _rhs) {
+		CP_Vec2 v;
+		v.m_x = m_x / _rhs;
+		v.m_y = m_y / _rhs;
+		return v;
+	}
+
+	CP_Vec2& operator/= (const double& _rhs) {
+		m_x = m_x / _rhs;
+		m_y = m_y / _rhs;
+		return (*this);
+	}
+
+	void normalize() {
+		double m = magnitude();
+		m_x /= m;
+		m_y /= m;
+	}
+
+	double magnitude_squared() {
+		return sqrt(magnitude());
+	}
+
+	double magnitude() {
+		return m_x * m_x + m_y * m_y; 
+	}
+};
+
+class CP_Point {
 public:
-    CP_Point(void):m_x(0.0),m_y(0.0){}
+	double m_x, m_y;
+
+    CP_Point() : m_x(0.0), m_y(0.0) {}
+	CP_Point(const double _x, const double _y) : m_x(_x), m_y(_y) {}
+	CP_Point(const CP_Vec2 &v) : m_x(v.m_x), m_y(v.m_y) {}
 	~CP_Point(){}
+
+	CP_Vec2& operator- (const CP_Point& _rhs) {
+		CP_Vec2 pt;
+		pt.m_x = m_x - _rhs.m_x;
+		pt.m_y = m_y - _rhs.m_y;
+		return pt;
+	}
+
+	CP_Vec2& operator+ (const CP_Point& _rhs) {
+		CP_Vec2 pt;
+		pt.m_x = m_x + _rhs.m_x;
+		pt.m_y = m_y + _rhs.m_y;
+		return pt;
+	}
+
 	CP_Point& operator= (const CP_Point& _rhs){
 		this->m_x = _rhs.m_x;
 		this->m_y = _rhs.m_y;

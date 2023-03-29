@@ -21,6 +21,10 @@ public:
 		this->m_y = _rhs.m_y;
 		return *this;
 	}
+
+	static bool equal(const CP_Point& _rhs, double _tol = 1e-6) {
+
+	}
 };
 
 typedef vector<CP_Point> VT_PointArray;
@@ -183,12 +187,11 @@ public:
 		rightChild = node->rightChild;
 		partition = node->partition;
 		position = node->position;
-		for(unsigned int i = 0; i < node->pos_coincident.size(); i++){
-			pos_coincident.push_back(node->pos_coincident[i]);
-		}
-		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){
-			neg_coincident.push_back(node->neg_coincident[i]);
-		}
+		for (auto& pc : node->pos_coincident)
+			pos_coincident.push_back(pc);
+
+		for (auto& nc : node->neg_coincident)
+			neg_coincident.push_back(nc);
 	}
 	void copy(CP_BSPNode *node){
 		parent = node->parent;
@@ -196,12 +199,19 @@ public:
 		rightChild = node->rightChild;
 		partition = node->partition;
 		position = node->position;
-		for(unsigned int i = 0; i < node->pos_coincident.size(); i++){
-			pos_coincident.push_back(node->pos_coincident[i]);
-		}
-		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){
-			neg_coincident.push_back(node->neg_coincident[i]);
-		}
+		for (auto& pc : node->pos_coincident)
+			pos_coincident.push_back(pc);
+
+		for (auto& nc : node->neg_coincident)
+			neg_coincident.push_back(nc);
+	}
+
+	void assign_coincidents(CP_BSPNode* node) {
+		for (auto& pc : node->pos_coincident)
+			pos_coincident.push_back(pc);
+
+		for (auto& nc : node->neg_coincident)
+			neg_coincident.push_back(nc);
 	}
 	~CP_BSPNode(){}
 };
@@ -254,7 +264,7 @@ extern bool gb_t_p_left(CP_Point &point, CP_Partition* partition);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
 extern void debugBsptree(CP_BSPNode* T);
-extern void debugFoutBsptree(CP_BSPNode* T, int floor);
+extern void debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);
 
 extern void releaseMemory();
 

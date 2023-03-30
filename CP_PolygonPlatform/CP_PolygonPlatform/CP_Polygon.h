@@ -1,5 +1,4 @@
-#ifndef CP_POLYGON_H
-#define CP_POLYGON_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -15,7 +14,6 @@ public:
 
 	CP_Vec2() : m_x(0.0), m_y(0.0) {};
 	CP_Vec2(const CP_Vec2& v) : m_x(v.m_x), m_y(v.m_y) {};
-	//CP_Vec2(const CP_Point& v) : m_x(v.m_x), m_y(v.m_y) {};
 
 	CP_Vec2& operator+ (const CP_Vec2& _rhs) {
 		CP_Vec2 v;
@@ -102,9 +100,11 @@ public:
 		return *this;
 	}
 
-	static bool equal(const CP_Point& _rhs, double _tol = 1e-6) {
-
+	double dist(const CP_Point& _rhs) {
+		return (*this - _rhs).magnitude();
 	}
+
+	//static bool equal(const CP_Point& _rhs, double _tol = 1e-6) {}
 };
 
 typedef vector<CP_Point> VT_PointArray;
@@ -149,13 +149,10 @@ public:
     void mb_clear( ) {m_pointArray.clear( ); m_regionArray.clear( );}
 }; // 类CP_Polygon定义结束
 
-extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
-                             CP_Point& pt, CP_Polygon& pn);
+extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop, CP_Point& pt, CP_Polygon& pn);
 extern void     gb_distanceMinPointPolygon(double&d, int& id, CP_Point& pt, CP_Polygon& pn);
-extern double   gb_distancePointPoint(CP_Point& p1, CP_Point& p2);
 extern double   gb_distancePointSegment(CP_Point& pt, CP_Point& p1, CP_Point& p2);
 
-extern void     gb_getIntArrayPointInPolygon(VT_IntArray& vi, CP_Polygon& pn, CP_Point& p, double eT);
 extern bool     gb_findPointInLoop(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, int pointInPolygon);
 extern void     gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point& newPoint);
 
@@ -328,8 +325,6 @@ extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, CP_Point *cross, double &pmin, double &pmax, double &pcross);
 
 extern bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition);
-extern bool gb_parent_t_sameDirection(CP_Partition *p1, CP_Partition *p2);
-extern bool gb_point_partition_near_begin(CP_Partition* partition, CP_Point *point);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
@@ -340,18 +335,14 @@ extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
 extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, double &pmin, double &pmax, double &pcross);
 extern bool gb_t_p_left(CP_Point &point, CP_Partition* partition);
-//extern bool gb_generateBSP(CP_BSPNode *node);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
+
 extern void debugBsptree(CP_BSPNode* T);
-extern void debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);
+// call by debugBsptree
+extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);
 
 extern void releaseMemory();
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////没有使用，此函数用于将分割p修剪到只剩下属于T区域中的线段，有bug暂时没用
-extern bool gb_cutPByRegionOfT(CP_BSPNode* T, CP_Partition* partition, CP_Point &pBegin, CP_Point& pEnd);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 #define POS_LEFT 0
 #define POS_POS_ON 1
@@ -359,12 +350,13 @@ extern bool gb_cutPByRegionOfT(CP_BSPNode* T, CP_Partition* partition, CP_Point 
 #define POS_RIGHT 3
 #define POS_CROSS 4
 
+// position of BSP Tree?
 #define REGION_IN 1
 #define REGION_OUT 2
+
 #define TOLERENCE 1e-4
 
-
-//左边pos 右边neg
+//left side pos right side neg
 #define P_T_ON_POS 0
 #define P_T_ON_NEG 1
 #define P_T_POS_NEG 2
@@ -377,5 +369,3 @@ extern bool gb_cutPByRegionOfT(CP_BSPNode* T, CP_Partition* partition, CP_Point 
 #define LINE_IN 0
 #define LINE_POS 1
 #define LINE_NEG 2
-#endif
-

@@ -296,9 +296,9 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
 	if(pDoc->m_showBsptree){
 		//if(pDoc->m_bspTree == NULL) {}
 		//else{
-			gb_drawBspTree(pDC, pDoc->m_bspTree,
+		gb_drawBspTree(pDC, pDoc->m_bspTree,
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
-            0, 200, 255, 4);
+        0, 200, 255, 4);
 		//}
 	}
 	releaseMemory();
@@ -1232,8 +1232,6 @@ void CCP_PolygonPlatformView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CCP_PolygonPlatformView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
 	CView::OnLButtonUp(nFlags, point);
 
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();

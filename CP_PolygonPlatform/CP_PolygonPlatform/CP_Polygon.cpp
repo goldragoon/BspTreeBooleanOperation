@@ -9,6 +9,12 @@
 
 using namespace std;
 
+bool compare_float(double x, double y, double epsilon = TOLERENCE) {
+	if (fabs(x - y) < epsilon)
+		return true; //they are same
+	return false; //they are not same
+}
+
 void gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
                              CP_Point& pt, CP_Polygon& pn)
 { 
@@ -1063,7 +1069,7 @@ CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char childInfo) {
 	vector<CP_Partition*> F_right;
 	vector<CP_Partition*> F_left;
-	vector<CP_Partition*> F_coincident;
+	//vector<CP_Partition*> F_coincident; need it?
 
 	CP_Partition *H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
 
@@ -1080,10 +1086,12 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	// partitionLine is used to record the part of the line where the partition is located inside the area
 	CP_Partition * partitionLine = new CP_Partition(*(tree->partition));
 
+	// temporary variables for gb_p_in_region
 	CP_Point pBegin, pEnd;
 	double pmin, pmax, pcross;
 	CP_Point point;
 
+	// ¾Æ·¡ È£Ãâ¿¡¼­ pcross´Â ¾²·¹±â°ª.
 	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
 		pBegin = tree->partition->end;
 		pEnd = tree->partition->begin;
@@ -1120,34 +1128,36 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	tree->pos_coincident.push_back(partitionLine);
 	//partitionLine initialization ends
 
-	if(vp.size() > 0) // Q : ÀÌ Á¶°ÇÀÌ H assign ÇÏÁö ÀüÀ¸·Î µé¾î°¡¾ß ÇÏÁö ¾Ê³ª?¤¤
-		tree->pos_coincident.push_back(vp[0]);
+	if(vp.size() > 0) // Q : ÀÌ Á¶°ÇÀÌ H assign ÇÏÁö ÀüÀ¸·Î µé¾î°¡¾ß ÇÏÁö ¾Ê³ª?
+		tree->pos_coincident.push_back(H); // ÇöÀç ³ëµåÀÇ hyperplane (ÀÌ°Ô partitionLine push_back ÇÏ±â Àü¿¡ µé¾î°¡¸é ¿Ö ¹®Á¦°¡ µÇ³ª?)
 
-	for(unsigned int i = 1; i < vp.size(); i++){
-		char pos = getPatitionPos(vp, i, H);
+	// ÇöÀç sub tree(³ëµå)¿¡ ³²¾ÆÀÖ´Â ¸ðµç ÆÄÆ¼¼ÇµéÀ» H¿¡ classification ÇÏ°í, H·Î Àß¶óÁØ´Ù.
+	for(const auto &p : vp){
+		char pos = getPatitionPos(p, H);
 		switch(pos){
 		case POS_LEFT:
-			F_left.push_back(vp[i]);
+			F_left.push_back(p);
 			break;
 		case POS_POS_ON:
-			tree->pos_coincident.push_back(vp[i]);
+			tree->pos_coincident.push_back(p);
 			break;
 		case POS_NEG_ON:
-			tree->neg_coincident.push_back(vp[i]);
+			tree->neg_coincident.push_back(p);
 			break;
 		case POS_RIGHT:
-			F_right.push_back(vp[i]);
+			F_right.push_back(p);
 			break;
 		case POS_CROSS:
 			CP_Partition *left = NULL;
 			CP_Partition * right = NULL;
-			gb_getCrossPartition(vp[i], H, left, right);
+			gb_getCrossPartition(p, H, left, right);
 			F_left.push_back(left);
 			F_right.push_back(right);
 			break;
 		}
 	}
 
+	// H·Î Tree¸¦ CutÇÑ °á°ú¿¡ µû¶ó ÇÏÀ§ ³ëµå¸¦ ¸¸µé¾î ÁØ´Ù.
 	if(F_left.size() == 0){
 		tree->leftChild = new CP_BSPNode();
 		tree->leftChild->position = REGION_IN;
@@ -1198,7 +1208,6 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	if(-pb * ta + tb * pa > 0){
 		left->begin = point;
 		right->end = point;
-
 	}
 	else{
 		left->end = point;
@@ -1206,40 +1215,28 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	}
 }
 
-char getPatitionPos(vector<CP_Partition*> &vp, int pos, CP_Partition *H){
-	double a, b, begin_a, begin_b, end_a, end_b;
+char getPatitionPos(const CP_Partition* const partition, const CP_Partition* const H) {
 	double begin_pos, end_pos;
 
-	a = H->end.m_x - H->begin.m_x;
-	b = H->end.m_y - H->begin.m_y;
-	
-	CP_Point vp_begin = vp[pos]->begin;
-	CP_Point vp_end = vp[pos]->end;
-	//ÅÐ¶ÏÆðµã
+	CP_Vec2 H_vector = H->end - H->begin;
 
-	begin_a = vp_begin.m_x - H->end.m_x;
-	begin_b = vp_begin.m_y - H->end.m_y;
+	CP_Point vp_begin = partition->begin;
+	CP_Point vp_end = partition->end;
 
-	begin_pos = a * begin_b - b * begin_a;
+	CP_Vec2 begin_vector = vp_begin - H->begin;
+	begin_pos = H_vector.cross_product(begin_vector);
 
-	//ÅÐ¶ÏÖÕµã
-	end_a = vp_end.m_x - H->end.m_x;
-	end_b = vp_end.m_y - H->end.m_y;
+	CP_Vec2 end_vector = vp_end - H->end;
+	end_pos = H_vector.cross_product(end_vector);
 
-	end_pos = a * end_b - b * end_a;
-
-	//Ð¡ÓÚ0£¬ÓÒ±ß¡£µÈÓÚ0£¬on¡£´óÓÚ0£¬×ó±ß
-	if(end_pos <= TOLERENCE && end_pos >= -TOLERENCE)
-		end_pos = 0;
-	if(begin_pos <= TOLERENCE && begin_pos >= -TOLERENCE)
-		begin_pos = 0;
+	if(compare_float(end_pos, 0)) end_pos = 0;
+	if(compare_float(begin_pos, 0)) begin_pos = 0;
 
 	if(end_pos * begin_pos < 0){
 		return POS_CROSS;
 	}
 	else if(end_pos * begin_pos > 0){
-		if(end_pos < 0)
-			return POS_RIGHT;
+		if (end_pos < 0)return POS_RIGHT;
 		else return POS_LEFT;
 	}
 	else{
@@ -1251,7 +1248,7 @@ char getPatitionPos(vector<CP_Partition*> &vp, int pos, CP_Partition *H){
 			double a1, b1;
 			a1 = vp_end.m_x - vp_begin.m_x;
 			b1 = vp_end.m_y - vp_begin.m_y;
-			if(a1 * a > 0 || b1 * b >0)
+			if(a1 * H_vector.m_x > 0 || b1 * H_vector.m_y >0)
 				return POS_POS_ON;
 			else return POS_NEG_ON;
 		}
@@ -1279,7 +1276,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		CP_Point pBegin, pEnd;
 		double pmin, pmax, pcross;
 		CP_Point point;
-
+		// ¾Æ·¡ È£Ãâ¿¡¼­ pcross´Â ¾²·¹±â°ª.
 		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
 			pBegin = tree->partition->end;
 			pEnd = tree->partition->begin;
@@ -1643,6 +1640,7 @@ char gb_coincidentPos(CP_Partition *p, CP_Point &point){
 	}
 }
 
+/*
 char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
 	CP_Partition *t_bp = A->partition;
 	double pa, pb, pc, ta, tb, tc;
@@ -1737,7 +1735,6 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 			double pmin, pmax, pcross;
 			
 			if(gb_p_in_region(A, partition, begin, end, point, pmin, pmax, pcross)){
-
 				
 				CP_Partition *t_partition = new CP_Partition();
 				t_partition->begin = A->partition->begin;
@@ -1803,7 +1800,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 	}
 
 }
-
+*/
 // classify 
 char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_point, 
 	CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
@@ -2031,111 +2028,114 @@ bool gb_t_p_left(CP_Point &point, CP_Partition* partition){
 
 }
 
-bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, const CP_Point &cross, double &pmin, double &pmax, double &pcross){
+// partition ÀÌ TÀÇ ³»ºÎ ¿µ¿ª¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, const CP_Point &cross, 
+	double &pmin, double &pmax, double &pcross){
 	begin = partition->begin;
 	end = partition->end;
 
+	// diff
 	double vx = partition->end.m_x - partition->begin.m_x;
 	double vy = partition->end.m_y - partition->begin.m_y;
 	
+	// »çºÐ¸é Áß ¾îµð·Î ÇâÇÏ´ÂÁö ³ªÅ¸³¿?
 	double mean_xy[2];
 	mean_xy[0] = vx > 0 ? 1: -1;
 	mean_xy[1] = vy > 0 ? 1: -1;
 
+	// dx, dy Áß¾î´À °ÍÀÌ ´õ Å«Áö °Ë»ç.
 	int x_or_y = 0;
-
 	if(vx * vx < vy * vy)
 		x_or_y = 1;
-	
 
 	double min = DBL_MAX / 2 * -1;
 	double max = DBL_MAX / 2;
 
 	CP_BSPNode *node = T;
-	CP_BSPNode *child;
+	CP_BSPNode *child = NULL;
+
+	// temporary variables only for inside of while-loop.
 	double pa, pb, pc, ta, tb, tc;
 	CP_Point point;
+	// root·Î °Å½½·¯ ¿Ã¶ó°¡¸é¼­ °Ë»ç..
 	while(node->parent != NULL){
 		child = node;
 		node = node->parent;
-		CP_Partition* t_bp = new CP_Partition();
 
-		if(child == node->leftChild){
+		CP_Partition* t_bp = new CP_Partition();
+		if(child == node->leftChild){ 
+			// ¸¸¾à ÇöÀç ³ëµå°¡ parent ±âÁØ ¾çÀÇ ¿µ¿ª¿¡ ÀÖ´Â °æ¿ì..
 			t_bp->begin = node->partition->begin;
 			t_bp->end = node->partition->end;
 		}
 		else{
+			// ¸¸¾à ÇöÀç ³ëµå°¡ parent ±âÁØ À½ÀÇ ¿µ¿ª¿¡ ÀÖ´Â °æ¿ì..
+			// Q : ¿Ö ¹Ù²ãÁÖÁö? -> vectorÀÇ ¹æÇâÀ» ¹Ù²Ù¾î¼­ ³»/¿ÜºÎ °Ë»ç?
 			t_bp->begin = node->partition->end;
 			t_bp->end = node->partition->begin;
 		}
+
 		//CP_Partition* t_bp = node->partition;
-		ta =t_bp->end.m_y - t_bp->begin.m_y;
-		tb =t_bp->begin.m_x - t_bp->end.m_x;
-		tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
+		// node partition vector is = (-tb , ta)
+		ta = t_bp->end.m_y - t_bp->begin.m_y;
+		tb = -(t_bp->end.m_x - t_bp->begin.m_x);
+		//tc = (-tb) * t_bp->begin.m_y - ta * t_bp->begin.m_x ; // t x t_begin(???)
+		tc = (-tb) * t_bp->begin.m_y - ta * t_bp->begin.m_x ;  // t x t_begin(???)
 
-		pa =partition->end.m_y - partition->begin.m_y;
-		pb =partition->begin.m_x - partition->end.m_x;
-		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
+		// new partition vector is = (-pb, pa)
+		pa = partition->end.m_y - partition->begin.m_y;
+		pb = -(partition->end.m_x - partition->begin.m_x);
+		pc = (-pb) * partition->begin.m_y - pa * partition->begin.m_x; // p x p_begin(???)
 
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){
-			//Æ½ÐÐ ÏÖÔÚ¼Ù¶¨ÖØºÏ»òÕßÆ½ÐÐÔÚTnode-partition×ó±ß¶¼¿ÉÒÔ
-			// node-partitionÏòÁ¿£¨-tb,ta£©
+		// check if two vectors are 'parallel'(cross product is zero)
+		// t x p
+		double cross_product_tp = (-tb) * pa - ta * (-pb);
+		if(compare_float(cross_product_tp, 0)){
+			
+			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
+			// µÎ °³ÀÇ ½ÃÀÛÁ¡À» ÀÕ´Â º¤ÅÍ..
 			double v1 = partition->begin.m_x - t_bp->begin.m_x;
 			double v2 = partition->begin.m_y - t_bp->begin.m_y;
-			if((-tb) * v2 - ta * v1 >= 0){
+			// t x v
+			if((-tb) * v2 - ta * v1 >= 0) {
+				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
 				continue;
 			}
-			else{
+			else{ 
+				// partitionÀÌ T ¹Ù±ù¿¡ ÀÖ´Â °ÍÀÌ È®½ÇÇÏ¹Ç·Î ´õÀÌ»ó ÁøÇàÇÒ ÇÊ¿ä°¡ ¾øÀ½.
 				return false;
 			}
 		}
+
+		// ±³Á¡ ±¸ÇÏ±â? (3Â÷¿ø¿¡¼­´Â ±³¼± ±¸ÇÏ±â°¡ µÇ¾î¾ß ÇÔ)
 		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 
-		if((-tb) * pa - (-pb) * ta > TOLERENCE)
+		// ¸¸¾à µÎ °³ÀÇ º¤ÅÍ°¡ ÆòÇàÇÏÁö ¾ÊÀº °æ¿ì...
+		if(cross_product_tp > TOLERENCE)
 		{
-			if(x_or_y == 0){
-				double currentMin = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						begin = point;
-					}
-			}
-			else if(x_or_y == 1){
-				double currentMin = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						begin = point;
-					}
-			}
+			double currentMin = (x_or_y == 0) ?
+				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+
+			if (currentMin >= max) return false;
+			else
+				if (currentMin > min) {
+					min = currentMin;
+					begin = point;
+				}
 		}
 		else{
-			if(x_or_y == 0){
-				double currentMax = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						end = point;
-					}
-			}
-			else if(x_or_y == 1){
-				double currentMax = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						end = point;
-					}
-			}
+			double currentMax = (x_or_y == 0) ?
+				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+
+			if (currentMax <= min) return false;
+			else
+				if (currentMax < max) {
+					max = currentMax;
+					end = point;
+				}
 		}
 	}
 
@@ -2148,12 +2148,12 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 	return true;	
 }
 
-bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, double &pmin, double &pmax, double &pcross){
+/*
+bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, 
+	double &pmin, double &pmax, double &pcross){
 	pos = partition->begin;
 	double vx = partition->end.m_x - partition->begin.m_x;
 	double vy = partition->end.m_y - partition->begin.m_y;
-
-	double l = sqrt(vx * vx + vy * vy);
 	
 	double mean_xy[2];
 	mean_xy[0] = vx > 0 ? 1: -1;
@@ -2193,7 +2193,8 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 		pb =partition->begin.m_x - partition->end.m_x;
 		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){//Æ½ÐÐ ÏÖÔÚ¼Ù¶¨ÖØºÏ»òÕßÆ½ÐÐÔÚTnode-partition×ó±ß¶¼¿ÉÒÔ
+		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){
+			//Æ½ÐÐ ÏÖÔÚ¼Ù¶¨ÖØºÏ»òÕßÆ½ÐÐÔÚTnode-partition×ó±ß¶¼¿ÉÒÔ
 			// node-partitionÏòÁ¿£¨-tb,ta£©
 			double v1 = partition->begin.m_x - t_bp->begin.m_x;
 			double v2 = partition->begin.m_y - t_bp->begin.m_y;
@@ -2303,7 +2304,7 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 	}
 	return true;	
 }
-
+*/
 bool gb_isCross(CP_BSPNode* A, CP_Point &point){ //ÐèÒª¿¼ÂÇnodeÊÇÆäparentµÄ×óº¢×Ó»¹ÊÇÓÒº¢×Ó
 	CP_BSPNode* node = A;
 	CP_BSPNode* child;

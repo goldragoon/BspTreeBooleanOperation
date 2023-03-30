@@ -179,13 +179,9 @@ extern bool     gb_removePoint(CP_Polygon& pn, int id);
 extern bool     gb_removeRegion(CP_Polygon& pn, int idRegion);
 extern void     gb_subtractOneAboveID(CP_Polygon& pn, int id);
 
-
-//my code
-//check
 class CP_BSPNode;
 extern bool     gb_checkPolygon(CP_Polygon& pn);
 extern bool     gb_checkRegion(CP_Region& rn);
-extern bool     gb_checkReginInRegin(CP_Region &in, CP_Region &region);
 extern bool     gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2);
 extern bool     gb_checkLoopSelfIntersection(CP_Loop& ln);
 extern bool     gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2);
@@ -199,37 +195,18 @@ class CP_Partition{
 public:
 	CP_Point begin;
 	CP_Point end;
-    vector<CP_Point> point_list;
-	vector<CP_Partition*> partition_list;
 
-	CP_Partition() {
-		begin = CP_Point();
-		end = CP_Point();
-		point_list.push_back(begin);
-		point_list.push_back(end);
-	}
-
-	CP_Partition(CP_Point &b, CP_Point &e){
-		begin = CP_Point();
-		end = CP_Point();
-		begin = b;
-		end = e;
-		point_list.push_back(begin);
-		point_list.push_back(end);
-	}
-
-	~CP_Partition(){
-		for(unsigned int i = 0; i < partition_list.size(); i++)
-			delete partition_list[i];
-	}
-
+	CP_Partition() {}
+	CP_Partition(const CP_Point &b, const CP_Point &e) : begin(b), end(e) {}
+	CP_Partition(const CP_Partition& p) { begin = p.begin; end = p.end; }
+	~CP_Partition() {}
+	/*
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();
 		r->begin = p->begin;
 		r->end = p->end;
-		partition_list.push_back(r);
 		return r;
-	}
+	}*/
 };
 
 typedef vector<CP_Partition> VT_PartitionArray;
@@ -322,7 +299,7 @@ extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point& p
 extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
 extern void gb_complement(CP_BSPNode* T);
 extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
-extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, CP_Point *cross, double &pmin, double &pmax, double &pcross);
+extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, const CP_Point &cross, double &pmin, double &pmax, double &pcross);
 
 extern bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);

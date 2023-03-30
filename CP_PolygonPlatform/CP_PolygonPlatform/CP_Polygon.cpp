@@ -989,64 +989,9 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 	return false;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////没有用到
-//in存在点在region内部则return true，否则return false
-bool gb_checkReginInRegin(CP_Region &in, CP_Region &region){
-	vector<CP_Point> pointList;
-	CP_Polygon *polygon = in.m_polygon;
-	for(unsigned int i = 0; i < in.m_loopArray.size(); i++){
-		CP_Loop loop = in.m_loopArray[i];
-		for(unsigned int j = 0; j < loop.m_pointIDArray.size(); j++){
-			pointList.push_back(polygon->m_pointArray[loop.m_pointIDArray[j]]);
-		}
-	}
-	CP_BSPNode *regionTree = gb_buildRegionBSPTree(region);
-
-	for(unsigned int i = 0; i < pointList.size(); i++){
-		CP_Point point = pointList[i];
-		CP_BSPNode *tree = regionTree;
-		while(true){
-			if(tree->leftChild == NULL && tree->rightChild == NULL){
-				if(tree->position == REGION_IN){
-					return true;
-				}
-				else return false;
-			}
-			CP_Partition *p = tree->partition;
-			//判断point与p的位置关系
-			double ax = p->end.m_x - p->begin.m_x;
-			double ay = p->end.m_y - p->begin.m_y;
-			double bx = point.m_x - p->end.m_x;
-			double by = point.m_y - p->end.m_y;
-
-			if(ax * by - bx * ay <= TOLERENCE && ax * by - bx * ay >= -TOLERENCE){ //点在直线上
-				if(ax * ax > ay * ay){
-					if((p->end.m_x - point.m_x) * (point.m_x - p->begin.m_x) >= 0){
-						return true;
-					}
-				}
-				else{
-					if((p->end.m_y - point.m_y) * (point.m_y - p->begin.m_y) >= 0){
-						return true;
-					}
-				}
-			}
-			else if(ax * by - bx * ay > TOLERENCE){
-				tree = tree->leftChild;
-			}
-			else{
-				tree = tree->rightChild;
-			}
-		}
-	}
-
-	return false;
-}
-
 // generate partition as 2d line segment(shoulnd't be 2d plane?)
 void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
-	printf("\t\tgb_getLoopPartition\n");
+	printf("\t\tgb_getLoopPartition\n"); // debug
 	CP_Polygon *polygon = ln.m_polygon;
 	int size = ln.m_pointIDArray.size();
 	int direction = -1;
@@ -1055,25 +1000,23 @@ void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
 
 	for(int i = 0; i < size; i++){
 		int j = (i + direction + size) % size;
-		printf("\t\t\t- (i,j) = (%d, %d)\n", i, j);
-		CP_Partition *p = new CP_Partition();
-		p->begin = polygon->m_pointArray[ln.m_pointIDArray[i]];
-		p->end = polygon->m_pointArray[ln.m_pointIDArray[j]];
+		printf("\t\t\t- (i,j) = (%d, %d)\n", i, j); // debug
+		CP_Partition* p = new CP_Partition(polygon->m_pointArray[ln.m_pointIDArray[i]], polygon->m_pointArray[ln.m_pointIDArray[j]]);
 		vp.push_back(p);
 	}
 }
 
 CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
+	printf("gb_buildPolygonBSPTree\n");
 	int nr = pn.m_regionArray.size();
-	if(nr == 0){
+	if(nr == 0)
 		return NULL;
-	}
+
 	vector<CP_BSPNode *> bsptrees;
 	CP_BSPNode* result = NULL;
-	for(int iR = 0; iR < nr; iR++)
-	{
-		bsptrees.push_back(gb_buildRegionBSPTree(pn.m_regionArray[iR]));
-	}
+	for(auto region : pn.m_regionArray)
+		bsptrees.push_back(gb_buildRegionBSPTree(region));
+
 	if(nr == 1) return bsptrees[0];
 	else{
 		result = bsptrees[0];
@@ -1107,6 +1050,7 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 	printf("\tgb_buildLoopBSPTree\n");
 
+	// polygon狼 俊瘤 俺荐父怒..
 	vector<CP_Partition*> partitionArray;
 	gb_getLoopPartition(ln, partitionArray);
 
@@ -1121,27 +1065,26 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	vector<CP_Partition*> F_left;
 	vector<CP_Partition*> F_coincident;
 
-	CP_Partition *H = vp[0];
+	CP_Partition *H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
+
+	// 货肺款 畴靛 积己.
 	CP_BSPNode *tree = new CP_BSPNode();
-	tree->partition = vp[0];
+	tree->partition = H; // hyper plane栏肺 node甫 律胺.
 	tree->parent = parent;
 
-	if(childInfo == CHILDINFO_LEFT)
-		parent->leftChild = tree;
-	else if(childInfo == CHILDINFO_RIGHT)
-		parent->rightChild = tree;
+	// parent狼 child node pointer甫 update窍扁..
+	if (childInfo == CHILDINFO_LEFT)      parent->leftChild = tree;
+	else if(childInfo == CHILDINFO_RIGHT) parent->rightChild = tree;
+	// else (childInfo == CHILDINFO_NO) 牢 版快绰 root node老 锭观俊 绝澜.
 
 	// partitionLine is used to record the part of the line where the partition is located inside the area
-	CP_Partition * partitionLine = new CP_Partition();
-
-	partitionLine->begin = tree->partition->begin;
-	partitionLine->end = tree->partition->end;
+	CP_Partition * partitionLine = new CP_Partition(*(tree->partition));
 
 	CP_Point pBegin, pEnd;
 	double pmin, pmax, pcross;
 	CP_Point point;
 
-	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, &point, pmin, pmax, pcross)){
+	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
 		pBegin = tree->partition->end;
 		pEnd = tree->partition->begin;
 	}
@@ -1171,15 +1114,13 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 		}
 	}
 
-	partitionLine->begin.m_x = pBegin.m_x;
-	partitionLine->begin.m_y = pBegin.m_y;
-	partitionLine->end.m_x = pEnd.m_x;
-	partitionLine->end.m_y = pEnd.m_y;
+	partitionLine->begin = pBegin;
+	partitionLine->end = pEnd;
 
 	tree->pos_coincident.push_back(partitionLine);
 	//partitionLine initialization ends
 
-	if(vp.size() > 0)
+	if(vp.size() > 0) // Q : 捞 炼扒捞 H assign 窍瘤 傈栏肺 甸绢啊具 窍瘤 臼唱?い
 		tree->pos_coincident.push_back(vp[0]);
 
 	for(unsigned int i = 1; i < vp.size(); i++){
@@ -1339,7 +1280,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		double pmin, pmax, pcross;
 		CP_Point point;
 
-		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, &point, pmin, pmax, pcross)){
+		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
 			pBegin = tree->partition->end;
 			pEnd = tree->partition->begin;
 		}
@@ -1360,7 +1301,6 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 				pEnd.m_x = pmax * mean_xy[0] + tree->partition->begin.m_x;
 				//pBegin.m_y = pmin * mean_xy[0] + tree->partition->begin.m_x;
 				pBegin.m_y = (pBegin.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
-
 				pEnd.m_y = (pEnd.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
 			}
 			else{
@@ -1378,6 +1318,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
+
 		tree->leftChild = B_inLeft;
 		tree->rightChild = B_inRight;
 		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
@@ -1392,6 +1333,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 	CP_BSPNode* tree = NULL;
 	CP_BSPNode* B_inRight = NULL;
 	CP_BSPNode* B_inLeft = NULL;
+
 	if(gb_treeIsCell(A) || gb_treeIsCell(B)){
 		tree = gb_mergeTreeWithCell(A, B, op);
 	}
@@ -1454,13 +1396,15 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 			case CP_BSPOp::INTERSECTION:
 				return T1;
 			case CP_BSPOp::SUBTRACTION:
+				
 				CP_BSPNode *node = new CP_BSPNode();
 				node->position = REGION_OUT;
 				return node;
-
-				//(Q : why naylor's algorithm not working?
-				//gb_complement(T1);
-				//return T1;
+				
+				/*
+				gb_complement(T1); // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
+				return T1;
+				*/
 			}
 		}
 		else{
@@ -1471,7 +1415,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 				return T2;
 			case CP_BSPOp::SUBTRACTION:
 				return T1;
-				//return T2; (Q : why naylor's algorithm not working?
+				//return T2; // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
 			}
 		}
 	}
@@ -1479,28 +1423,23 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 }
 
 void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd){
-	// if T is cell
+	// if T is 'cell(or leaf node)' 
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
 		B_inRight = new CP_BSPNode(T);	
 		return;
 	}
 
-	// if T is not cell
-	
+	// if T is 'not cell(not leaf node)'
 	CP_Point cross_point;
 	CP_Partition *partitionPush = NULL;
 	CP_Partition *leftPartition = partition;
 	CP_Partition *rightPartition = partition;
 	CP_Point pLBegin, pLEnd, pRBegin, pREnd;
-	pLBegin.m_x = partitionBegin.m_x;
-	pLBegin.m_y = partitionBegin.m_y;
-	pLEnd.m_x = partitionEnd.m_x;
-	pLEnd.m_y = partitionEnd.m_y;
-	pRBegin.m_x = partitionBegin.m_x;
-	pRBegin.m_y = partitionBegin.m_y;
-	pREnd.m_x = partitionEnd.m_x;
-	pREnd.m_y = partitionEnd.m_y;
+	pLBegin = partitionBegin;
+	pLEnd = partitionEnd;
+	pRBegin = partitionBegin;
+	pREnd = partitionEnd;
 
 	// pos has 7 cases
 	char pos = gb_t_p_Position3(T, partition, cross_point, pLBegin, pLEnd, pRBegin, pREnd);
@@ -1796,20 +1735,19 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 			// 判断partition是否有可能继续包含在区域中的线段
 			CP_Point begin, end;
 			double pmin, pmax, pcross;
-			CP_Point pos_point;
-			double tmin, tmax, tcross;
-			if(gb_p_in_region(A, partition, begin, end, &point, pmin, pmax, pcross)){
+			
+			if(gb_p_in_region(A, partition, begin, end, point, pmin, pmax, pcross)){
 
 				
 				CP_Partition *t_partition = new CP_Partition();
-
 				t_partition->begin = A->partition->begin;
 				t_partition->end = A->partition->end;
 
+				CP_Point pos_point;
+				double tmin, tmax, tcross;
 				gb_t_in_region(A, t_partition, pos_point, &point, tmin, tmax, tcross);
 
 				CP_Partition *currentp = new CP_Partition();
-
 				currentp->begin = begin;
 				currentp->end = end;
 
@@ -1881,7 +1819,7 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 	pb =partition->begin.m_x - partition->end.m_x;
 	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
-	bool not_in_region = false; // 
+	bool not_in_region = false; // ??
 	if(pa * pa > pb * pb){ // y规氢
 		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
 			not_in_region = true;
@@ -2093,7 +2031,7 @@ bool gb_t_p_left(CP_Point &point, CP_Partition* partition){
 
 }
 
-bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, CP_Point *cross, double &pmin, double &pmax, double &pcross){
+bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, const CP_Point &cross, double &pmin, double &pmax, double &pcross){
 	begin = partition->begin;
 	end = partition->end;
 
@@ -2202,9 +2140,9 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 	}
 
 	if(x_or_y == 0)
-		pcross = (cross->m_x - partition->begin.m_x) * mean_xy[x_or_y];
+		pcross = (cross.m_x - partition->begin.m_x) * mean_xy[x_or_y];
 	else if(x_or_y == 1)
-		pcross = (cross->m_y - partition->begin.m_y) * mean_xy[x_or_y];
+		pcross = (cross.m_y - partition->begin.m_y) * mean_xy[x_or_y];
 	pmin = min;
 	pmax = max;
 	return true;	

@@ -891,15 +891,13 @@ bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
 		return true;
 }
 
-//宮슥앎럿쀼true，뤠橙false
 bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Point* p22){
 	double ta, tb, tc, pa, pb, pc;
 	CP_Point cross;
-	//횅땍殮窟렘넋
 	pa = p11->m_y - p12->m_y;
 	pb = p12->m_x - p11->m_x;
 	pc = p11->m_y * (p11->m_x - p12->m_x) - p11->m_x * (p11->m_y - p12->m_y);
-	//횅땍殮窟렘넋
+
 	ta = p21->m_y - p22->m_y;
 	tb = p22->m_x - p21->m_x;
 	tc = p21->m_y * (p21->m_x - p22->m_x) - p21->m_x * (p21->m_y - p22->m_y);
@@ -1177,26 +1175,17 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	return tree;
 }
 
+
+// 이미 확실히 T와 P가 cross되는 것이 보장된 상태임을 가정한다.
+// (outplace) T를 P로 자르고, left, right(내외부)로 파티션을 새로 생성한다.
 void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right){
 	left = new CP_Partition(T);
 	right = new CP_Partition(T);
 
-	CP_Vec2 t = T->end - T->begin;
+	CP_Vec2 t_vec, p_vec;
+	CP_Point point = T->intersection(P, t_vec, p_vec);
 
-	double pa, pb, pc, ta, tb, tc;
-	ta =T->end.m_y - T->begin.m_y;
-	tb =T->begin.m_x - T->end.m_x;
-	tc = -ta * T->begin.m_x - tb * T->begin.m_y;
-
-	pa =P->end.m_y - P->begin.m_y;
-	pb =P->begin.m_x - P->end.m_x;
-	pc = -pa * P->begin.m_x - pb * P->begin.m_y;
-
-	CP_Point point;
-	point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-	point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-
-	if(-pb * ta + tb * pa > 0){
+	if(-t_vec.cross_product(p_vec) > 0) {
 		left->begin = point;
 		right->end = point;
 	}
@@ -1319,8 +1308,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 
 	CP_BSPNode* tree = NULL;
-	CP_BSPNode* B_inRight = NULL;
-	CP_BSPNode* B_inLeft = NULL;
+
 
 	if(gb_treeIsCell(A) || gb_treeIsCell(B)){
 		tree = gb_mergeTreeWithCell(A, B, op);
@@ -1337,6 +1325,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 		CP_Point pBegin(tree->partition->begin - sub);
 		CP_Point pEnd(tree->partition->begin + sub);
 
+		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
@@ -1410,7 +1399,10 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 	return NULL;
 }
 
-void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd){
+void gb_partitionBspt(
+	const CP_BSPNode* const T, const CP_Partition* const partition, 
+	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* parent, 
+	const CP_Point& partitionBegin, const CP_Point& partitionEnd){
 	// if T is 'cell(or leaf node)' 
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
@@ -1421,8 +1413,8 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 	// if T is 'not cell(not leaf node)'
 	CP_Point cross_point;
 	CP_Partition *partitionPush = NULL;
-	CP_Partition *leftPartition = partition;
-	CP_Partition *rightPartition = partition;
+	const CP_Partition *leftPartition = partition;
+	const CP_Partition *rightPartition = partition;
 	CP_Point pLBegin, pLEnd, pRBegin, pREnd;
 	pLBegin = partitionBegin;
 	pLEnd = partitionEnd;
@@ -1436,41 +1428,41 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 		B_inLeft = T->leftChild;
 		B_inRight = T->rightChild;
 		partitionPush = T->partition;
-		root->pos_coincident.push_back(partitionPush);
+		parent->pos_coincident.push_back(partitionPush);
 		return;
 	case P_T_ON_NEG:
 		B_inLeft = T->rightChild;
 		B_inRight = T->leftChild;
 		partitionPush = T->partition;
-		root->neg_coincident.push_back(partitionPush);
+		parent->neg_coincident.push_back(partitionPush);
 		return;
 	case P_T_POS_NEG:
 		B_inRight = new CP_BSPNode();
 		B_inRight->rightChild = T->rightChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, root, pLBegin, pLEnd);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, pLBegin, pLEnd);
 		break;
 	case P_T_POS_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->rightChild = T->rightChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, root, pLBegin, pLEnd);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, pLBegin, pLEnd);
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->leftChild = T->leftChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, root, pRBegin, pREnd);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, pRBegin, pREnd);
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
 		B_inRight->leftChild = T->leftChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, root, pRBegin, pREnd);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, pRBegin, pREnd);
 		break;
 	case P_T_BOTH_POS:
 		B_inLeft = new CP_BSPNode();
@@ -1524,8 +1516,8 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 				break;
 			}
 		}
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, root, pLBegin, pLEnd);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, root, pRBegin, pREnd);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, pLBegin, pLEnd);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, pRBegin, pREnd);
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
@@ -1563,7 +1555,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 			case LINE_IN:				
 				right = new CP_Partition();
 				left = new CP_Partition();
-
 				left->begin = T->neg_coincident[i]->begin;
 				left->end = cross_point;
 				right->begin = cross_point;
@@ -1581,8 +1572,8 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 			}
 		}
 		
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, root, pLBegin, pLEnd);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, root, pRBegin, pREnd);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, pLBegin, pLEnd);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, pRBegin, pREnd);
 		break;
 	}
 	if(!gb_treeIsCell(B_inLeft)){
@@ -1593,7 +1584,6 @@ void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* & B_in
 			B_inRight->leftChild->parent = B_inRight;
 			B_inRight->rightChild->parent = B_inRight;
 	}
-	 
 }
 
 char gb_coincidentPos(CP_Partition *p, CP_Point &point){
@@ -1793,7 +1783,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 }
 */
 // classify 
-char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_point, 
+char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point &cross_point, 
 	CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
 
 	CP_Partition *t_bp = A->partition;
@@ -1808,11 +1798,13 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
 	bool not_in_region = false; // ??
-	if(pa * pa > pb * pb){ // y방향
+	if(pa * pa > pb * pb){ 
+		// y방향
 		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
 			not_in_region = true;
 	}
-	else{ // x방향
+	else{ 
+		// x방향
 		if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
 			not_in_region = true;
 	}
@@ -1861,8 +1853,7 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 			CP_Point point;
 			point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 			point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-			cross_point = CP_Point();
-			cross_point = point;
+			cross_point =  point;
 			bool crossInpartition = false;
 			if(pa * pa > pb * pb){ //y렘蕨
 				if(((partitionLEnd.m_y - point.m_y > TOLERENCE) && (point.m_y - partitionLBegin.m_y > TOLERENCE))
@@ -1966,7 +1957,7 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 	}	
 }
 
-bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition){
+bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition){
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;
 
@@ -1980,7 +1971,7 @@ bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition){
 
 }
 
-bool gb_t_p_left(CP_Point &point, CP_Partition* partition){
+bool gb_t_p_left(const CP_Point &point, const CP_Partition* const partition){
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;
 
@@ -2299,7 +2290,7 @@ bool gb_isCross(CP_BSPNode* A, CP_Point &point){
 	return true;
 }
 
-bool gb_treeIsCell(CP_BSPNode* node){
+bool gb_treeIsCell(const CP_BSPNode* const node){
 	if(node->leftChild == NULL && node->rightChild == NULL)
 		return true;
 	else 
@@ -2509,6 +2500,7 @@ bool gb_changePartitionDir(CP_Partition *p){
 	return true;
 }
 
+// p를 f로 잘라버린다.(inplace)
 bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 	double vx1, vx2, vx3, vy1, vy2, vy3;
 	vx1 = face->end.m_x - face->begin.m_x;
@@ -2557,7 +2549,8 @@ bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 		return false;
 
 	}
-	else{ // p宅face殮窟貫零路북
+	else{
+		// The position of p coincides with the straight line of face
 		return true;
 	}
 }

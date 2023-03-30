@@ -279,7 +279,7 @@ public:
 	char position;
 
 	CP_BSPNode():parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), position(0){}
-	CP_BSPNode(CP_BSPNode *node){
+	CP_BSPNode(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
@@ -291,7 +291,7 @@ public:
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
 	}
-	void copy(CP_BSPNode *node){
+	void copy(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
@@ -304,7 +304,7 @@ public:
 			neg_coincident.push_back(nc);
 	}
 
-	void assign_coincidents(CP_BSPNode* node) {
+	void assign_coincidents(const CP_BSPNode* const node) {
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
 
@@ -331,14 +331,17 @@ extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
 extern char getPatitionPos(const CP_Partition* const partition, const CP_Partition* const H);
 
-extern bool gb_treeIsCell(CP_BSPNode* node);
-extern void gb_partitionBspt(CP_BSPNode* T, CP_Partition* partition, CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* root, CP_Point& partitionBegin, CP_Point& partitionEnd);
+extern bool gb_treeIsCell(const CP_BSPNode* const node);
+extern void gb_partitionBspt(
+	const CP_BSPNode* const T, const CP_Partition* const partition, 
+	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
+	const CP_Point& partitionBegin, const CP_Point& partitionEnd);
 
 // The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)
 //extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
-extern char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
 
 extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
 extern void gb_complement(CP_BSPNode* T);
@@ -347,7 +350,7 @@ extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
 // partition이 T의 내부에 있는지 검사한다.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, const CP_Point &cross, double &pmin, double &pmax, double &pcross);
 
-extern bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition);
+bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
@@ -357,7 +360,7 @@ extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, double &pmin, double &pmax, double &pcross);
-extern bool gb_t_p_left(CP_Point &point, CP_Partition* partition);
+extern bool gb_t_p_left(const CP_Point &point, const CP_Partition* const partition);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
 

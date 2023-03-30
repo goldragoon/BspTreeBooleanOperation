@@ -1,4 +1,4 @@
-// this project
+ï»¿// this project
 #include "stdafx.h"
 #include "CP_Polygon.h"
 
@@ -127,7 +127,6 @@ bool gb_findPointInLoop(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPoint
     return false;
 }
 
-// ÕâÀï¼ÙÉèËùÓĞµÄÌõ¼ş¶¼³ÉÁ¢£¬¼´º¯ÊıÄÚ²¿²»ÅĞ¶ÏÊäÈëµÄºÏ·¨ĞÔ
 void gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point& newPoint)
 {
     int nv = pn.m_pointArray.size( );
@@ -135,7 +134,7 @@ void gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& id
     pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray.insert(
         pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray.begin( )+idPointInLoop+1,
         nv);
-} // º¯Êıgb_findPointInLoop½áÊø
+}
 
 void gb_intArrayInit(VT_IntArray& vi, int data)
 {
@@ -143,7 +142,7 @@ void gb_intArrayInit(VT_IntArray& vi, int data)
     int i;
     for (i=0; i<n; i++)
         vi[i] = data;
-} // º¯Êıgb_intArrayInit½áÊø
+}
 
 void gb_intArrayInitLoop(VT_IntArray& vi, CP_Polygon& pn, int idRegion, int idLoop, double eT)
 {
@@ -155,9 +154,9 @@ void gb_intArrayInitLoop(VT_IntArray& vi, CP_Polygon& pn, int idRegion, int idLo
     {
         v = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray[i];
         vi[v] = v;
-    } // for½áÊø
+    }
     gb_intArrayInitPointSame(vi, pn, eT);
-} // º¯Êıgb_intArrayInitLoop½áÊø
+}
 
 void gb_intArrayInitPoint(VT_IntArray& vi, CP_Polygon& pn, int v, double eT)
 {
@@ -166,7 +165,7 @@ void gb_intArrayInitPoint(VT_IntArray& vi, CP_Polygon& pn, int v, double eT)
     {
         vi.clear( );
         return;
-    } // if½áÊø
+    }
     vi.resize(n);
     int i;
     double d;
@@ -226,7 +225,7 @@ void gb_intArrayInitPolygonSamePoint(VT_IntArray& vr, CP_Polygon& pr, VT_IntArra
     {
         vr.clear( );
         return;
-    } // if½áÊø
+    } // ifì¨ç›£
     vr.resize(n1);
     gb_intArrayInit(vr, -1);
     n0 = ps.m_pointArray.size( );
@@ -266,22 +265,22 @@ void gb_intArrayInitRegion(VT_IntArray& vi, CP_Polygon& pn, int idRegion, double
 
 void gb_moveLoop(CP_Polygon& pn, int idRegion, int idLoop, double vx, double vy)
 {
-    int nr, nL, nv;
-    int i, id;
-    nr = pn.m_regionArray.size( );
-    if ((idRegion<0) || (idRegion>=nr))
-        return;
-    nL = pn.m_regionArray[idRegion].m_loopArray.size( );
-    if ((idLoop<0) || (idLoop>=nL))
-        return;
-    nv = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray.size( );
-    for (i=0; i<nv; i++)
-    {
-        id = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray[i];
-        pn.m_pointArray[id].m_x += vx;
-        pn.m_pointArray[id].m_y += vy;
-    } // for½áÊø
-} // º¯Êıgb_moveLoop½áÊø
+	int nr, nL, nv;
+	int i, id;
+	nr = pn.m_regionArray.size();
+	if ((idRegion < 0) || (idRegion >= nr))
+		return;
+	nL = pn.m_regionArray[idRegion].m_loopArray.size();
+	if ((idLoop < 0) || (idLoop >= nL))
+		return;
+	nv = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray.size();
+	for (i = 0; i < nv; i++)
+	{
+		id = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray[i];
+		pn.m_pointArray[id].m_x += vx;
+		pn.m_pointArray[id].m_y += vy;
+	}
+}
 
 void gb_movePoint(CP_Polygon& pn, int id, double vx, double vy)
 {
@@ -290,7 +289,7 @@ void gb_movePoint(CP_Polygon& pn, int id, double vx, double vy)
         return;
     pn.m_pointArray[id].m_x += vx;
     pn.m_pointArray[id].m_y += vy;
-} // º¯Êıgb_movePoint½áÊø
+}
 
 void gb_movePointIntArray(CP_Polygon& pn, VT_IntArray& vi, double vx, double vy)
 {
@@ -298,67 +297,66 @@ void gb_movePointIntArray(CP_Polygon& pn, VT_IntArray& vi, double vx, double vy)
     int i;
     for (i=0; i<n; i++)
         gb_movePoint(pn, vi[i], vx, vy);
-} // º¯Êıgb_movePoint½áÊø
+}
 
 void gb_movePolygon(CP_Polygon& pn, double vx, double vy)
 {
-    int n = pn.m_pointArray.size( );
-    int i;
-    for (i=0; i<n; i++)
-    {
-        pn.m_pointArray[i].m_x += vx;
-        pn.m_pointArray[i].m_y += vy;
-    } // for½áÊø
-} // º¯Êıgb_movePolygon½áÊø
+	int n = pn.m_pointArray.size();
+	int i;
+	for (i = 0; i < n; i++)
+	{
+		pn.m_pointArray[i].m_x += vx;
+		pn.m_pointArray[i].m_y += vy;
+	}
+}
 
 void gb_moveRegion(CP_Polygon& pn, int idRegion, double vx, double vy)
 {
-    int nr, nL, nv;
-    int i, j, k, id;
-    nr = pn.m_regionArray.size( );
-    if ((idRegion<0) || (idRegion>=nr))
-        return;
-    i = idRegion;
-    nL = pn.m_regionArray[i].m_loopArray.size( );
-    for (j=0; j<nL; j++)
-    {
-        nv = pn.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( );
-        for (k=0; k<nv; k++)
-        {
-            id = pn.m_regionArray[i].m_loopArray[j].m_pointIDArray[k];
-            pn.m_pointArray[id].m_x += vx;
-            pn.m_pointArray[id].m_y += vy;
-        } // for½áÊø
-    } // for½áÊø
-} // º¯Êıgb_moveRegion½áÊø
+	int nr, nL, nv;
+	int i, j, k, id;
+	nr = pn.m_regionArray.size();
+	if ((idRegion < 0) || (idRegion >= nr))
+		return;
+	i = idRegion;
+	nL = pn.m_regionArray[i].m_loopArray.size();
+	for (j = 0; j < nL; j++)
+	{
+		nv = pn.m_regionArray[i].m_loopArray[j].m_pointIDArray.size();
+		for (k = 0; k < nv; k++)
+		{
+			id = pn.m_regionArray[i].m_loopArray[j].m_pointIDArray[k];
+			pn.m_pointArray[id].m_x += vx;
+			pn.m_pointArray[id].m_y += vy;
+		}
+	}
+}
 
-// ½«ÔÚÈ«¾Ö×ø±êÏµÏÂµÄµã×ª»»³ÉÎªÔÚÆÁÄ»×ø±êÏÂµÄµã
-// result:      Êä³öµÄÔÚÆÁÄ»×ø±êÏÂµÄµã;
-// pointGlobal: ÊäÈëµÄÔÚÈ«¾Ö×ø±êÏµÏÂµÄµã;
-// scale:       ÊäÈëµÄ±ÈÀıÒò×Ó;
-// translation: ÊäÈëµÄÆ½ÒÆ×ø±êÖµ¡£
+// ì‰¥ç³í™ì• éºŸê¹ƒæºè‹Ÿë¨ë“ç˜»ë»£ëƒ¥æ§¨ç³íŒìº¥éºŸê¹ƒè‹Ÿë¨ë“
+// result:      æ¸´ë†”ë¨ç³íŒìº¥éºŸê¹ƒè‹Ÿë¨ë“;
+// pointGlobal: æ¸´í™ë¨ç³í™ì• éºŸê¹ƒæºè‹Ÿë¨ë“;
+// scale:       æ¸´í™ë¨ê¶ì ˆï¥”ç¶¾;
+// translation: æ¸´í™ë¨í‹±ï¤³éºŸê¹ƒä»¤ã€‚
 void gb_pointConvertFromGlobalToScreen(CP_Point& result, CP_Point pointGlobal, double scale, CP_Point translation, int screenX, int screenY)
 {
     result.m_x=(pointGlobal.m_x-translation.m_x)*scale;
     result.m_y=(pointGlobal.m_y-translation.m_y)*scale;
     result.m_x+= (screenX/2);
     result.m_y=screenY/2-result.m_y;
-} // º¯ÊıPointConvertFromGlobalToScreen½áÊø
+} // ë³€é‘’PointConvertFromGlobalToScreenì¨ç›£
 
-// ½«ÔÚÆÁÄ»×ø±êÏÂµÄµã×ª»»³ÉÎªÔÚÈ«¾Ö×ø±êÏµÏÂµÄµã
-// result:      Êä³öµÄÔÚÈ«¾Ö×ø±êÏµÏÂµÄµã;
-// pointScreen: ÊäÈëµÄÔÚÆÁÄ»×ø±êÏµÏÂµÄµã;
-// scale:       ÊäÈëµÄ±ÈÀıÒò×Ó;
-// translation: ÊäÈëµÄÆ½ÒÆ×ø±êÖµ¡£
+// ì‰¥ç³íŒìº¥éºŸê¹ƒè‹Ÿë¨ë“ç˜»ë»£ëƒ¥æ§¨ç³í™ì• éºŸê¹ƒæºè‹Ÿë¨ë“
+// result:      æ¸´ë†”ë¨ç³í™ì• éºŸê¹ƒæºè‹Ÿë¨ë“;
+// pointScreen: æ¸´í™ë¨ç³íŒìº¥éºŸê¹ƒæºè‹Ÿë¨ë“;
+// scale:       æ¸´í™ë¨ê¶ì ˆï¥”ç¶¾;
+// translation: æ¸´í™ë¨í‹±ï¤³éºŸê¹ƒä»¤ã€‚
 void gb_pointConvertFromScreenToGlobal(CP_Point& result, CP_Point pointScreen, double scale, CP_Point translation, int screenX, int screenY)
 {
     result.m_x=pointScreen.m_x - screenX/2;
     result.m_y=screenY/2-pointScreen.m_y;
     result.m_x=result.m_x/scale+translation.m_x;
     result.m_y=result.m_y/scale+translation.m_y;
-} // º¯Êıgb_PointConvertFromScreenToGlobal½áÊø
+}
 
-// ¸ø¶à±ßĞÎpÔö¼ÓĞÂµÄÄÚ»·£¬¸ÃÄÚ»·ÊÇÍâ½ÓÔ²°ë¾¶ÎªrµÄÕın±ßĞÎ¡£
 bool gb_polygonNewInLoopRegular(CP_Polygon& p, int idRegion, int n, double r, double cx, double cy)
 {
     if (n<3)
@@ -380,7 +378,7 @@ bool gb_polygonNewInLoopRegular(CP_Polygon& p, int idRegion, int n, double r, do
     {
         p.m_pointArray[i].m_x = cx + r*cos(d);
         p.m_pointArray[i].m_y = cy + r*sin(d);
-    } // for½áÊø
+    }
     p.m_regionArray[idRegion].m_loopArray[nL].m_polygon = &p;
     p.m_regionArray[idRegion].m_loopArray[nL].m_regionIDinPolygon = idRegion;
     p.m_regionArray[idRegion].m_loopArray[nL].m_loopIDinRegion = nL;
@@ -388,11 +386,10 @@ bool gb_polygonNewInLoopRegular(CP_Polygon& p, int idRegion, int n, double r, do
     for (i=0, k= t-1; i<n; i++, k--)
     {
         p.m_regionArray[idRegion].m_loopArray[nL].m_pointIDArray[i] = k;
-    } // for½áÊø
+    }
     return true;
-} // º¯Êıgb_polygonNewInLoopRegular½áÊø
+}
 
-// ¸ø¶à±ßĞÎpÔö¼ÓĞÂµÄÍâ»·£¬¸ÃÍâ»·ÊÇÍâ½ÓÔ²°ë¾¶ÎªrµÄÕın±ßĞÎ¡£
 void gb_polygonNewOutLoopRegular(CP_Polygon& p, int n, double r, double cx, double cy)
 {
     if (n<3)
@@ -407,7 +404,7 @@ void gb_polygonNewOutLoopRegular(CP_Polygon& p, int n, double r, double cx, doub
     {
         p.m_pointArray[i].m_x = cx + r*cos(d);
         p.m_pointArray[i].m_y = cy + r*sin(d);
-    } // for½áÊø
+    } // forì¨ç›£
     int rs = p.m_regionArray.size( );
     p.m_regionArray.resize(rs+1);
     p.m_regionArray[rs].m_polygon = & p;
@@ -420,8 +417,8 @@ void gb_polygonNewOutLoopRegular(CP_Polygon& p, int n, double r, double cx, doub
     for (i=0, k= s; i<n; i++, k++)
     {
         p.m_regionArray[rs].m_loopArray[0].m_pointIDArray[i] = k;
-    } // for½áÊø
-} // º¯Êıgb_polygonNewOutLoopRegular½áÊø
+    } // forì¨ç›£
+} // ë³€é‘’gb_polygonNewOutLoopRegularì¨ç›£
 
 bool gb_removeLoop(CP_Polygon& pn, int idRegion, int idLoop)
 {
@@ -435,11 +432,11 @@ bool gb_removeLoop(CP_Polygon& pn, int idRegion, int idLoop)
         v = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray[iLv];
         pn.m_pointArray.erase(pn.m_pointArray.begin( )+v);
         gb_subtractOneAboveID(pn, v);
-    } // for(iLv)½áÊø
+    } // for(iLv)ì¨ç›£
     pn.m_regionArray[idRegion].m_loopArray.erase(
         pn.m_regionArray[idRegion].m_loopArray.begin( )+idLoop);
     return true;
-} // º¯Êıgb_removeLoop½áÊø
+} // ë³€é‘’gb_removeLoopì¨ç›£
 
 bool gb_removePoint(CP_Polygon& pn, int id)
 {
@@ -448,14 +445,14 @@ bool gb_removePoint(CP_Polygon& pn, int id)
     if (!rf)
         return false;
     nLv = pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.size( );
-    if (nLv<4) // É¾³ıÕû¸ö»·
+    if (nLv<4) // î€ë‡œæ†ëª¸ë»”
         return (gb_removeLoop(pn, ir, iL));
     pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.erase(
         pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.begin( )+iLv);
     pn.m_pointArray.erase(pn.m_pointArray.begin( )+id);
     gb_subtractOneAboveID(pn, id);
     return true;
-} // º¯Êıgb_removePoint½áÊø
+} // ë³€é‘’gb_removePointì¨ç›£
 
 bool gb_removeRegion(CP_Polygon& pn, int idRegion)
 {
@@ -465,7 +462,7 @@ bool gb_removeRegion(CP_Polygon& pn, int idRegion)
     {
         pn.mb_clear( );
         return true;
-    } // if½áÊø`
+    } // ifì¨ç›£`
     nL = pn.m_regionArray[idRegion].m_loopArray.size( );
     for (iL=0; iL<nL; iL++)
     {
@@ -475,11 +472,11 @@ bool gb_removeRegion(CP_Polygon& pn, int idRegion)
             v = pn.m_regionArray[idRegion].m_loopArray[iL].m_pointIDArray[iLv];
             pn.m_pointArray.erase(pn.m_pointArray.begin( )+v);
             gb_subtractOneAboveID(pn, v);
-        } // for(iLv)½áÊø
-    } // for(iL)½áÊø
+        } // for(iLv)ì¨ç›£
+    } // for(iL)ì¨ç›£
     pn.m_regionArray.erase(pn.m_regionArray.begin( )+idRegion);
     return true;
-} // º¯Êıgb_removeRegion½áÊø
+} // ë³€é‘’gb_removeRegionì¨ç›£
 
 void gb_subtractOneAboveID(CP_Polygon& pn, int id)
 {
@@ -501,10 +498,10 @@ void gb_subtractOneAboveID(CP_Polygon& pn, int id)
 }
 
 //my code
-//ºÏ·¨ĞÔ¼ì²é
+//ë¶ë¬æ˜‘ì‡±ê¿´
 bool gb_checkPolygon(CP_Polygon& pn)
 {
-	//¼ì²éµ¥¸öÇøÓò
+	//ì‡±ê¿´ë°ëª¸í˜å µ
 	int nr = pn.m_regionArray.size();
 	for(int iR = 0; iR < nr; iR++)
 	{
@@ -514,7 +511,7 @@ bool gb_checkPolygon(CP_Polygon& pn)
 		}
 	}
 
-	//±ßÏà½»
+	//ê¸‹å®®ìŠ¥
 	for(int i = 0; i < nr - 1; i++){
 		for(int j = i + 1; j < nr; j++){
 			if(gb_checkRegionCrossRegion(pn.m_regionArray[i], pn.m_regionArray[j]))
@@ -522,7 +519,7 @@ bool gb_checkPolygon(CP_Polygon& pn)
 		}
 	}
 
-	//¼ì²éÇøÓòÖ®¼äÊÇ·ñÓĞÇøÓòÖØºÏ
+	//ì‡±ê¿´í˜å µè£‚ì‡Œè§’ë¤ å”í˜å µè·¯ë¶
 	for(int i = 0; i < nr - 1; i++){
 		for(int j = i + 1; j < nr; j++){
 			CP_BSPNode *a = gb_buildRegionBSPTree(pn.m_regionArray[i]);
@@ -537,7 +534,7 @@ bool gb_checkPolygon(CP_Polygon& pn)
 
 bool gb_checkRegion(CP_Region& rn)
 {
-	//ÅĞ¶Ï»·µÄ×Ô½»ºÍ·½Ïò
+	//í„¸ë™¤ë»”ë¨è±ìŠ¥ëµ¨ë ˜è•¨
 	int nl = rn.m_loopArray.size();
 	for(int iL = 0; iL < nl; iL++)
 	{
@@ -545,7 +542,7 @@ bool gb_checkRegion(CP_Region& rn)
 			return false;
 	}
 
-	//ÅĞ¶Ï»·Ö®¼äµÄ±ßÊÇ·ñÏà½»£¨Ö÷ÒªÊÇÎªÁËÅĞ¶ÏÖØºÏ£©
+	//í„¸ë™¤ë»”è£‚ì‡Œë¨ê¸‹è§’ë¤ å®®ìŠ¥ï¼ˆå¯®ï¤«è§’æ§¨ì£„í„¸ë™¤è·¯ë¶ï¼‰
 	for(int iL1 = 0; iL1 < nl - 1; iL1++)
 	{
 		for(int iL2 = iL1 + 1; iL2 < nl; iL2++)
@@ -555,7 +552,7 @@ bool gb_checkRegion(CP_Region& rn)
 		}
 	}
 
-	//ÅĞ¶ÏÄÚ»·Ö®¼äÊÇ·ñÓĞÏà»¥¸²¸Ç
+	//í„¸ë™¤ì½”ë»”è£‚ì‡Œè§’ë¤ å”å®®ë¹³ë¦¼ë§¨
 	for(int iL1 = 1; iL1 < nl - 1; iL1++)
 	{
 		for(int iL2 = iL1 + 1; iL2 < nl; iL2++)
@@ -567,7 +564,7 @@ bool gb_checkRegion(CP_Region& rn)
 		}
 	}
 
-	//ÅĞ¶ÏÄÚ»·ÊÇ·ñÔÚÍâ»·ÄÚ²¿
+	//í„¸ë™¤ì½”ë»”è§’ë¤ ç³æ£ë»”ì½”ê¼¬
 	for(int iL = 1; iL < nl; iL++)
 	{
 		CP_BSPNode *a = gb_buildLoopBSPTree(rn.m_loopArray[iL]);
@@ -590,7 +587,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 	CP_Point *p0, *p1, *p2;
 	int v1, v2;
 
-	//ÅĞ¶ÏÊÇ·ñÎªË³Ê±Õë
+	//í„¸ë™¤è§’ë¤ æ§¨ç³ ç‚æ¿¾
 	CP_Point *pc;
 
 	int max;
@@ -625,7 +622,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		return false;
 	}
 
-	//ÅĞ¶ÏxminµãËùÁ¬Ïß¶ÎÊÇ·ñÓëÆäËûÏß¶ÎÏà½»
+	//í„¸ë™¤xminë“æ°ì ¯çªŸë™ˆè§’ë¤ å®…í˜å„‰çªŸë™ˆå®®ìŠ¥
 	double a0, b0, c0, a, b, c;
 	a0 = pmin.m_y - pminl.m_y;
 	b0 = pminl.m_x - pmin.m_x;
@@ -635,7 +632,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 			continue;
 		CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
 		CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
-		//È·¶¨Ö±Ïß·½³Ì
+		//íš…ë•æ®®çªŸë ˜ë„‹
 		a = pl1.m_y - pl2.m_y;
 		b = pl2.m_x - pl1.m_x;
 		c = pl1.m_y * (pl1.m_x - pl2.m_x) - pl1.m_x * (pl1.m_y - pl2.m_y);
@@ -666,7 +663,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 
 	}
 
-	//È·¶¨Ö±Ïß·½³Ì
+	//íš…ë•æ®®çªŸë ˜ë„‹
 	a0 = pminr.m_y - pmin.m_y;
 	b0 = pmin.m_x - pminr.m_x;
 	c0 = pminr.m_y * (pminr.m_x - pmin.m_x) - pminr.m_x * (pminr.m_y - pmin.m_y);
@@ -675,7 +672,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 			continue;
 		CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
 		CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
-		//È·¶¨Ö±Ïß·½³Ì
+		//íš…ë•æ®®çªŸë ˜ë„‹
 		a = pl1.m_y - pl2.m_y;
 		b = pl2.m_x - pl1.m_x;
 		c = pl1.m_y * (pl1.m_x - pl2.m_x) - pl1.m_x * (pl1.m_y - pl2.m_y);
@@ -705,7 +702,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		}
 	}
 
-	//ÅĞ¶ÏºÏ·¨ĞÔ
+	//í„¸ë™¤ë¶ë¬æ˜‘
 	vector<int> concavePoint;
 	for(int iP = 0; iP < np; iP++)
 	{
@@ -730,7 +727,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		v1 = iP - 1;
 		if(iP == 0) v1 = np - 1;
 		p0 = &(pn->m_pointArray[ln.m_pointIDArray[v1]]);
-		//È·¶¨Ö±Ïß·½³Ì
+		//íš…ë•æ®®çªŸë ˜ë„‹
 		
 		a0 = p1->m_y - p0->m_y;
 		b0 = p0->m_x - p1->m_x;
@@ -741,7 +738,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 				continue;
 			CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
 			CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
-			//È·¶¨Ö±Ïß·½³Ì
+			//íš…ë•æ®®çªŸë ˜ë„‹
 			a = pl1.m_y - pl2.m_y;
 			b = pl2.m_x - pl1.m_x;
 			c = pl1.m_y * (pl1.m_x - pl2.m_x) - pl1.m_x * (pl1.m_y - pl2.m_y);
@@ -775,7 +772,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		v2 = iP + 1;
 		if(iP == np - 1) v2 = 0;
 		p0 = &(pn->m_pointArray[ln.m_pointIDArray[v2]]);
-		//È·¶¨Ö±Ïß·½³Ì
+		//íš…ë•æ®®çªŸë ˜ë„‹
 		a0 = p1->m_y - p0->m_y;
 		b0 = p0->m_x - p1->m_x;
 		c0 = p1->m_y * (p1->m_x - p0->m_x) - p1->m_x * (p1->m_y - p0->m_y);
@@ -784,7 +781,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 				continue;
 			CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
 			CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
-			//È·¶¨Ö±Ïß·½³Ì
+			//íš…ë•æ®®çªŸë ˜ë„‹
 			a = pl1.m_y - pl2.m_y;
 			b = pl2.m_x - pl1.m_x;
 			c = pl1.m_y * (pl1.m_x - pl2.m_x) - pl1.m_x * (pl1.m_y - pl2.m_y);
@@ -813,7 +810,7 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 	return true;
 }
 
-//´æÔÚÏà½»µÄ±ßÔò·µ»Øtrue£¬·ñÔò·µ»Øfasle
+//ë‹¸ç³å®®ìŠ¥ë¨ê¸‹æ©™ëŸ¿ì€¼trueï¼Œë¤ æ©™ëŸ¿ì€¼fasle
 bool gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2){
 	vector<CP_Point> regionListBegin1, regionListBrgin2;
 	vector<CP_Point> regionListEnd1, regionListEnd2;
@@ -840,7 +837,7 @@ bool gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2){
 	return false;
 }
 
-//´æÔÚÏà½»µÄ±ßÔò·µ»Øtrue£¬·ñÔò·µ»Øfasle
+//ë‹¸ç³å®®ìŠ¥ë¨ê¸‹æ©™ëŸ¿ì€¼trueï¼Œë¤ æ©™ëŸ¿ì€¼fasle
 bool gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2){
 	int k1, k2;
 	CP_Polygon *polygon = lnin1.m_polygon;
@@ -863,7 +860,7 @@ bool gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2){
 	return false;
 }
 
-//ÅĞ¶ÏÒ»¸öbsptreeÖĞÊÇ·ñÓĞinµÄÒ¶×Ó½Úµã
+//í„¸ë™¤å¯§ëª¸bsptreeæ«“è§’ë¤ å”inë¨ç§Šç¶¾ìŒ˜ë“
 bool gb_treeHasInCell(CP_BSPNode* tree){
 	if(gb_treeIsCell(tree)){
 		if(tree->position == REGION_IN)
@@ -894,23 +891,23 @@ bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
 		return true;
 }
 
-//Ïà½»¾Í·µ»Øtrue£¬·ñÔòfalse
+//å®®ìŠ¥ì•ëŸ¿ì€¼trueï¼Œë¤ æ©™false
 bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Point* p22){
 	double ta, tb, tc, pa, pb, pc;
 	CP_Point cross;
-	//È·¶¨Ö±Ïß·½³Ì
+	//íš…ë•æ®®çªŸë ˜ë„‹
 	pa = p11->m_y - p12->m_y;
 	pb = p12->m_x - p11->m_x;
 	pc = p11->m_y * (p11->m_x - p12->m_x) - p11->m_x * (p11->m_y - p12->m_y);
-	//È·¶¨Ö±Ïß·½³Ì
+	//íš…ë•æ®®çªŸë ˜ë„‹
 	ta = p21->m_y - p22->m_y;
 	tb = p22->m_x - p21->m_x;
 	tc = p21->m_y * (p21->m_x - p22->m_x) - p21->m_x * (p21->m_y - p22->m_y);
 
-	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){//Æ½ĞĞ
+	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){//í‹±ï¤‰
 		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)){ //Ö±ÏßÖØºÏ
-			if(pb * pb > pa * pa){ // xÖáÅĞ¶Ï
+			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)){ //æ®®çªŸè·¯ë¶
+			if(pb * pb > pa * pa){ // xè‰í„¸ë™¤
 				double min1 = p11->m_x, min2 = p21->m_x, max1 = p12->m_x, max2 = p22->m_x;
 				if(min1 > max1){
 					double c = min1;
@@ -927,7 +924,7 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 				else
 					return true;
 			}
-			else{ //yÖáÅĞ¶Ï
+			else{ //yè‰í„¸ë™¤
 				double min1 = p11->m_y, min2 = p21->m_y, max1 = p12->m_y, max2 = p22->m_y;
 				if(min1 > max1){
 					double c = min1;
@@ -946,13 +943,13 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 			}
 		}
 	}
-	else { //Ö±ÏßÏà½»
+	else { //æ®®çªŸå®®ìŠ¥
 		cross.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 		cross.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 
 		bool P1, P2;
 		bool P1equal0 = false, P2equal0 = false;
-		if(pb * pb > pa * pa){ // xÖáÅĞ¶Ï
+		if(pb * pb > pa * pa){ // xè‰í„¸ë™¤
 			if((p12->m_x - cross.m_x) * (cross.m_x - p11->m_x) >= -TOLERENCE){
 				P1 = true;
 				if((p12->m_x - cross.m_x) * (cross.m_x - p11->m_x) <= TOLERENCE)
@@ -961,7 +958,7 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 			else
 				P1 = false;
 		}
-		else{ //yÖáÅĞ¶Ï
+		else{ //yè‰í„¸ë™¤
 			if((p12->m_y - cross.m_y) * (cross.m_y - p11->m_y) >= -TOLERENCE){
 				P1 = true;
 				if((p12->m_y - cross.m_y) * (cross.m_y - p11->m_y) <= TOLERENCE)
@@ -971,7 +968,7 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 				P1 = false;
 		}
 
-		if(tb * tb > ta * ta){ // xÖáÅĞ¶Ï
+		if(tb * tb > ta * ta){ // xè‰í„¸ë™¤
 			if((p22->m_x - cross.m_x) * (cross.m_x - p21->m_x) >= -TOLERENCE){
 				P2 = true;
 				if((p22->m_x - cross.m_x) * (cross.m_x - p21->m_x) <= TOLERENCE)
@@ -980,7 +977,7 @@ bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Po
 			else
 				P2 = false;
 		}
-		else{ //yÖáÅĞ¶Ï
+		else{ //yè‰í„¸ë™¤
 			if((p22->m_y - cross.m_y) * (cross.m_y - p21->m_y) >= -TOLERENCE){
 				P2 = true;
 				if((p22->m_y - cross.m_y) * (cross.m_y - p21->m_y) <= TOLERENCE)
@@ -1056,12 +1053,12 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 	printf("\tgb_buildLoopBSPTree\n");
 
-	// polygonÀÇ ¿¡Áö °³¼ö¸¸Å­..
+	// polygonì˜ ì—ì§€ ê°œìˆ˜ë§Œí¼..
 	vector<CP_Partition*> partitionArray;
 	gb_getLoopPartition(ln, partitionArray);
 
 	CP_BSPNode *tree = NULL;
-	// root¶ó¼­ CHILDINFO_NO¸¦ ³Ñ±è.
+	// rootë¼ì„œ CHILDINFO_NOë¥¼ ë„˜ê¹€.
 	tree = gb_buildBSPTree(partitionArray, NULL, CHILDINFO_NO);
 	return tree;
 }
@@ -1073,15 +1070,15 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	CP_Partition *H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
 
-	// »õ·Î¿î ³ëµå »ı¼º.
+	// ìƒˆë¡œìš´ ë…¸ë“œ ìƒì„±.
 	CP_BSPNode *tree = new CP_BSPNode();
-	tree->partition = H; // hyper planeÀ¸·Î node¸¦ ÂÉ°·.
+	tree->partition = H; // hyper planeìœ¼ë¡œ nodeë¥¼ ìª¼ê°¬.
 	tree->parent = parent;
 
-	// parentÀÇ child node pointer¸¦ updateÇÏ±â..
+	// parentì˜ child node pointerë¥¼ updateí•˜ê¸°..
 	if (childInfo == CHILDINFO_LEFT)      parent->leftChild = tree;
 	else if(childInfo == CHILDINFO_RIGHT) parent->rightChild = tree;
-	// else (childInfo == CHILDINFO_NO) ÀÎ °æ¿ì´Â root nodeÀÏ ¶§¹Û¿¡ ¾øÀ½.
+	// else (childInfo == CHILDINFO_NO) ì¸ ê²½ìš°ëŠ” root nodeì¼ ë•Œë°–ì— ì—†ìŒ.
 
 	// partitionLine is used to record the part of the line where the partition is located inside the area
 	CP_Partition * partitionLine = new CP_Partition(*(tree->partition));
@@ -1091,7 +1088,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	double pmin, pmax, pcross;
 	CP_Point point;
 
-	// ¾Æ·¡ È£Ãâ¿¡¼­ pcross´Â ¾²·¹±â°ª.
+	// ì•„ë˜ í˜¸ì¶œì—ì„œ pcrossëŠ” ì“°ë ˆê¸°ê°’.
 	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
 		pBegin = tree->partition->end;
 		pEnd = tree->partition->begin;
@@ -1128,10 +1125,10 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	tree->pos_coincident.push_back(partitionLine);
 	//partitionLine initialization ends
 
-	if(vp.size() > 0) // Q : ÀÌ Á¶°ÇÀÌ H assign ÇÏÁö ÀüÀ¸·Î µé¾î°¡¾ß ÇÏÁö ¾Ê³ª?
-		tree->pos_coincident.push_back(H); // ÇöÀç ³ëµåÀÇ hyperplane (ÀÌ°Ô partitionLine push_back ÇÏ±â Àü¿¡ µé¾î°¡¸é ¿Ö ¹®Á¦°¡ µÇ³ª?)
+	if(vp.size() > 0) // Q : ì´ ì¡°ê±´ì´ H assign í•˜ì§€ ì „ìœ¼ë¡œ ë“¤ì–´ê°€ì•¼ í•˜ì§€ ì•Šë‚˜?
+		tree->pos_coincident.push_back(H); // í˜„ì¬ ë…¸ë“œì˜ hyperplane (ì´ê²Œ partitionLine push_back í•˜ê¸° ì „ì— ë“¤ì–´ê°€ë©´ ì™œ ë¬¸ì œê°€ ë˜ë‚˜?)
 
-	// ÇöÀç sub tree(³ëµå)¿¡ ³²¾ÆÀÖ´Â ¸ğµç ÆÄÆ¼¼ÇµéÀ» H¿¡ classification ÇÏ°í, H·Î Àß¶óÁØ´Ù.
+	// í˜„ì¬ sub tree(ë…¸ë“œ)ì— ë‚¨ì•„ìˆëŠ” ëª¨ë“  íŒŒí‹°ì…˜ë“¤ì„ Hì— classification í•˜ê³ , Hë¡œ ì˜ë¼ì¤€ë‹¤.
 	for(const auto &p : vp){
 		char pos = getPatitionPos(p, H);
 		switch(pos){
@@ -1157,7 +1154,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 		}
 	}
 
-	// H·Î Tree¸¦ CutÇÑ °á°ú¿¡ µû¶ó ÇÏÀ§ ³ëµå¸¦ ¸¸µé¾î ÁØ´Ù.
+	// Hë¡œ Treeë¥¼ Cutí•œ ê²°ê³¼ì— ë”°ë¼ í•˜ìœ„ ë…¸ë“œë¥¼ ë§Œë“¤ì–´ ì¤€ë‹¤.
 	if(F_left.size() == 0){
 		tree->leftChild = new CP_BSPNode();
 		tree->leftChild->position = REGION_IN;
@@ -1270,7 +1267,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		CP_Point pBegin, pEnd;
 		double pmin, pmax, pcross;
 		CP_Point point;
-		// ¾Æ·¡ È£Ãâ¿¡¼­ pcross´Â ¾²·¹±â°ª.
+		// ì•„ë˜ í˜¸ì¶œì—ì„œ pcrossëŠ” ì“°ë ˆê¸°ê°’.
 		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
 			pBegin = tree->partition->end;
 			pEnd = tree->partition->begin;
@@ -1657,9 +1654,9 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 				return P_T_ON_NEG;
 			}
 		}
-		else{  //²»Ïà½»
+		else{  //ê¼‡å®®ìŠ¥
 			double isleft = -tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
-			if(isleft > 0){ //PÔÚT×ó±ß
+			if(isleft > 0){ //Pç³Tç’˜ê¸‹
 				partitionRBegin = partition->end;
 				partitionREnd = partition->begin;
 				if(ta * pa > 0 || tb * pb > 0){
@@ -1669,7 +1666,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 					return P_T_POS_POS;
 				}
 			}
-			else{//PÔÚTÓÒ±ß
+			else{//Pç³Tå¡˜ê¸‹
 				partitionLBegin = partition->end;
 				partitionLEnd = partition->begin;
 				if(ta * pa > 0 || tb * pb > 0){
@@ -1681,19 +1678,19 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 			}
 		}
 	}
-	else{//Ïà½»
-		//ÇótºÍpµÄ½»µã
+	else{//å®®ìŠ¥
+		//í—¹tëµ¨pë¨ìŠ¥ë“
 		CP_Point point;
 		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 		cross_point = CP_Point();
 		cross_point = point;
 
-		//ÅĞ¶Ï½»µãÊÇ·ñÔÚpartitionBeginºÍpartitionEndÄÚ²¿
+		//í„¸ë™¤ìŠ¥ë“è§’ë¤ ç³partitionBeginëµ¨partitionEndì½”ê¼¬
 		double dx = partitionLEnd.m_x - partitionLBegin.m_x;
 		double dy = partitionLEnd.m_y - partitionLBegin.m_y;
 		bool crossInpartition = false;
-		if(pa * pa > pb * pb){ //y·½Ïò
+		if(pa * pa > pb * pb){ //yë ˜è•¨
 			if(((partitionLEnd.m_y - point.m_y > TOLERENCE) && (point.m_y - partitionLBegin.m_y > TOLERENCE))
 				|| ((partitionLEnd.m_y - point.m_y < -TOLERENCE) && (point.m_y - partitionLBegin.m_y < -TOLERENCE))){ //in
 				crossInpartition = true;
@@ -1701,7 +1698,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 			if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
 				crossInpartition = false;
 		}
-		else{//x·½Ïò
+		else{//xë ˜è•¨
 			if(((partitionLEnd.m_x - point.m_x > TOLERENCE) && (point.m_x - partitionLBegin.m_x > TOLERENCE))
 				|| ((partitionLEnd.m_x - point.m_x < -TOLERENCE) && (point.m_x - partitionLBegin.m_x < -TOLERENCE))){ //in
 				crossInpartition = true;
@@ -1724,7 +1721,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 			}
 		}
 		else{		
-			// ÅĞ¶ÏpartitionÊÇ·ñÓĞ¿ÉÄÜ¼ÌĞø°üº¬ÔÚÇøÓòÖĞµÄÏß¶Î
+			// í„¸ë™¤partitionè§’ë¤ å”ì˜µì½˜ì…¨å´ê´€ë²µç³í˜å µæ«“ë¨çªŸë™ˆ
 			CP_Point begin, end;
 			double pmin, pmax, pcross;
 			
@@ -1811,11 +1808,11 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
 	bool not_in_region = false; // ??
-	if(pa * pa > pb * pb){ // y¹æÇâ
+	if(pa * pa > pb * pb){ // yë°©í–¥
 		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
 			not_in_region = true;
 	}
-	else{ // x¹æÇâ
+	else{ // xë°©í–¥
 		if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
 			not_in_region = true;
 	}
@@ -1836,9 +1833,9 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 					return P_T_ON_NEG;
 				}
 			}
-			else{  //²»Ïà½»
+			else{  //ê¼‡å®®ìŠ¥
 				double isleft = -tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
-				if(isleft > 0){ //PÔÚT×ó±ß
+				if(isleft > 0){ //Pç³Tç’˜ê¸‹
 					partitionRBegin = partition->end;
 					partitionREnd = partition->begin;
 					if(ta * pa > 0 || tb * pb > 0){
@@ -1848,7 +1845,7 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 						return P_T_POS_POS;
 					}
 				}
-				else{//PÔÚTÓÒ±ß
+				else{//Pç³Tå¡˜ê¸‹
 					partitionLBegin = partition->end;
 					partitionLEnd = partition->begin;
 					if(ta * pa > 0 || tb * pb > 0){
@@ -1860,20 +1857,20 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 				}
 			}
 		}
-		else{//Ö±ÏßÏà½»
+		else{//æ®®çªŸå®®ìŠ¥
 			CP_Point point;
 			point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 			point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 			cross_point = CP_Point();
 			cross_point = point;
 			bool crossInpartition = false;
-			if(pa * pa > pb * pb){ //y·½Ïò
+			if(pa * pa > pb * pb){ //yë ˜è•¨
 				if(((partitionLEnd.m_y - point.m_y > TOLERENCE) && (point.m_y - partitionLBegin.m_y > TOLERENCE))
 					|| ((partitionLEnd.m_y - point.m_y < -TOLERENCE) && (point.m_y - partitionLBegin.m_y < -TOLERENCE))){ //in
 					crossInpartition = true;
 				}
 			}
-			else{//x·½Ïò
+			else{//xë ˜è•¨
 				if(((partitionLEnd.m_x - point.m_x > TOLERENCE) && (point.m_x - partitionLBegin.m_x > TOLERENCE))
 					|| ((partitionLEnd.m_x - point.m_x < -TOLERENCE) && (point.m_x - partitionLBegin.m_x < -TOLERENCE))){ //in
 					crossInpartition = true;
@@ -1892,18 +1889,18 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 					return P_T_BOTH_NEG;
 				}
 			}
-			else{//ÇøÓòÄÚÇÒ²»Ïà½»
+			else{//í˜å µì½”í• ê¼‡å®®ìŠ¥
 				CP_Point begin, end;
 
-				//¼ÆËãp·½Ïò
+				//ì…•ç‚¬pë ˜è•¨
 				double a, b;
-				if(pa * pa > pb * pb){ //y·½Ïò
+				if(pa * pa > pb * pb){ //yë ˜è•¨
 					a = partitionLBegin.m_y - point.m_y;
 					b = partitionLEnd.m_y - point.m_y;
 					if(a < 0) a *= -1;
 					if(b < 0) b *= -1;
 				}
-				else{//x·½Ïò
+				else{//xë ˜è•¨
 					a = partitionLBegin.m_x - point.m_x;
 					b = partitionLEnd.m_x - point.m_x;
 					if(a < 0) a *= -1;
@@ -1916,16 +1913,16 @@ char gb_t_p_Position3(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_po
 				else 
 					dirP = -1;
 				
-				////¼ÆËãt·½Ïò
+				////ì…•ç‚¬të ˜è•¨
 				if(A->pos_coincident.size() == 0)
 					int baa = 1;
-				if(ta * ta > tb * tb){ //y·½Ïò
+				if(ta * ta > tb * tb){ //yë ˜è•¨
 					a = A->pos_coincident[0]->begin.m_y - point.m_y;
 					b = A->pos_coincident[0]->end.m_y - point.m_y;
 					if(a < 0) a *= -1;
 					if(b < 0) b *= -1;
 				}
-				else{//x·½Ïò
+				else{//xë ˜è•¨
 					a = A->pos_coincident[0]->begin.m_x - point.m_x;
 					b = A->pos_coincident[0]->end.m_x - point.m_x;
 					if(a < 0) a *= -1;
@@ -2022,7 +2019,7 @@ bool gb_t_p_left(CP_Point &point, CP_Partition* partition){
 
 }
 
-// partition ÀÌ TÀÇ ³»ºÎ ¿µ¿ª¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+// partition ì´ Tì˜ ë‚´ë¶€ ì˜ì—­ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
 bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, const CP_Point &cross, 
 	double &pmin, double &pmax, double &pcross){
 	begin = partition->begin;
@@ -2032,12 +2029,12 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 	double vx = partition->end.m_x - partition->begin.m_x;
 	double vy = partition->end.m_y - partition->begin.m_y;
 	
-	// »çºĞ¸é Áß ¾îµğ·Î ÇâÇÏ´ÂÁö ³ªÅ¸³¿?
+	// ì‚¬ë¶„ë©´ ì¤‘ ì–´ë””ë¡œ í–¥í•˜ëŠ”ì§€ ë‚˜íƒ€ëƒ„?
 	double mean_xy[2];
 	mean_xy[0] = vx > 0 ? 1: -1;
 	mean_xy[1] = vy > 0 ? 1: -1;
 
-	// dx, dy Áß¾î´À °ÍÀÌ ´õ Å«Áö °Ë»ç.
+	// dx, dy ì¤‘ì–´ëŠ ê²ƒì´ ë” í°ì§€ ê²€ì‚¬.
 	int x_or_y = 0;
 	if(vx * vx < vy * vy)
 		x_or_y = 1;
@@ -2048,68 +2045,43 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 	CP_BSPNode *node = T;
 	CP_BSPNode *child = NULL;
 
-	// temporary variables only for inside of while-loop.
-	double pa, pb, pc, ta, tb, tc;
-	CP_Point point;
-	// root·Î °Å½½·¯ ¿Ã¶ó°¡¸é¼­ °Ë»ç..
 	while(node->parent != NULL){
+		// rootë¡œ ê±°ìŠ¬ëŸ¬ ì˜¬ë¼ê°€ë©´ì„œ partitionê³¼ êµì°¨í•˜ëŠ”ì§€ ê²€ì‚¬
 		child = node;
 		node = node->parent;
 
-		CP_Partition* t_bp = new CP_Partition();
+		CP_Partition* t_bp = new CP_Partition(); // (tree)_(binary)(partition)
 		if(child == node->leftChild){ 
-			// ¸¸¾à ÇöÀç ³ëµå°¡ parent ±âÁØ ¾çÀÇ ¿µ¿ª¿¡ ÀÖ´Â °æ¿ì..
+			// ë§Œì•½ í˜„ì¬ ë…¸ë“œê°€ parent ê¸°ì¤€ ì–‘ì˜ ì˜ì—­ì— ìˆëŠ” ê²½ìš°..
 			t_bp->begin = node->partition->begin;
 			t_bp->end = node->partition->end;
 		}
 		else{
-			// ¸¸¾à ÇöÀç ³ëµå°¡ parent ±âÁØ À½ÀÇ ¿µ¿ª¿¡ ÀÖ´Â °æ¿ì..
-			// Q : ¿Ö ¹Ù²ãÁÖÁö? -> vectorÀÇ ¹æÇâÀ» ¹Ù²Ù¾î¼­ ³»/¿ÜºÎ °Ë»ç?
+			// ë§Œì•½ í˜„ì¬ ë…¸ë“œê°€ parent ê¸°ì¤€ ìŒì˜ ì˜ì—­ì— ìˆëŠ” ê²½ìš°..
+			// Q : ì™œ ë°”ê¿”ì£¼ì§€? -> vectorì˜ ë°©í–¥ì„ ë°”ê¾¸ì–´ì„œ ë‚´/ì™¸ë¶€ ê²€ì‚¬?
 			t_bp->begin = node->partition->end;
 			t_bp->end = node->partition->begin;
 		}
-
-	    // Ref : https://imois.in/posts/line-intersections-with-cross-products/
-
 		// (almost wrong) CP_Partition* t_bp = node->partition;
-		// node partition vector is = (tb , ta)
-		// line equation coefficient : (ax + by + c = 0)
-		ta = t_bp->end.m_y - t_bp->begin.m_y;
-		tb = t_bp->end.m_x - t_bp->begin.m_x;
-		CP_Vec2 t(tb, ta);
-		tc = tb * t_bp->begin.m_y - ta * t_bp->begin.m_x;
+		CP_Vec2 t_vec, p_vec;
+		CP_Point point = t_bp->intersection(partition, t_vec, p_vec);		
 
-		// new partition vector is = (pb, pa)
-		// line equation coefficient : (ax + by + c = 0)
-		pa = partition->end.m_y - partition->begin.m_y;
-		pb = partition->end.m_x - partition->begin.m_x;
-		CP_Vec2 p(pb, pa);
-		pc = pb * partition->begin.m_y - pa * partition->begin.m_x; // p x p_begin(???)
-
-		// check if two vectors are 'parallel'(cross product is zero)
-		// t x p
-		double cross_product_tp = t.cross_product(p);
+		// check if two vectors (t, p) are 'parallel'(cross product is zero)
+		double cross_product_tp = t_vec.cross_product(p_vec);
 		if(compare_float(cross_product_tp, 0)){
-			
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
-			// µÎ °³ÀÇ ½ÃÀÛÁ¡À» ÀÕ´Â º¤ÅÍ..
+			// ë‘ ê°œì˜ ì‹œì‘ì ì„ ì‡ëŠ” ë²¡í„°..
 			CP_Vec2 v = partition->begin - t_bp->begin;
-			// t x v
-			if(t.cross_product(v) >= 0) {
+			if(t_vec.cross_product(v) >= 0) {
 				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
 				continue;
 			}
 			else{ 
-				// partitionÀÌ T ¹Ù±ù¿¡ ÀÖ´Â °ÍÀÌ È®½ÇÇÏ¹Ç·Î ´õÀÌ»ó ÁøÇàÇÒ ÇÊ¿ä°¡ ¾øÀ½.
+				// partitionì´ T ë°”ê¹¥ì— ìˆëŠ” ê²ƒì´ í™•ì‹¤í•˜ë¯€ë¡œ ë”ì´ìƒ ì§„í–‰í•  í•„ìš”ê°€ ì—†ìŒ.
 				return false;
 			}
 		}
-
-		// projective/homogeneous equationÀ¸·Î ±³Á¡ ±¸ÇÏ±â (3Â÷¿ø¿¡¼­´Â ±³¼± ±¸ÇÏ±â°¡ µÇ¾î¾ß ÇÔ)
-		point.m_x =  (tc * pb - tb * pc) / (tb * pa - ta * pb);
-		point.m_y =  (tc * pa - ta * pc) / (tb * pa - ta * pb);
-
-		// ¸¸¾à µÎ °³ÀÇ º¤ÅÍ°¡ ÆòÇàÇÏÁö ¾ÊÀº °æ¿ì...
+		// ë§Œì•½ ë‘ ê°œì˜ ë²¡í„°ê°€ í‰í–‰í•˜ì§€ ì•Šì€ ê²½ìš°...
 		if(cross_product_tp > TOLERENCE)
 		{
 			double currentMin = (x_or_y == 0) ?
@@ -2192,8 +2164,8 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
 		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){
-			//Æ½ĞĞ ÏÖÔÚ¼Ù¶¨ÖØºÏ»òÕßÆ½ĞĞÔÚTnode-partition×ó±ß¶¼¿ÉÒÔ
-			// node-partitionÏòÁ¿£¨-tb,ta£©
+			//í‹±ï¤‰ å›ç³ì†ë•è·¯ë¶ìƒ€è«’í‹±ï¤‰ç³Tnode-partitionç’˜ê¸‹ë–¼ì˜µï¥€
+			// node-partitionè•¨ì¢†ï¼ˆ-tb,taï¼‰
 			double v1 = partition->begin.m_x - t_bp->begin.m_x;
 			double v2 = partition->begin.m_y - t_bp->begin.m_y;
 			if((-tb) * v2 - ta * v1 >= 0){
@@ -2398,7 +2370,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		node = node->parent;
 		CP_Partition *p = new CP_Partition();
 
-		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){//ÒòÎª0ÊÇ¼ÇÂ¼µÄÖ±Ïß£¬ÓÃÓÚÅĞ¶ÏT,PÎ»ÖÃÊ±¼ÇÂ¼TµÄpartitionÔÚÇøÓòÄÚµÄ²¿·Ö
+		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){//ï¥”æ§¨0è§’ì…˜ì©Œë¨æ®®çªŸï¼Œç—°é»¨í„¸ë™¤T,Pè²«é›¶ç‚ì…˜ì©ŒTë¨partitionç³í˜å µì½”ë¨ê¼¬ë¡¸
 			p->begin = node->pos_coincident[i]->begin;
 			p->end = node->pos_coincident[i]->end;
 
@@ -2585,7 +2557,7 @@ bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 		return false;
 
 	}
-	else{ // pÓëfaceÖ±ÏßÎ»ÖÃÖØºÏ
+	else{ // på®…faceæ®®çªŸè²«é›¶è·¯ë¶
 		return true;
 	}
 }
@@ -2624,7 +2596,7 @@ bool gb_generateBSPTreeFace(CP_BSPNode *node){
 			CP_Partition *f;
 			for(unsigned int j = 0; j < node->rightIn.size(); j++){
 				f = node->rightIn[j];
-				//È¡³öfÓëpÖØºÏµÄ²¿·Ö
+				//í˜¤ë†”få®…pè·¯ë¶ë¨ê¼¬ë¡¸
 				CP_Partition *result = new CP_Partition();
 				if(gb_cutParallelFace(p, f, result)){
 					node->polygon.push_back(result);
@@ -2706,8 +2678,8 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin
 		pb =partition->begin.m_x - partition->end.m_x;
 		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta <= TOLERENCE){//Æ½ĞĞ ÏÖÔÚ¼Ù¶¨ÖØºÏ»òÕßÆ½ĞĞÔÚTnode-partition×ó±ß¶¼¿ÉÒÔ
-			// node-partitionÏòÁ¿£¨-tb,ta£©
+		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta <= TOLERENCE){//í‹±ï¤‰ å›ç³ì†ë•è·¯ë¶ìƒ€è«’í‹±ï¤‰ç³Tnode-partitionç’˜ê¸‹ë–¼ì˜µï¥€
+			// node-partitionè•¨ì¢†ï¼ˆ-tb,taï¼‰
 			double v1 = partition->begin.m_x - t_bp->begin.m_x;
 			double v2 = partition->begin.m_y - t_bp->begin.m_y;
 			if((-tb) * v2 - ta * v1 >= 0){

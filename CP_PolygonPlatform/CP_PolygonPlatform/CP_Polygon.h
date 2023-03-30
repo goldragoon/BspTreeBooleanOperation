@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <iostream>
 #include <cmath>
@@ -75,12 +75,6 @@ public:
 	double cross_product(const CP_Vec2& cp) {
 		return m_x * cp.m_y - m_y * cp.m_x;
 	}
-
-	/*
-	* \brief º¤ÅÍ¸¦ ¹«ÇÑÇÑ Á÷¼±À¸·Î »ı°¢ÇÏ¿©, µÎ °³ÀÇ º¤ÅÍ °£ÀÇ intersection point¸¦ ±¸ÇÑ´Ù.
-	*/
-	//double intersection_point(const CP_Vec2& cp) {}
-
 };
 
 class CP_Point {
@@ -148,7 +142,7 @@ public:
 
 public:
     CP_Region(void):m_regionIDinPolygon(0),m_polygon(NULL) { }
-}; // ÀàCP_Region¶¨Òå½áÊø
+};
 typedef vector<CP_Region> VT_RegionArray;
 
 class CP_Polygon
@@ -159,7 +153,7 @@ public:
 
 public:
     void mb_clear( ) {m_pointArray.clear( ); m_regionArray.clear( );}
-}; // ÀàCP_Polygon¶¨Òå½áÊø
+};
 
 extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop, CP_Point& pt, CP_Polygon& pn);
 extern void     gb_distanceMinPointPolygon(double&d, int& id, CP_Point& pt, CP_Polygon& pn);
@@ -202,7 +196,6 @@ extern CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn);
 extern CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn);
 extern CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln);
 
-//bsptree
 class CP_Partition{
 public:
 	CP_Point begin;
@@ -213,7 +206,44 @@ public:
 	CP_Partition(const CP_Partition* p) { begin = p->begin; end = p->end; }
 	~CP_Partition() {}
 
-	//CP_Point intersection_point(const CP_Partition *_partition) {}
+	/*
+	* \brief ë²¡í„°ë¥¼ ë¬´í•œí•œ ì§ì„ ìœ¼ë¡œ ìƒê°í•˜ì—¬, ë‘ ê°œì˜ ë²¡í„° ê°„ì˜ intersection pointë¥¼ êµ¬í•œë‹¤.
+	*/
+	CP_Point intersection(const CP_Partition* _partition, CP_Vec2 &coef_t_ab, CP_Vec2 &coef_p_ab) {
+		// Proof : https://imois.in/posts/line-intersections-with-cross-products/
+
+		CP_Point point_intersection;
+
+		// calculate line equation coefficients 
+		// 1. (this) object : (ta)x + (tb)y + (tc) = 0
+		// 2. (cp) object : (pa)x + (pb)y + (pc) = 0
+
+		// 1. (this) object
+		double ta, tb, tc;
+		CP_Vec2 t_ba = this->end - this->begin;
+		ta = t_ba.m_y;
+		tb = t_ba.m_x;
+		tc = tb * this->begin.m_y - ta * this->begin.m_x;
+
+		// 2. (cp) object
+		double pa, pb, pc;
+		CP_Vec2 p_ba = _partition->end - _partition->begin;
+		pa = p_ba.m_y;
+		pb = p_ba.m_x;
+		pc = pb * _partition->begin.m_y - pa * _partition->begin.m_x;
+
+		// projective/homogeneous equationìœ¼ë¡œ êµì  (3ì°¨ì› ë²„ì „ì—ì„œëŠ” êµì„ ìœ¼ë¡œ ë°”ê¿€ ê²ƒ)
+		double denominator = tb * pa - ta * pb;
+		point_intersection.m_x = (tc * pb - tb * pc) / denominator;
+		point_intersection.m_y = (tc * pa - ta * pc) / denominator;
+
+		// additional return for performance optimization
+		coef_t_ab = t_ba;
+		coef_p_ab = p_ba;
+
+		return point_intersection;
+	}
+
 	/*
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();
@@ -240,7 +270,7 @@ public:
 	CP_Partition * partition;
 	vector<CP_Partition*> pos_coincident;
 	vector<CP_Partition*> neg_coincident;
-	vector<CP_Partition*> polygon;//cell ¼ÇÂ¼ polygon£¬node¼ÇÂ¼face
+	vector<CP_Partition*> polygon;
 
 	vector<CP_Partition*> leftIn;
 	vector<CP_Partition*> leftOut;
@@ -314,7 +344,7 @@ extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
 extern void gb_complement(CP_BSPNode* T);
 extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
 
-// partitionÀÌ TÀÇ ³»ºÎ¿¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+// partitionì´ Tì˜ ë‚´ë¶€ì— ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, const CP_Point &cross, double &pmin, double &pmax, double &pcross);
 
 extern bool gb_t_p_left(CP_Partition* tp, CP_Partition* partition);

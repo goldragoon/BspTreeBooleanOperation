@@ -1,46 +1,28 @@
-// 这段 MFC 示例源代码演示如何使用 MFC Microsoft Office Fluent 用户界面 
-// (“Fluent UI”)。该示例仅供参考，
-// 用以补充《Microsoft 基础类参考》和 
-// MFC C++ 库软件随附的相关电子文档。
-// 复制、使用或分发 Fluent UI 的许可条款是单独提供的。
-// 若要了解有关 Fluent UI 许可计划的详细信息，请访问  
-// http://go.microsoft.com/fwlink/?LinkId=238214。
-//
-// 版权所有(C) Microsoft Corporation
-// 保留所有权利。
-
-// CP_PolygonPlatformView.h : CCP_PolygonPlatformView 类的接口
-//
-
 #pragma once
-
 
 class CCP_PolygonPlatformView : public CView
 {
-protected: // 仅从序列化创建
+protected:
 	CCP_PolygonPlatformView();
 	DECLARE_DYNCREATE(CCP_PolygonPlatformView)
 
-// 特性
 public:
 	CCP_PolygonPlatformDoc* GetDocument() const;
 	double m_buildTime;
 	double m_mergeTime;
 	double m_generateEdgeTime;
-// 操作
+
 public:
 	void mb_statusSetText(char* s1, char* s2);
 
-// 重写
 public:
-	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图
+	virtual void OnDraw(CDC* pDC);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
-// 实现
 public:
 	virtual ~CCP_PolygonPlatformView();
 #ifdef _DEBUG
@@ -48,9 +30,6 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-
-// 生成的消息映射函数
 protected:
 	afx_msg void OnFilePrintPreview();
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
@@ -99,7 +78,6 @@ public:
 	afx_msg void OnUpdateViewResult(CCmdUI *pCmdUI);
 	afx_msg void OnViewResult();
 	afx_msg void OnPolygonIntersection();
-	afx_msg void OnUpdatePolygonIntersection(CCmdUI *pCmdUI);
 	afx_msg void OnPolygonAB();
 	afx_msg void OnPolygonBA();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -130,8 +108,6 @@ extern void gb_drawPolygonPoint(CDC* pDC, CP_Polygon& p,
 extern void gb_drawPolygonPointID(CDC* pDC, CP_Polygon& p,
                                 double scale, CP_Point translation, int screenX, int screenY,
                                 int r, int g, int b);
-
-//sunsiyuan
 extern void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
         double scale, CP_Point translation, int screenX, int screenY,
         int r, int g, int b, int size);
@@ -140,9 +116,7 @@ extern void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree,
         double scale, CP_Point translation, int screenX, int screenY,
         int r, int g, int b, int size);
 
-extern void gb_drawInCell(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point translation, int screenX, int screenY, int r, int g, int b, int size);
-
-#ifndef _DEBUG  // CP_PolygonPlatformView.cpp 中的调试版本
+#ifndef _DEBUG
 inline CCP_PolygonPlatformDoc* CCP_PolygonPlatformView::GetDocument() const
    { return reinterpret_cast<CCP_PolygonPlatformDoc*>(m_pDocument); }
 #endif

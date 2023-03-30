@@ -253,9 +253,6 @@ public:
 	}*/
 };
 
-typedef vector<CP_Partition> VT_PartitionArray;
-extern void     gb_getLoopPartition(CP_Loop& ln, VT_PartitionArray& vp);
-
 enum class CP_BSPOp {
 	UNION,
 	INTERSECTION,

@@ -1185,11 +1185,11 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	CP_Vec2 t_vec, p_vec;
 	CP_Point point = T->intersection(P, t_vec, p_vec);
 
-	if(-t_vec.cross_product(p_vec) > 0) {
+	if (t_vec.cross_product(p_vec) < 0) {
 		left->begin = point;
 		right->end = point;
 	}
-	else{
+	else {
 		left->end = point;
 		right->begin = point;
 	}

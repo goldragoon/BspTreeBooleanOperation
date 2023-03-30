@@ -7,7 +7,6 @@
 #define new DEBUG_NEW
 #endif
 
-// CMainFrame
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWndEx)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
@@ -20,17 +19,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
 END_MESSAGE_MAP()
 
-// CMainFrame 构造/析构
-
 CMainFrame::CMainFrame()
 {
-	// TODO: 在此添加成员初始化代码
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_VS_2008);
 }
 
-CMainFrame::~CMainFrame()
-{
-}
+CMainFrame::~CMainFrame(){}
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -44,7 +38,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	if (!m_wndStatusBar.Create(this))
 	{
-		TRACE0("未能创建状态栏\n");
+		TRACE0("\n");
 		return -1;
 	}
 
@@ -180,7 +174,7 @@ void CMainFrame::OnFilePrintPreview()
 {
 	if (IsPrintPreview())
 	{
-		PostMessage(WM_COMMAND, AFX_ID_PREVIEW_CLOSE);  // 强制关闭“打印预览”模式
+		PostMessage(WM_COMMAND, AFX_ID_PREVIEW_CLOSE);
 	}
 }
 

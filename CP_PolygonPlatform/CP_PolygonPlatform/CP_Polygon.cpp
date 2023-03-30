@@ -1181,17 +1181,11 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 }
 
 void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right){
-	left = new CP_Partition();
-	right = new CP_Partition();
+	left = new CP_Partition(T);
+	right = new CP_Partition(T);
 
-	left->begin.m_x = T->begin.m_x;
-	left->begin.m_y = T->begin.m_y;
-	left->end.m_x = T->end.m_x;
-	left->end.m_y = T->end.m_y;
-	right->begin.m_x = T->begin.m_x;
-	right->begin.m_y = T->begin.m_y;
-	right->end.m_x = T->end.m_x;
-	right->end.m_y = T->end.m_y;
+	CP_Vec2 t = T->end - T->begin;
+
 	double pa, pb, pc, ta, tb, tc;
 	ta =T->end.m_y - T->begin.m_y;
 	tb =T->begin.m_x - T->end.m_x;
@@ -1199,7 +1193,7 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 
 	pa =P->end.m_y - P->begin.m_y;
 	pb =P->begin.m_x - P->end.m_x;
-	pc = - pa * P->begin.m_x - pb * P->begin.m_y;
+	pc = -pa * P->begin.m_x - pb * P->begin.m_y;
 
 	CP_Point point;
 	point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
@@ -2075,29 +2069,33 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 			t_bp->end = node->partition->begin;
 		}
 
-		//CP_Partition* t_bp = node->partition;
-		// node partition vector is = (-tb , ta)
-		ta = t_bp->end.m_y - t_bp->begin.m_y;
-		tb = -(t_bp->end.m_x - t_bp->begin.m_x);
-		//tc = (-tb) * t_bp->begin.m_y - ta * t_bp->begin.m_x ; // t x t_begin(???)
-		tc = (-tb) * t_bp->begin.m_y - ta * t_bp->begin.m_x ;  // t x t_begin(???)
+	    // Ref : https://imois.in/posts/line-intersections-with-cross-products/
 
-		// new partition vector is = (-pb, pa)
+		// (almost wrong) CP_Partition* t_bp = node->partition;
+		// node partition vector is = (tb , ta)
+		// line equation coefficient : (ax + by + c = 0)
+		ta = t_bp->end.m_y - t_bp->begin.m_y;
+		tb = t_bp->end.m_x - t_bp->begin.m_x;
+		CP_Vec2 t(tb, ta);
+		tc = tb * t_bp->begin.m_y - ta * t_bp->begin.m_x;
+
+		// new partition vector is = (pb, pa)
+		// line equation coefficient : (ax + by + c = 0)
 		pa = partition->end.m_y - partition->begin.m_y;
-		pb = -(partition->end.m_x - partition->begin.m_x);
-		pc = (-pb) * partition->begin.m_y - pa * partition->begin.m_x; // p x p_begin(???)
+		pb = partition->end.m_x - partition->begin.m_x;
+		CP_Vec2 p(pb, pa);
+		pc = pb * partition->begin.m_y - pa * partition->begin.m_x; // p x p_begin(???)
 
 		// check if two vectors are 'parallel'(cross product is zero)
 		// t x p
-		double cross_product_tp = (-tb) * pa - ta * (-pb);
+		double cross_product_tp = t.cross_product(p);
 		if(compare_float(cross_product_tp, 0)){
 			
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..
-			double v1 = partition->begin.m_x - t_bp->begin.m_x;
-			double v2 = partition->begin.m_y - t_bp->begin.m_y;
+			CP_Vec2 v = partition->begin - t_bp->begin;
 			// t x v
-			if((-tb) * v2 - ta * v1 >= 0) {
+			if(t.cross_product(v) >= 0) {
 				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
 				continue;
 			}
@@ -2107,9 +2105,9 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 			}
 		}
 
-		// 교점 구하기? (3차원에서는 교선 구하기가 되어야 함)
-		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
+		// projective/homogeneous equation으로 교점 구하기 (3차원에서는 교선 구하기가 되어야 함)
+		point.m_x =  (tc * pb - tb * pc) / (tb * pa - ta * pb);
+		point.m_y =  (tc * pa - ta * pc) / (tb * pa - ta * pb);
 
 		// 만약 두 개의 벡터가 평행하지 않은 경우...
 		if(cross_product_tp > TOLERENCE)
@@ -2305,7 +2303,7 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 	return true;	
 }
 */
-bool gb_isCross(CP_BSPNode* A, CP_Point &point){ //矜狼옘쪄node角페parent돨璘벚綾뻘角塘벚綾
+bool gb_isCross(CP_BSPNode* A, CP_Point &point){
 	CP_BSPNode* node = A;
 	CP_BSPNode* child;
 	double a1, b1, a2, b2;

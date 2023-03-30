@@ -14,6 +14,7 @@ public:
 	double m_x, m_y;
 
 	CP_Vec2() : m_x(0.0), m_y(0.0) {};
+	CP_Vec2(const double _x, const double _y) : m_x(_x), m_y(_y) {};
 	CP_Vec2(const CP_Vec2& v) : m_x(v.m_x), m_y(v.m_y) {};
 
 	CP_Vec2& operator+ (const CP_Vec2& _rhs) {
@@ -74,6 +75,12 @@ public:
 	double cross_product(const CP_Vec2& cp) {
 		return m_x * cp.m_y - m_y * cp.m_x;
 	}
+
+	/*
+	* \brief 벡터를 무한한 직선으로 생각하여, 두 개의 벡터 간의 intersection point를 구한다.
+	*/
+	//double intersection_point(const CP_Vec2& cp) {}
+
 };
 
 class CP_Point {
@@ -203,7 +210,7 @@ public:
 
 	CP_Partition() {}
 	CP_Partition(const CP_Point &b, const CP_Point &e) : begin(b), end(e) {}
-	CP_Partition(const CP_Partition& p) { begin = p.begin; end = p.end; }
+	CP_Partition(const CP_Partition* p) { begin = p->begin; end = p->end; }
 	~CP_Partition() {}
 
 	//CP_Point intersection_point(const CP_Partition *_partition) {}

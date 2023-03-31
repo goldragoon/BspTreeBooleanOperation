@@ -1322,7 +1322,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 		CP_Vec2 pDiff = tree->partition->end - tree->partition->begin;
 		pDiff.normalize();
 
-		CP_Vec2 sub(pDiff * (DBL_MAX / 2));
+		CP_Vec2 sub(pDiff * (DBL_MAX / 10e200));
 		CP_Point2 pBegin(tree->partition->begin - sub);
 		CP_Point2 pEnd(tree->partition->begin + sub);
 
@@ -1829,31 +1829,55 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		// line intersection
 		cross_point = point_intersection;
 		bool crossInpartition = false;
-
-
+		bool crossInpartition_new = false;
 		///////////// Check cross_point is on the line segment (partition) ////////////
 		// 지금 시점에서는 partitionL == partitoinR
-		if (std::abs(pa) > std::abs(pb)) { // 방정식의 계수 a term이 b보다 클때..?
-			//partition 직선의 방정식이 y축 방향으로 더 기울어져 있음. (y=x 보다 y축에 가까운 기울기)
+		// crossPoint가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
+		// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
+		if (
+			// check x-coordinate
+			((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
+			|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))
+			// check y-coordinate
+			|| ((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
+			|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE)))
+		{ 
+			//in
+			crossInpartition = true;
+		}
 
-			// crossPoint가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
-			// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
-			if (((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
-				|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))) 
-			{ 
-				//in
-				crossInpartition = true;
-			}
+		/*
+		* // Just for Debugging
+		CP_Partition partitionL2(CP_Point2(0,0), CP_Point2(3,3));
+		double d;
+		auto closest = partitionL2.closestPoint(CP_Point2(4,4), d);
+
+		double d2;
+		auto closest2 = partitionL2.closestPoint(CP_Point2(3.000001, 3.00001), d);
+		*/
+		/*
+		CP_Partition partitionL(partitionLBegin, partitionLEnd);
+		if (partitionL.is_point_on(point_intersection)) {
+			crossInpartition_new = true;
 		}
-		else {
-			//partition 직선의 방정식이 x축 방향으로 더 기울어져 있음. (y=x 보다 x축에 가까운 기울기 )
-			if (((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
-				|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE))) 
-			{   
-				//in
-				crossInpartition = true;
-			}
+		
+		if (crossInpartition_new != crossInpartition) {
+			printf("partition check is different! (%d, %d)\n", crossInpartition, crossInpartition_new);
+			printf("\t- begin : (%lf, %lf), end : (%lf, %lf)\n", 
+				partitionLBegin.m_x, partitionLBegin.m_y,
+				partitionLEnd.m_x, partitionLEnd.m_y
+			);
+			printf("\t- point_intersection : (%lf, %lf)\n",
+				point_intersection.m_x, point_intersection.m_y
+			);
+
+			double dist;
+			auto closest = partitionL.closestPoint(point_intersection, dist);
+			printf("\t- intersection point 2 partition dist : %lf\n", dist);
+
 		}
+		crossInpartition = crossInpartition_new;
+		*/
 		///////////// Check cross_point is on the line segment (partition) ////////////
 
 		// partitionL, partitoinR을 알맞게 잘라서 할당해줌.
@@ -1874,7 +1898,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 
 			// Calculate the p direction
 			double a, b;
-			if (pa * pa > pb * pb) { 
+			if (std::abs(pa) > std::abs(pb)) { 
 				//y방향
 				a = partitionLBegin.m_y - point_intersection.m_y;
 				b = partitionLEnd.m_y - point_intersection.m_y;
@@ -1894,21 +1918,15 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			else dirP = -1;
 
 			// Calculate the t direction
-			//if (A->pos_coincident.size() == 0)
-			//int baa = 1;
-			if (ta * ta > tb * tb) {
+			if (std::abs(ta) > std::abs(tb)) {
 				//y방향
-				a = A->pos_coincident[0]->begin.m_y - point_intersection.m_y;
-				b = A->pos_coincident[0]->end.m_y - point_intersection.m_y;
-				if (a < 0) a *= -1;
-				if (b < 0) b *= -1;
+				a = std::abs(A->pos_coincident[0]->begin.m_y - point_intersection.m_y);
+				b = std::abs(A->pos_coincident[0]->end.m_y - point_intersection.m_y);
 			}
 			else {
 				//x방향
-				a = A->pos_coincident[0]->begin.m_x - point_intersection.m_x;
-				b = A->pos_coincident[0]->end.m_x - point_intersection.m_x;
-				if (a < 0) a *= -1;
-				if (b < 0) b *= -1;
+				a = std::abs(A->pos_coincident[0]->begin.m_x - point_intersection.m_x);
+				b = std::abs(A->pos_coincident[0]->end.m_x - point_intersection.m_x);
 			}
 
 			double dirAP = a - b;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+
 // for only debugging.
 #include <iostream>
 
@@ -36,14 +37,11 @@ public:
 		v.m_y = m_y - _rhs.m_y;
 		return v;
 	}
-	/*
-	CP_Vec2& operator* (const CP_Vec2& _rhs) {
-		CP_Vec2 v;
-		v.m_x = m_x * _rhs.m_x;
-		v.m_y = m_y * _rhs.m_y;
-		return v;
+	
+	double operator* (const CP_Vec2& _rhs) const {
+		return m_x * _rhs.m_x + m_y * _rhs.m_y;
 	}
-	*/
+	
 	CP_Vec2& operator* (const double& _rhs) {
 		CP_Vec2 v;
 		v.m_x = m_x * _rhs;
@@ -290,7 +288,6 @@ public:
 	/*
 	* \brief check that point is on is partition line segment(end ~ begin).
 	*/
-	/*
 	bool is_point_on(const CP_Point2 &_pt) const {
 		double d;
 		closestPoint(_pt, d);
@@ -300,10 +297,10 @@ public:
 	CP_Point2 closestPoint(const CP_Point2& point, double& d) const
 	{
 		CP_Vec2 dir = end - begin;
-		d = std::clamp(Dot(point - a, dir) / dir.LengthSq());
-		return a + d * dir;
+		d = std::clamp(((point - begin) * dir) / dir.magnitude_squared(), 0.0, 1.0);
+		return begin + dir * d;
 	}
-	*/
+	
 	/*
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();

@@ -1,9 +1,5 @@
 ﻿#include "stdafx.h"
-
-#ifndef SHARED_HANDLERS
 #include "CP_PolygonPlatform.h"
-#endif
-
 #include "CP_PolygonPlatformDoc.h"
 
 #ifdef __INTELLISENSE__
@@ -309,60 +305,6 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
         }
     }
 }
-
-#ifdef SHARED_HANDLERS
-
-// 鍵쫠暠돨連넣
-void CCP_PolygonPlatformDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
-{
-	// 錦맣늪덜쯤鹿삥齡匡도鑒앴
-	dc.FillSolidRect(lprcBounds, RGB(255, 255, 255));
-
-	CString strText = _T("TODO: implement thumbnail drawing here");
-	LOGFONT lf;
-
-	CFont* pDefaultGUIFont = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
-	pDefaultGUIFont->GetLogFont(&lf);
-	lf.lfHeight = 36;
-
-	CFont fontDraw;
-	fontDraw.CreateFontIndirect(&lf);
-
-	CFont* pOldFont = dc.SelectObject(&fontDraw);
-	dc.DrawText(strText, lprcBounds, DT_CENTER | DT_WORDBREAK);
-	dc.SelectObject(pOldFont);
-}
-
-// 鎧乞뇹잿넋埼돨連넣
-void CCP_PolygonPlatformDoc::InitializeSearchContent()
-{
-	CString strSearchContent;
-	// 닒匡도鑒앴零鎧乞코휭。
-	// 코휭꼬롸壇譚“;”롸몰
-
-	// 절흔:  strSearchContent = _T("point;rectangle;circle;ole object;")；
-	SetSearchContent(strSearchContent);
-}
-
-void CCP_PolygonPlatformDoc::SetSearchContent(const CString& value)
-{
-	if (value.IsEmpty())
-	{
-		RemoveChunk(PKEY_Search_Contents.fmtid, PKEY_Search_Contents.pid);
-	}
-	else
-	{
-		CMFCFilterChunkValueImpl *pChunk = NULL;
-		ATLTRY(pChunk = new CMFCFilterChunkValueImpl);
-		if (pChunk != NULL)
-		{
-			pChunk->SetTextValue(PKEY_Search_Contents, value, CHUNK_TEXT);
-			SetChunkValue(pChunk);
-		}
-	}
-}
-
-#endif 
 
 #ifdef _DEBUG
 void CCP_PolygonPlatformDoc::AssertValid() const

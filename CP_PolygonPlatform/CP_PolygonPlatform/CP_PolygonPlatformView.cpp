@@ -1,9 +1,5 @@
 #include "stdafx.h"
-
-#ifndef SHARED_HANDLERS
 #include "CP_PolygonPlatform.h"
-#endif
-
 #include "CP_PolygonPlatformDoc.h"
 #include "CP_PolygonPlatformView.h"
 #include "MainFrm.h"
@@ -281,9 +277,7 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
 
 void CCP_PolygonPlatformView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
-#ifndef SHARED_HANDLERS
 	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
-#endif
 }
 
 #ifdef _DEBUG
@@ -362,9 +356,9 @@ void gb_drawLoop(CDC* pDC, CP_Loop& p,
         pg = p.m_polygon->m_pointArray[i];
         gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
         pDC->LineTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
-    } //for结束
+    }
     pDC->SelectObject(penOld);
-} // 函数gb_drawPolygonLoop结束
+}
 
 void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
         double scale, CP_Point2 translation, int screenX, int screenY,
@@ -385,9 +379,9 @@ void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
         pg = pa[i];
         gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
         pDC->LineTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
-    } //for结束
+    }
     pDC->SelectObject(penOld);
-} // 函数gb_drawPointArrayLine结束
+} 
 
 void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
         double scale, CP_Point2 translation, int screenX, int screenY,
@@ -426,11 +420,8 @@ void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point2 translat
 		gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
 		pDC->LineTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
 	}
-
-	//if(pg == NULL)
-//		return;
 	pDC->SelectObject(penOld);
-} // 函数gb_drawBspTree结束
+}
 
 void gb_drawPointArrayPoint(CDC* pDC, VT_PointArray& pa,
         double scale, CP_Point2 translation, int screenX, int screenY,
@@ -608,7 +599,6 @@ void CCP_PolygonPlatformView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CCP_PolygonPlatformView::OnUpdateComboAorb(CCmdUI *pCmdUI)
 {
-	// TODO: Add the command here to update the UI handler code
     CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
     if (robbon_bar==NULL)
         return;
@@ -632,8 +622,8 @@ void CCP_PolygonPlatformView::OnComboAorb()
     CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
     if (pbox==NULL)
         return;
-    //pbox->AddItem("Polygon A");
-    //pbox->AddItem("Polygon B");
+    pbox->AddItem("Polygon A");
+    pbox->AddItem("Polygon B");
     int i = pbox->GetCurSel( );
     pbox->SelectItem(i);
     if (i==0)
@@ -667,12 +657,10 @@ void CCP_PolygonPlatformView::OnEdgeNumber()
     string.Format("%d", i);
     slider->SetEditText(string);
     Invalidate( );
-
 }
 
 void CCP_PolygonPlatformView::OnTolerance()
 {
-	// TODO: 在此添加命令处理程序代码
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -697,7 +685,6 @@ void CCP_PolygonPlatformView::OnTolerance()
 
 void CCP_PolygonPlatformView::OnViewStandard()
 {
-	// TODO: 在此添加命令处理程序代码
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -707,7 +694,6 @@ void CCP_PolygonPlatformView::OnViewStandard()
     pDoc->m_translation.m_y = 0.0; // 坐标平移量
     Invalidate( );
     mb_statusSetText("标准化坐标系。", "不平移，也不缩放。");
-
 }
 
 void CCP_PolygonPlatformView::OnViewFit()

@@ -92,17 +92,12 @@ public:
 		m_z = _z;
 	}
 
-	CP_Vec3 cross_product(const CP_Vec3& cp) {
+	CP_Vec3 cross_product(const CP_Vec3& cp) const {
 		CP_Vec3 ret;
-		/*
-		double ta, tb, tc;
-		ta = this->begin.m_y - this->end.m_y;
-		tb = this->begin.m_x - this->end.m_x;
-		tc = tb * this->begin.m_y - ta * this->begin.m_x;
-		*/
-		ret.m_x = this->m_y - cp.m_y;
-		ret.m_y = this->m_x - cp.m_x;
-		ret.m_z = ret.m_y * this->m_y - ret.m_x * this->m_x;
+		// this, cp 벡터의 세번째 element가 1일때의 공식.
+		ret.m_x = m_y - cp.m_y;
+		ret.m_y = m_x - cp.m_x;
+		ret.m_z = m_x * cp.m_y - cp.m_x * m_y;
 		return ret;
 	}
 };

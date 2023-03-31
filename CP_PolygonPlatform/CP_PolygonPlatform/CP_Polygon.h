@@ -69,12 +69,54 @@ public:
 	}
 
 	double magnitude() {
-		return m_x * m_x + m_y * m_y; 
+		return m_x * m_x + m_y * m_y;
 	}
 
 	double cross_product(const CP_Vec2& cp) {
 		return m_x * cp.m_y - m_y * cp.m_x;
 	}
+};
+
+class CP_Vec3 {
+public:
+	double m_x, m_y, m_z;
+
+	CP_Vec3() : m_x(0.0), m_y(0.0), m_z(0.0) {};
+	CP_Vec3(const double _x, const double _y, const double _z) : m_x(_x), m_y(_y), m_z(_z) {};
+	CP_Vec3(const CP_Vec3& v3) : m_x(v3.m_x), m_y(v3.m_y), m_z(v3.m_z) {};
+	CP_Vec3(const CP_Vec2& v2, double _z) {
+		m_x = v2.m_x;
+		m_y = v2.m_y;
+		m_z = _z;
+	}
+
+	CP_Vec3 cross_product(const CP_Vec3& cp) {
+		CP_Vec3 ret;
+		/*
+		double ta, tb, tc;
+		ta = this->begin.m_y - this->end.m_y;
+		tb = this->begin.m_x - this->end.m_x;
+		tc = tb * this->begin.m_y - ta * this->begin.m_x;
+		*/
+		ret.m_x = this->m_y - cp.m_y;
+		ret.m_y = this->m_x - cp.m_x;
+		ret.m_z = ret.m_y * this->m_y - ret.m_x * this->m_x;
+		return ret;
+	}
+};
+
+class CP_Line2 {
+public:
+	// 2D line coefficients (a)x + (b)y + (c) = 0
+	double a, b, c;
+	CP_Line2():a(0.0), b(0.0), c(0.0) {}
+	CP_Line2(const CP_Vec2& _s, const CP_Vec2& _e) {
+		// construct line equation by converting _s, _e as homogeneous coordinate.
+		CP_Vec3 S(_s, 1), E(_e, 1);
+		CP_Vec3 coeffs = S.cross_product(E);
+		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
+	}
+	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
 };
 
 class CP_Point2 {
@@ -110,6 +152,7 @@ public:
 		return (*this - _rhs).magnitude();
 	}
 
+	CP_Vec2 as_vec() const { return CP_Vec2(m_x, m_y); }
 	//static bool equal(const CP_Point2& _rhs, double _tol = 1e-6) {}
 };
 
@@ -209,37 +252,31 @@ public:
 	/*
 	* \brief 벡터를 무한한 직선으로 생각하여, 두 개의 벡터 간의 intersection point를 구한다.
 	*/
-	CP_Point2 intersection(const CP_Partition* _partition, CP_Vec2 &coef_t_ab, CP_Vec2 &coef_p_ab) {
+	CP_Point2 intersection(const CP_Partition* _partition, 
+		CP_Vec2 &_t_vec, CP_Vec2 &_p_vec,
+		CP_Line2 &_t_line, CP_Line2 &_p_line
+	) {
 		// Proof : https://imois.in/posts/line-intersections-with-cross-products/
 
 		CP_Point2 point_intersection;
 
 		// calculate line equation coefficients 
-		// 1. (this) object : (ta)x + (tb)y + (tc) = 0
-		// 2. (cp) object : (pa)x + (pb)y + (pc) = 0
-
 		// 1. (this) object
-		double ta, tb, tc;
-		CP_Vec2 t_ba = this->end - this->begin;
-		ta = t_ba.m_y;
-		tb = t_ba.m_x;
-		tc = tb * this->begin.m_y - ta * this->begin.m_x;
+		CP_Vec2 t_vec = this->end - this->begin;
+		CP_Line2 t_line(this->begin.as_vec(), this->end.as_vec());
 
-		// 2. (cp) object
-		double pa, pb, pc;
-		CP_Vec2 p_ba = _partition->end - _partition->begin;
-		pa = p_ba.m_y;
-		pb = p_ba.m_x;
-		pc = pb * _partition->begin.m_y - pa * _partition->begin.m_x;
-
+		// 2. (_partition) object
+		CP_Vec2 p_vec = _partition->end - _partition->begin;
+		CP_Line2 p_line(_partition->begin.as_vec(), _partition->end.as_vec());
+		
 		// projective/homogeneous equation으로 교점 (3차원 버전에서는 교선으로 바꿀 것)
-		double denominator = tb * pa - ta * pb;
-		point_intersection.m_x = (tc * pb - tb * pc) / denominator;
-		point_intersection.m_y = (tc * pa - ta * pc) / denominator;
+		double denominator = t_line.b * p_line.a - t_line.a * p_line.b;
+		point_intersection.m_x = (t_line.c * p_line.b - t_line.b * p_line.c) / denominator;
+		point_intersection.m_y = (t_line.c * p_line.a - t_line.a * p_line.c) / denominator;
 
 		// additional return for performance optimization
-		coef_t_ab = t_ba;
-		coef_p_ab = p_ba;
+		_t_vec = t_vec; _p_vec = p_vec;
+		_t_line = t_line; _p_line = p_line;
 
 		return point_intersection;
 	}

@@ -1183,7 +1183,8 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	right = new CP_Partition(T);
 
 	CP_Vec2 t_vec, p_vec;
-	CP_Point2 point = T->intersection(P, t_vec, p_vec);
+	CP_Line2 t_line, p_line;
+	CP_Point2 point = T->intersection(P, t_vec, p_vec, t_line, p_line);
 
 	if (t_vec.cross_product(p_vec) < 0) {
 		left->begin = point;
@@ -2053,7 +2054,8 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP
 		}
 		// (almost wrong) CP_Partition* t_bp = node->partition;
 		CP_Vec2 t_vec, p_vec;
-		CP_Point2 point = t_bp->intersection(partition, t_vec, p_vec);		
+		CP_Line2 t_line, p_line;
+		CP_Point2 point = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);		
 
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
 		double cross_product_tp = t_vec.cross_product(p_vec);

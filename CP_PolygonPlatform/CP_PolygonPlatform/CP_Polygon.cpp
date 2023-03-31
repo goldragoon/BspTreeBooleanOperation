@@ -1829,21 +1829,34 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		// line intersection
 		cross_point = point_intersection;
 		bool crossInpartition = false;
-		if (pa * pa > pb * pb) { 
-			//y방향
+
+
+		///////////// Check cross_point is on the line segment (partition) ////////////
+		// 지금 시점에서는 partitionL == partitoinR
+		if (std::abs(pa) > std::abs(pb)) { // 방정식의 계수 a term이 b보다 클때..?
+			//partition 직선의 방정식이 y축 방향으로 더 기울어져 있음. (y=x 보다 y축에 가까운 기울기)
+
+			// crossPoint가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
+			// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
 			if (((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
-				|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))) { //in
+				|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))) 
+			{ 
+				//in
 				crossInpartition = true;
 			}
 		}
 		else {
-			//x방향
+			//partition 직선의 방정식이 x축 방향으로 더 기울어져 있음. (y=x 보다 x축에 가까운 기울기 )
 			if (((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
-				|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE))) { //in
+				|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE))) 
+			{   
+				//in
 				crossInpartition = true;
 			}
 		}
+		///////////// Check cross_point is on the line segment (partition) ////////////
 
+		// partitionL, partitoinR을 알맞게 잘라서 할당해줌.
 		if (crossInpartition) {
 			if (t_vec.cross_product(p_vec) > 0) {
 				partitionLBegin = point_intersection;
@@ -1946,43 +1959,34 @@ bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partiti
 
 }
 */
+#include <algorithm>
+
 bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition){
+	CP_Vec2 partition_vec = partition->end - partition->begin;
+
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;
 
 	double x2 = point.m_x - partition->end.m_x;
 	double y2 = point.m_y - partition->end.m_y;
-
-	double lengthx1 = x1;
-	double lengthy1 = y1;
 	
-	if(lengthx1 < 0)
-		lengthx1 *= -1;
-	if(lengthy1 < 0)
-		lengthy1 *= -1;
-	if(lengthx1 < lengthy1)
-		lengthx1 = lengthy1;
+	/////////////////////////// why this is required for inner ring data?
+
+	double lengthx1 = std::abs(x1);
+	double lengthy1 = std::abs(y1);
+	lengthx1 = max(lengthx1, lengthy1);
 	x1 /= lengthx1;
 	y1 /= lengthx1;
 
-
-	double lengthx2 = x2;
-	double lengthy2 = y2;
-	if(lengthx2 < 0)
-		lengthx2 *= -1;
-	if(lengthy2 < 0)
-		lengthy2 *= -1;
-	if(lengthx2 < lengthy2)
-		lengthx2 = lengthy2;
+	double lengthx2 = std::abs(x2);
+	double lengthy2 = std::abs(y2);
+	lengthx2 = max(lengthx2, lengthy2);
 	x2 /= lengthx2;
 	y2 /= lengthx2;
+	///////////////////////////
 
-
-	if(x1 * y2 - x2 * y1 > 0)
-		return true;
-	else 
-		return false;
-
+	if(x1 * y2 - x2 * y1 > 0) return true; // left (inside)
+	else return false; // on or right (outside)
 }
 
 // partition 이 T의 내부 영역에 존재하는지 검사한다.

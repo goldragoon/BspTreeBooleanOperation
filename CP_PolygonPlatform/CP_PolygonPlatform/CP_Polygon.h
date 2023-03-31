@@ -1,8 +1,12 @@
 ﻿#pragma once
 
-#include <iostream>
 #include <cmath>
 #include <vector>
+#include <algorithm>
+
+// for only debugging.
+#include <iostream>
+
 using namespace std;
 
 // Math
@@ -32,14 +36,14 @@ public:
 		v.m_y = m_y - _rhs.m_y;
 		return v;
 	}
-
+	/*
 	CP_Vec2& operator* (const CP_Vec2& _rhs) {
 		CP_Vec2 v;
 		v.m_x = m_x * _rhs.m_x;
 		v.m_y = m_y * _rhs.m_y;
 		return v;
 	}
-
+	*/
 	CP_Vec2& operator* (const double& _rhs) {
 		CP_Vec2 v;
 		v.m_x = m_x * _rhs;
@@ -157,14 +161,11 @@ public:
 	CP_Vec2 as_vec() const { return CP_Vec2(m_x, m_y); }
 	//static bool equal(const CP_Point2& _rhs, double _tol = 1e-6) {}
 };
-
 typedef vector<CP_Point2> VT_PointArray;
 
 class CP_Polygon;
 
 typedef vector<int> VT_IntArray;
-typedef vector<VT_IntArray> VT_IntArray2;
-
 class CP_Loop
 {
 public:
@@ -197,7 +198,10 @@ public:
     VT_RegionArray m_regionArray;
 
 public:
-    void mb_clear( ) {m_pointArray.clear( ); m_regionArray.clear( );}
+    void mb_clear( ) {
+		m_pointArray.clear( ); 
+		m_regionArray.clear( );
+	}
 };
 
 extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop, CP_Point2& pt, CP_Polygon& pn);
@@ -229,14 +233,14 @@ extern bool     gb_removeLoop(CP_Polygon& pn, int idRegion, int idLoop);
 extern bool     gb_removePoint(CP_Polygon& pn, int id);
 extern bool     gb_removeRegion(CP_Polygon& pn, int idRegion);
 extern void     gb_subtractOneAboveID(CP_Polygon& pn, int id);
-
-class CP_BSPNode;
 extern bool     gb_checkPolygon(CP_Polygon& pn);
 extern bool     gb_checkRegion(CP_Region& rn);
 extern bool     gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2);
 extern bool     gb_checkLoopSelfIntersection(CP_Loop& ln);
 extern bool     gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2);
 extern bool     gb_checkLineSegmentCross(CP_Point2* a1, CP_Point2* a2, CP_Point2* b1, CP_Point2* b2);
+
+class CP_BSPNode;
 extern CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn);
 extern CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn);
 extern CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln);
@@ -283,6 +287,23 @@ public:
 		return point_intersection;
 	}
 
+	/*
+	* \brief check that point is on is partition line segment(end ~ begin).
+	*/
+	/*
+	bool is_point_on(const CP_Point2 &_pt) const {
+		double d;
+		closestPoint(_pt, d);
+		return compare_float(d, 0);
+	}
+	
+	CP_Point2 closestPoint(const CP_Point2& point, double& d) const
+	{
+		CP_Vec2 dir = end - begin;
+		d = std::clamp(Dot(point - a, dir) / dir.LengthSq());
+		return a + d * dir;
+	}
+	*/
 	/*
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();

@@ -1790,8 +1790,8 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
 	CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
-	double ta = -t_line.a, tb = t_line.b, tc = -t_line.c;
-	double pa = -p_line.a, pb = p_line.b, pc = -p_line.c;
+	double ta = -t_line.a, tb = -t_line.b, tc = -t_line.c;
+	double pa = -p_line.a, pb = -p_line.b, pc = -p_line.c;
 
 	bool not_in_region = false; // partition이 A의 binary partition으로 나눠진 region에 들어있지 않ㅇ므?
 	if(pa * pa > pb * pb){ 
@@ -1801,7 +1801,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	}
 	else{ 
 		// x방향
-		if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
+		if(partitionLEnd.m_x / pb - partitionLBegin.m_x / pb < 0)
 			not_in_region = true;
 	}
 
@@ -1814,10 +1814,10 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 
 			// line equation의 c term 비교?
 			if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-				(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) 
+				(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
 			{
 				// intersect (two line equation coincides)
-				if(ta * pa > 0 || tb * pb > 0){
+				if(ta * pa > 0 || tb * pb < 0){
 					return P_T_ON_POS;
 				}
 				else {
@@ -1826,7 +1826,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			}
 			else{  
 				//not intersect
-				double isleft = -tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
+				double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
 				if(isleft > 0){
 					//P is to the left of T
 					partitionRBegin = partition->end;
@@ -1871,7 +1871,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			}
 
 			if (crossInpartition) {
-				if ((-tb) * pa - (-pb) * ta > 0) {
+				if (tb * pa - pb * ta > 0) {
 					partitionLBegin = point_intersection;
 					partitionREnd = point_intersection;
 					return P_T_BOTH_POS;

@@ -1849,6 +1849,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		auto closest2 = partitionL2.closestPoint(CP_Point2(3.000001, 3.00001), d);
 		*/
 		/*
+		* // 위에는 이 조건이랑 좀 다름...
 		CP_Partition partitionL(partitionLBegin, partitionLEnd);
 		if (partitionL.is_point_on(point_intersection)) {
 			crossInpartition_new = true;

@@ -390,8 +390,7 @@ extern char gb_coincidentPos(CP_Partition *p, CP_Point2 &point);
 
 // partition이 T의 내부에 있는지 검사한다.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
-
-bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition);
+//bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);

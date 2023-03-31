@@ -1401,7 +1401,8 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* parent, 
-	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd){
+	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
+){ 
 	// if T is 'cell(or leaf node)' 
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
@@ -1793,174 +1794,158 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	double ta = -t_line.a, tb = -t_line.b, tc = -t_line.c;
 	double pa = -p_line.a, pb = -p_line.b, pc = -p_line.c;
 
-	bool not_in_region = false; // partition이 A의 binary partition으로 나눠진 region에 들어있지 않ㅇ므?
-	if(pa * pa > pb * pb){ 
-		// y방향
-		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
-			not_in_region = true;
-	}
-	else{ 
-		// x방향
-		if(partitionLEnd.m_x / pb - partitionLBegin.m_x / pb < 0)
-			not_in_region = true;
-	}
+	if(t_line.isParallel(p_line)){
 
-	if(not_in_region){
-		if (gb_t_p_left(A->partition, partition)) return P_T_NEG_POS;
-		else return P_T_NEG_NEG;
-	}
-	else{
-		if(t_line.isParallel(p_line)){
-
-			// line equation의 c term 비교?
-			if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-				(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
-			{
-				// intersect (two line equation coincides)
-				if(ta * pa > 0 || tb * pb < 0){
-					return P_T_ON_POS;
-				}
-				else {
-					return P_T_ON_NEG;
-				}
+		// line equation의 c term 비교?
+		if(//(ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
+			(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
+		{
+			// (problematic!!!!!!!!!!!!!!!!!!) not catching!!!!!!!!!!!!!!!!
+			// intersect (two line equation coincides)
+			if(ta * pa > 0 || tb * pb < 0){
+				return P_T_ON_POS;
 			}
-			else{  
-				//not intersect
-				double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
-				if(isleft > 0){
-					//P is to the left of T
-					partitionRBegin = partition->end;
-					partitionREnd = partition->begin;
-					if(ta * pa > 0 || tb * pb > 0){
-						return P_T_POS_NEG;
-					}
-					else{
-						return P_T_POS_POS;
-					}
+			else {
+				return P_T_ON_NEG;
+			}
+		}
+		else{  
+			//not intersect
+			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
+			if(isleft > 0){
+				//P is to the left of T
+				partitionRBegin = partition->end;
+				partitionREnd = partition->begin;
+				if(ta * pa > 0 || tb * pb > 0){
+					return P_T_POS_NEG;
 				}
 				else{
-					//P is to the right of T
-					partitionLBegin = partition->end;
-					partitionLEnd = partition->begin;
-					if(ta * pa > 0 || tb * pb > 0){
-						return P_T_NEG_POS;
-					}
-					else{
-						return P_T_NEG_NEG;
-					}
+					return P_T_POS_POS;
+				}
+			}
+			else{
+				//P is to the right of T
+				partitionLBegin = partition->end;
+				partitionLEnd = partition->begin;
+				if(ta * pa > 0 || tb * pb > 0){
+					return P_T_NEG_POS;
+				}
+				else{
+					return P_T_NEG_NEG;
 				}
 			}
 		}
-		else{
-			// line intersection
-			cross_point = point_intersection;
-			bool crossInpartition = false;
+	}
+	else{
+		// line intersection
+		cross_point = point_intersection;
+		bool crossInpartition = false;
+		if (pa * pa > pb * pb) { 
+			//y방향
+			if (((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
+				|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))) { //in
+				crossInpartition = true;
+			}
+		}
+		else {
+			//x방향
+			if (((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
+				|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE))) { //in
+				crossInpartition = true;
+			}
+		}
+
+		if (crossInpartition) {
+			if (tb * pa - pb * ta > 0) {
+				partitionLBegin = point_intersection;
+				partitionREnd = point_intersection;
+				return P_T_BOTH_POS;
+			}
+			else {
+				partitionRBegin = point_intersection;
+				partitionLEnd = point_intersection;
+				return P_T_BOTH_NEG;
+			}
+		}
+		else {
+			//inside and disjoint
+			CP_Point2 begin, end;
+
+			// Calculate the p direction
+			double a, b;
 			if (pa * pa > pb * pb) { 
 				//y방향
-				if (((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
-					|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))) { //in
-					crossInpartition = true;
-				}
+				a = partitionLBegin.m_y - point_intersection.m_y;
+				b = partitionLEnd.m_y - point_intersection.m_y;
+				if (a < 0) a *= -1;
+				if (b < 0) b *= -1;
 			}
 			else {
 				//x방향
-				if (((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
-					|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE))) { //in
-					crossInpartition = true;
-				}
+				a = partitionLBegin.m_x - point_intersection.m_x;
+				b = partitionLEnd.m_x - point_intersection.m_x;
+				if (a < 0) a *= -1;
+				if (b < 0) b *= -1;
 			}
 
-			if (crossInpartition) {
-				if (tb * pa - pb * ta > 0) {
-					partitionLBegin = point_intersection;
-					partitionREnd = point_intersection;
-					return P_T_BOTH_POS;
+			double dirP = a - b;
+			if (dirP > 0)
+				dirP = 1;
+			else
+				dirP = -1;
+
+			// Calculate the t direction
+			if (A->pos_coincident.size() == 0)
+				int baa = 1;
+			if (ta * ta > tb * tb) {
+				//y방향
+				a = A->pos_coincident[0]->begin.m_y - point_intersection.m_y;
+				b = A->pos_coincident[0]->end.m_y - point_intersection.m_y;
+				if (a < 0) a *= -1;
+				if (b < 0) b *= -1;
+			}
+			else {
+				//x방향
+				a = A->pos_coincident[0]->begin.m_x - point_intersection.m_x;
+				b = A->pos_coincident[0]->end.m_x - point_intersection.m_x;
+				if (a < 0) a *= -1;
+				if (b < 0) b *= -1;
+			}
+
+			double dirAP = a - b;
+			if (dirAP > 0) dirAP = 1;
+			else dirAP = -1;
+
+			if (gb_t_p_left(A->pos_coincident[0]->begin, partition)) {
+				if (dirAP * dirP < 0) {
+					partitionRBegin = partition->end;
+					partitionREnd = partition->begin;
+					return P_T_POS_POS;
 				}
 				else {
-					partitionRBegin = point_intersection;
-					partitionLEnd = point_intersection;
-					return P_T_BOTH_NEG;
+					partitionLBegin = partition->end;
+					partitionLEnd = partition->begin;
+					return P_T_NEG_POS;
 				}
 			}
 			else {
-				//inside and disjoint
-				CP_Point2 begin, end;
-
-				// Calculate the p direction
-				double a, b;
-				if (pa * pa > pb * pb) { 
-					//y방향
-					a = partitionLBegin.m_y - point_intersection.m_y;
-					b = partitionLEnd.m_y - point_intersection.m_y;
-					if (a < 0) a *= -1;
-					if (b < 0) b *= -1;
+				if (dirAP * dirP < 0) {
+					partitionLBegin = partition->end;
+					partitionLEnd = partition->begin;
+					return P_T_NEG_NEG;
 				}
 				else {
-					//x방향
-					a = partitionLBegin.m_x - point_intersection.m_x;
-					b = partitionLEnd.m_x - point_intersection.m_x;
-					if (a < 0) a *= -1;
-					if (b < 0) b *= -1;
+					partitionRBegin = partition->end;
+					partitionREnd = partition->begin;
+					return P_T_POS_NEG;
 				}
-
-				double dirP = a - b;
-				if (dirP > 0)
-					dirP = 1;
-				else
-					dirP = -1;
-
-				// Calculate the t direction
-				if (A->pos_coincident.size() == 0)
-					int baa = 1;
-				if (ta * ta > tb * tb) {
-					//y방향
-					a = A->pos_coincident[0]->begin.m_y - point_intersection.m_y;
-					b = A->pos_coincident[0]->end.m_y - point_intersection.m_y;
-					if (a < 0) a *= -1;
-					if (b < 0) b *= -1;
-				}
-				else {
-					//x방향
-					a = A->pos_coincident[0]->begin.m_x - point_intersection.m_x;
-					b = A->pos_coincident[0]->end.m_x - point_intersection.m_x;
-					if (a < 0) a *= -1;
-					if (b < 0) b *= -1;
-				}
-
-				double dirAP = a - b;
-				if (dirAP > 0) dirAP = 1;
-				else dirAP = -1;
-
-				if (gb_t_p_left(A->pos_coincident[0]->begin, partition)) {
-					if (dirAP * dirP < 0) {
-						partitionRBegin = partition->end;
-						partitionREnd = partition->begin;
-						return P_T_POS_POS;
-					}
-					else {
-						partitionLBegin = partition->end;
-						partitionLEnd = partition->begin;
-						return P_T_NEG_POS;
-					}
-				}
-				else {
-					if (dirAP * dirP < 0) {
-						partitionLBegin = partition->end;
-						partitionLEnd = partition->begin;
-						return P_T_NEG_NEG;
-					}
-					else {
-						partitionRBegin = partition->end;
-						partitionREnd = partition->begin;
-						return P_T_POS_NEG;
-					}
-				}
-
 			}
+
 		}
 	}	
 }
 
+/*
 bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition){
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;
@@ -1974,7 +1959,7 @@ bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partiti
 		return false;
 
 }
-
+*/
 bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition){
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;

@@ -1190,23 +1190,28 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	}
 }
 
-char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H) {
+char getPartitionPos(
+	const CP_Partition* const partition,   // H를 자르기 위해서 비교해야 되는 binary partitioner.
+	const CP_Partition* const H            // 이미 생성된 BSP tree 노드의 binary partitioner.
+) {
+	// Naylor Figure 3.1. Check Spatial relationships between two binary partitioners.
 	double begin_pos, end_pos;
 
-	CP_Vec2 H_vector = H->end - H->begin;
+	CP_Vec2 H_vector = H->end - H->begin; 
 
 	CP_Point2 vp_begin = partition->begin;
 	CP_Point2 vp_end = partition->end;
 
 	CP_Vec2 begin_vector = vp_begin - H->begin;
-	begin_pos = H_vector.cross_product(begin_vector);
+	begin_pos = H_vector.cross_product(begin_vector); // check begin point coincides or...
 
 	CP_Vec2 end_vector = vp_end - H->end;
-	end_pos = H_vector.cross_product(end_vector);
+	end_pos = H_vector.cross_product(end_vector); // check end point is coincides or...
 
 	if(compare_float(end_pos, 0)) end_pos = 0;
 	if(compare_float(begin_pos, 0)) begin_pos = 0;
 
+	// 여기서는 두 개의 line segment의 관계에 대해서만 생각! 무한한 직선으로 생각하지 않음.
 	if(end_pos * begin_pos < 0){
 		return POS_CROSS;
 	}
@@ -1214,16 +1219,19 @@ char getPartitionPos(const CP_Partition* const partition, const CP_Partition* co
 		if (end_pos < 0)return POS_RIGHT;
 		else return POS_LEFT;
 	}
-	else{ // end_pos * begin_pos 
+	else{ 
+		// end_pos * begin_pos == 0?
+		// 다시 말해 p와 H가 parallel/anti-parallel하거나, 혹은 시작점만 coincidence할 수 도 있음.
 		if(end_pos < 0 || begin_pos < 0)
 			return POS_RIGHT;
 		else if(end_pos > 0 || begin_pos > 0)
 			return POS_LEFT;
 		else {
+			// end_pos == 0 && begin_pos == 0 (완전 일치..)
 			CP_Vec2 vp_vec = vp_end - vp_begin;
-			if(vp_vec.m_x * H_vector.m_x > 0 || vp_vec.m_y * H_vector.m_y >0)
-				return POS_POS_ON;
-			else return POS_NEG_ON;
+			if(vp_vec.m_x * H_vector.m_x > 0 || vp_vec.m_y * H_vector.m_y > 0)
+				return POS_POS_ON;  // parallel on 
+			else return POS_NEG_ON; // anti-parallel on 
 		}
 	}
 }

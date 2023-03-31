@@ -1,20 +1,5 @@
-// 这段 MFC 示例源代码演示如何使用 MFC Microsoft Office Fluent 用户界面 
-// (“Fluent UI”)。该示例仅供参考，
-// 用以补充《Microsoft 基础类参考》和 
-// MFC C++ 库软件随附的相关电子文档。
-// 复制、使用或分发 Fluent UI 的许可条款是单独提供的。
-// 若要了解有关 Fluent UI 许可计划的详细信息，请访问  
-// http://go.microsoft.com/fwlink/?LinkId=238214。
-//
-// 版权所有(C) Microsoft Corporation
-// 保留所有权利。
-
-// CP_PolygonPlatformView.cpp : CCP_PolygonPlatformView 类的实现
-//
-
 #include "stdafx.h"
-// SHARED_HANDLERS 可以在实现预览、缩略图和搜索筛选器句柄的
-// ATL 项目中进行定义，并允许与该项目共享文档代码。
+
 #ifndef SHARED_HANDLERS
 #include "CP_PolygonPlatform.h"
 #endif
@@ -26,21 +11,11 @@
 #define new DEBUG_NEW
 #endif
 
-// //////////////////////////////////////////////////////
-// New codes begin:
-//#include "CF_Draw.h"
-// New codes end.
-// //////////////////////////////////////////////////////
-
-//sunsiyuan
 #include "CP_Polygon.h"
-
-// CCP_PolygonPlatformView
 
 IMPLEMENT_DYNCREATE(CCP_PolygonPlatformView, CView)
 
 BEGIN_MESSAGE_MAP(CCP_PolygonPlatformView, CView)
-	// 标准打印命令
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CCP_PolygonPlatformView::OnFilePrintPreview)
@@ -81,8 +56,6 @@ BEGIN_MESSAGE_MAP(CCP_PolygonPlatformView, CView)
 	ON_COMMAND(ID_VIEW_B, &CCP_PolygonPlatformView::OnViewB)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_POINT_ID, &CCP_PolygonPlatformView::OnUpdateViewPointId)
 	ON_COMMAND(ID_VIEW_POINT_ID, &CCP_PolygonPlatformView::OnViewPointId)
-	ON_COMMAND(ID_VIEW_T_FACE, &CCP_PolygonPlatformView::OnViewTFace)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_T_FACE, &CCP_PolygonPlatformView::OnUpdateViewTFace)
 	ON_COMMAND(ID_CHECK, &CCP_PolygonPlatformView::OnCheck)
 	ON_COMMAND(ID_POLYGON_UNION, &CCP_PolygonPlatformView::OnPolygonUnion)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_RESULT, &CCP_PolygonPlatformView::OnUpdateViewResult)
@@ -93,29 +66,19 @@ BEGIN_MESSAGE_MAP(CCP_PolygonPlatformView, CView)
 	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
-// CCP_PolygonPlatformView 构造/析构
-
 CCP_PolygonPlatformView::CCP_PolygonPlatformView()
 {
-	// TODO: 在此处添加构造代码
 	m_buildTime = 0;
 	m_mergeTime = 0;
 	m_generateEdgeTime = 0;
 }
 
-CCP_PolygonPlatformView::~CCP_PolygonPlatformView()
-{
-}
+CCP_PolygonPlatformView::~CCP_PolygonPlatformView(){}
 
 BOOL CCP_PolygonPlatformView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: 在此处通过修改
-	//  CREATESTRUCT cs 来修改窗口类或样式
-
 	return CView::PreCreateWindow(cs);
 }
-
-// CCP_PolygonPlatformView 绘制
 
 void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
 {
@@ -144,8 +107,9 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
                 gb_drawPolygonPointID(pDC, pDoc->m_a,
                     pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
                     0, 0, 0);
-        } // if结束
-       if (pDoc->m_flagShowB)
+        }
+
+        if (pDoc->m_flagShowB)
         {
             gb_drawPolygonLoop(pDC, pDoc->m_b,
                 pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
@@ -160,8 +124,9 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
                 gb_drawPolygonPointID(pDC, pDoc->m_b,
                     pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
                     0, 0, 255);
-        } // if结束
-    } // if(!pDoc->m_flagShowSelect)结束: 显示所有的基本内容
+        }
+    }
+
     if (pDoc->m_flagSelect) // 显示选择集
     {
         switch(pDoc->m_flagSelectType)
@@ -654,21 +619,20 @@ void CCP_PolygonPlatformView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CCP_PolygonPlatformView::OnUpdateComboAorb(CCmdUI *pCmdUI)
 {
-	// TODO: 在此添加命令更新用户界面处理程序代码
+	// TODO: Add the command here to update the UI handler code
     CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
     if (robbon_bar==NULL)
         return;
     CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 获取编辑框句柄
     if (pbox==NULL)
         return;
-    pbox->AddItem("多边形A");
-    pbox->AddItem("多边形B");
+    pbox->AddItem("Polygon A");
+    pbox->AddItem("Polygon B");
 
 }
 
 void CCP_PolygonPlatformView::OnComboAorb()
 {
-	// TODO: 在此添加命令处理程序代码
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -676,11 +640,11 @@ void CCP_PolygonPlatformView::OnComboAorb()
     CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
     if (robbon_bar==NULL)
         return;
-    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 获取编辑框句柄
+    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
     if (pbox==NULL)
         return;
-    pbox->AddItem("多边形A");
-    pbox->AddItem("多边形B");
+    pbox->AddItem("Polygon A");
+    pbox->AddItem("Polygon B");
     int i = pbox->GetCurSel( );
     pbox->SelectItem(i);
     if (i==0)
@@ -693,16 +657,15 @@ void CCP_PolygonPlatformView::OnComboAorb()
 
 void CCP_PolygonPlatformView::OnEdgeNumber()
 {
-	// TODO: 在此添加命令处理程序代码
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
     CString string;
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //获取Ribbon bar 句柄
+    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
     if (robbon_bar==NULL)
         return;
-    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_EDGE_NUMBER); // 获取编辑框句柄
+    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_EDGE_NUMBER);
     if (slider==NULL)
         return;
     string= slider->GetEditText(); // 获取数字
@@ -1417,9 +1380,9 @@ void CCP_PolygonPlatformView::OnNewRightInloop()
     Invalidate( );
 
     char s[100];
-    sprintf_s(s, 100, "新内环位于多边形%c中。", (flagA ? 'A' : 'B'));
+    sprintf_s(s, 100, "The new inner ring is in polygon %c.", (flagA ? 'A' : 'B'));
     if (flagSuccess)
-         mb_statusSetText("新内环创建成功。", s);
+         mb_statusSetText("The new inner ring is successfully created.", s);
     else mb_statusSetText("没有创建新内环。", s);
 }
 
@@ -1806,26 +1769,6 @@ void CCP_PolygonPlatformView::OnViewPointId()
 
 }
 
-
-void CCP_PolygonPlatformView::OnViewTFace()
-{
-	// TODO: 在此添加命令处理程序代码
-	CCP_PolygonPlatformDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
-    //pDoc->m_flagShowTriangleFace ^= true;
-    Invalidate(); // 刷新
-}
-
-void CCP_PolygonPlatformView::OnUpdateViewTFace(CCmdUI *pCmdUI)
-{
-	CCP_PolygonPlatformDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
-}
-
 void CCP_PolygonPlatformView::OnCheck()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -1834,20 +1777,20 @@ void CCP_PolygonPlatformView::OnCheck()
 	if (!pDoc)
 		return;
 
-	if(pDoc->m_a.m_regionArray.size() > 0){
-		if(gb_checkPolygon(pDoc->m_a)){
-			MessageBox("一般多边形A合法");
-		}
-		else
-			MessageBox("一般多边形A不合法");
-	}
-	if(pDoc->m_b.m_regionArray.size() > 0){
-		if(gb_checkPolygon(pDoc->m_b)){
-			MessageBox("一般多边形B合法");
-		}
-		else
-			MessageBox("一般多边形B不合法");
-	}
+    if (pDoc->m_a.m_regionArray.size() > 0) {
+        if (gb_checkPolygon(pDoc->m_a)) {
+            MessageBox("general polygon A is legal");
+        }
+        else
+            MessageBox("General polygon A is illegal");
+    }
+    if (pDoc->m_b.m_regionArray.size() > 0) {
+        if (gb_checkPolygon(pDoc->m_b)) {
+            MessageBox("General polygon B is legal");
+        }
+        else
+            MessageBox("General polygon B is illegal");
+    }
 
 	releaseMemory();
 }

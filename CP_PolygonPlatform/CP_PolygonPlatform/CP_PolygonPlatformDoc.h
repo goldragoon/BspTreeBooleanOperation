@@ -40,21 +40,16 @@ public:
      // true: 显示; false: 不显示。
 
     bool m_flagMoveSame; // true: 移动重合的点; false: 重合点分开移动。
-//    bool m_flagShowTriangleFace;  // true: 显示; false: 不显示。
 
  // 下面是一些临时性变量
     CP_Point2 m_basePoint;
     bool m_flagMouseDown; // true: 按下鼠标左键; false: 放开鼠标左键
-
-//sunsiyuan
 	bool m_showBsptree;
 	CP_BSPNode *m_bspTree;
 
-// 操作
 public:
 	void mb_initData( );
 
-// 重写
 public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);

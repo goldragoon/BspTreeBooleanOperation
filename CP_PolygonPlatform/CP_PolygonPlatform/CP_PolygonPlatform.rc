@@ -469,29 +469,29 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_MOVE_SAME            "重合的点一起移动"
-    ID_ADD_OUTLOOP          "添加新外环"
-    ID_ADD_INLOOP           "添加新内环"
-    ID_ADD_POINT            "添加新的点"
-    ID_DELETE               "删除拾取的图形"
-    ID_POLYGON_TRIANGULATION "对A、B及布尔运算结果进行三角形剖分"
-    ID_POLYGON_UNION        "布尔运算: A+B\nA+B"
-    ID_POLYGON_INTERSECTION "计算A和B的交集"
-    ID_POLYGON_A_B          "布尔运算: A-B\nA-B"
-    ID_POLYGON_B_A          "布尔运算: B-A\nB-A"
-    ID_VIEW_POINT_ID        "显示或隐藏点标识\n切换点标识显示"
-    ID_VIEW_STANDARD        "恢复标准显示坐标系\n恢复原始坐标系"
-    ID_VIEW_A               "显示或隐藏多边形A\n切换A显示"
-    ID_VIEW_B               "显示或隐藏多边形B\n切换B显示"
-    ID_VIEW_RESULT          "显示或隐藏布尔运算结果\n切换布尔运算结果显示"
-    ID_VIEW_T_FACE          "第1种模式: 显示或隐藏剖分面\n切换剖分面显示"
+    ID_MOVE_SAME "Coincident points move together"
+    ID_ADD_OUTLOOP "Add new outer loop"
+    ID_ADD_INLOOP "Add a new inner loop"
+    ID_ADD_POINT "Add new point"
+    ID_DELETE "Delete Picked Graphics"
+    ID_POLYGON_TRIANGULATION "Triangulation of A, B and Boolean results"
+    ID_POLYGON_UNION "Boolean operation: A+B\nA+B"
+    ID_POLYGON_INTERSECTION "Compute the intersection of A and B"
+    ID_POLYGON_A_B "Boolean Operation: A-B\nA-B"
+    ID_POLYGON_B_A "Boolean Operation: B-A\nB-A"
+    ID_VIEW_POINT_ID "Show or hide point ID\ntoggle point ID display"
+    ID_VIEW_STANDARD "Restore Standard Display Coordinate System\nRestore Original Coordinate System"
+    ID_VIEW_A "Show or hide polygon A\ntoggle A display"
+    ID_VIEW_B "Show or hide polygon B\ntoggle B display"
+    ID_VIEW_RESULT "Show or hide Boolean results\nToggle display of Boolean results"
+    ID_VIEW_T_FACE "Mode 1: Show or hide splitting faces\nToggle splitting face display"
 END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_T_EDGE          "第2种模式: 显示或隐藏剖分边\n切换剖分边显示"
-    ID_VIEW_T_FACE_EDGE     "第3种模式: 采用不同颜色同时显示剖分面和边\n切换剖分面和边显示"
-    ID_VIEW_FIT             "针对屏幕自适应显示\n自适应显示"
+    ID_VIEW_T_EDGE "Mode 2: Show or hide tessellation edges\ntoggle tessellation edge display"
+    ID_VIEW_T_FACE_EDGE "3rd mode: use different colors to display facets and edges at the same time\ntoggle display of facets and edges"
+    ID_VIEW_FIT "Fit to screen\nFit to display"
 END
 
 #endif    // 中文(简体，中国) resources

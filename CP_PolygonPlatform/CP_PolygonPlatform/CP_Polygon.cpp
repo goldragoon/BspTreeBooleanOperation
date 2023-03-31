@@ -1405,7 +1405,12 @@ void gb_partitionBspt(
 	}
 
 	// if T is 'not cell(not leaf node)'
-	CP_Point2 cross_point;
+	
+	/*
+	* \brief	cross point는 T->partition, 그리고 partition 을 무한한 직선으로 생각했을 때의 교점.
+	* \details	두 직선이 평행/일치할 경우 cross_point에는 쓰레기 값이 들어있게 됨. (ON_POS, ON_NEG, POS_POS, NEG_NEG).
+	*/ 
+	CP_Point2 cross_point; 
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
 	CP_Point2 pLBegin, pLEnd, pRBegin, pREnd;
@@ -1462,20 +1467,22 @@ void gb_partitionBspt(
 		B_inLeft->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			CP_Partition *right = NULL;
-			CP_Partition *left = NULL;
 			switch(gb_coincidentPos(T->pos_coincident[i], cross_point)){
-			case LINE_IN:				
-				right = new CP_Partition();
-				left = new CP_Partition();
+			case LINE_IN: 
+			{
+				CP_Partition* right = new CP_Partition();
+				CP_Partition* left = new CP_Partition();
 
 				left->begin = T->pos_coincident[i]->begin;
 				left->end = cross_point;
+
 				right->begin = cross_point;
 				right->end = T->pos_coincident[i]->end;
+
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
+			}
 			case LINE_POS:
 				B_inLeft->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
@@ -1600,10 +1607,6 @@ char gb_coincidentPos(CP_Partition *p, CP_Point2 &point){
 		if(dx2 < 0) dx2 *= -1;
 		if(dy2 < 0) dy2 *= -1;
 
-		dx1 /= 2;
-		dx2 /= 2;
-		dy1 /= 2;
-		dy2 /= 2;
 		if(dx1 + dy1 < dx2 + dy2){
 			return LINE_NEG;
 		}
@@ -1786,44 +1789,32 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	double pa = -p_line.a, pb = -p_line.b, pc = -p_line.c;
 
 	if(t_line.isParallel(p_line)){
-
-		// line equation의 c term 비교?
+		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
+		
 		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
 			(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
 		{
-			// (problematic!!!!!!!!!!!!!!!!!!) not catching!!!!!!!!!!!!!!!!
-			// intersect (two line equation coincides)
-			if(ta * pa > 0 || tb * pb < 0){
-				return P_T_ON_POS;
-			}
-			else {
-				return P_T_ON_NEG;
-			}
+			// [Warning from Gyu Jin Choi] : (problematic) never enters
+			// intersect (coincide)
+			if(ta * pa > 0 || tb * pb < 0) return P_T_ON_POS;
+			else return P_T_ON_NEG;
 		}
 		else{  
-			//not intersect
+			//not intersect (parallel)
 			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
 			if(isleft > 0){
 				//P is to the left of T
 				partitionRBegin = partition->end;
 				partitionREnd = partition->begin;
-				if(ta * pa > 0 || tb * pb > 0){
-					return P_T_POS_NEG;
-				}
-				else{
-					return P_T_POS_POS;
-				}
+				if(ta * pa > 0 || tb * pb > 0) return P_T_POS_NEG;
+				else return P_T_POS_POS;
 			}
 			else{
 				//P is to the right of T
 				partitionLBegin = partition->end;
 				partitionLEnd = partition->begin;
-				if(ta * pa > 0 || tb * pb > 0){
-					return P_T_NEG_POS;
-				}
-				else{
-					return P_T_NEG_NEG;
-				}
+				if(ta * pa > 0 || tb * pb > 0) return P_T_NEG_POS;
+				else return P_T_NEG_NEG;
 			}
 		}
 	}
@@ -1847,7 +1838,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		}
 
 		if (crossInpartition) {
-			if (tb * pa - pb * ta > 0) {
+			if (t_vec.cross_product(p_vec) > 0) {
 				partitionLBegin = point_intersection;
 				partitionREnd = point_intersection;
 				return P_T_BOTH_POS;
@@ -1860,7 +1851,6 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		}
 		else {
 			//inside and disjoint
-			CP_Point2 begin, end;
 
 			// Calculate the p direction
 			double a, b;
@@ -1880,14 +1870,12 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			}
 
 			double dirP = a - b;
-			if (dirP > 0)
-				dirP = 1;
-			else
-				dirP = -1;
+			if (dirP > 0) dirP = 1;
+			else dirP = -1;
 
 			// Calculate the t direction
-			if (A->pos_coincident.size() == 0)
-				int baa = 1;
+			//if (A->pos_coincident.size() == 0)
+			//int baa = 1;
 			if (ta * ta > tb * tb) {
 				//y방향
 				a = A->pos_coincident[0]->begin.m_y - point_intersection.m_y;

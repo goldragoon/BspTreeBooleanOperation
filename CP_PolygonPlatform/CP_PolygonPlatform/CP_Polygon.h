@@ -70,11 +70,11 @@ public:
 		m_y /= m;
 	}
 
-	double magnitude_squared() {
-		return sqrt(magnitude());
+	double magnitude() {
+		return sqrt(magnitude_squared());
 	}
 
-	double magnitude() {
+	double magnitude_squared() {
 		return m_x * m_x + m_y * m_y;
 	}
 

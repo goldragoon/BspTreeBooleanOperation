@@ -1225,10 +1225,8 @@ char getPatitionPos(const CP_Partition* const partition, const CP_Partition* con
 		else if(end_pos > 0 || begin_pos > 0)
 			return POS_LEFT;
 		else {
-			double a1, b1;
-			a1 = vp_end.m_x - vp_begin.m_x;
-			b1 = vp_end.m_y - vp_begin.m_y;
-			if(a1 * H_vector.m_x > 0 || b1 * H_vector.m_y >0)
+			CP_Vec2 vp_vec = vp_end - vp_begin;
+			if(vp_vec.m_x * H_vector.m_x > 0 || vp_vec.m_y * H_vector.m_y >0)
 				return POS_POS_ON;
 			else return POS_NEG_ON;
 		}
@@ -1797,7 +1795,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	pb =partition->begin.m_x - partition->end.m_x;
 	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
-	bool not_in_region = false; // ??
+	bool not_in_region = false; // partition이 A의 binary partition으로 나눠진 region에 들어있지 않ㅇ므?
 	if(pa * pa > pb * pb){ 
 		// y방향
 		if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)

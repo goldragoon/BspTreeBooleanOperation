@@ -16,7 +16,7 @@ bool compare_float(double x, double y, double epsilon = TOLERENCE) {
 }
 
 void gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
-                             CP_Point& pt, CP_Polygon& pn)
+                             CP_Point2& pt, CP_Polygon& pn)
 { 
     d = 0.0;
     idRegion = -1;
@@ -48,7 +48,7 @@ void gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop,
     }
 }
 
-void gb_distanceMinPointPolygon(double&d,int& id,CP_Point& pt,CP_Polygon& pn)
+void gb_distanceMinPointPolygon(double&d,int& id,CP_Point2& pt,CP_Polygon& pn)
 {
     d = 0.0;
     id = -1;
@@ -70,7 +70,7 @@ void gb_distanceMinPointPolygon(double&d,int& id,CP_Point& pt,CP_Polygon& pn)
     }
 }
 
-double gb_distancePointSegment(CP_Point& pt, CP_Point& p1, CP_Point& p2)
+double gb_distancePointSegment(CP_Point2& pt, CP_Point2& p1, CP_Point2& p2)
 {
     double dx0 = p2.m_x - p1.m_x;
     double dy0 = p2.m_y - p1.m_y;
@@ -127,7 +127,7 @@ bool gb_findPointInLoop(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPoint
     return false;
 }
 
-void gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point& newPoint)
+void gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point2& newPoint)
 {
     int nv = pn.m_pointArray.size( );
     pn.m_pointArray.push_back(newPoint);
@@ -336,7 +336,7 @@ void gb_moveRegion(CP_Polygon& pn, int idRegion, double vx, double vy)
 // pointGlobal: 渴흙돨瞳홍애麟깃溝苟돨듐;
 // scale:       渴흙돨궐절凜綾;
 // translation: 渴흙돨틱盧麟깃令。
-void gb_pointConvertFromGlobalToScreen(CP_Point& result, CP_Point pointGlobal, double scale, CP_Point translation, int screenX, int screenY)
+void gb_pointConvertFromGlobalToScreen(CP_Point2& result, CP_Point2 pointGlobal, double scale, CP_Point2 translation, int screenX, int screenY)
 {
     result.m_x=(pointGlobal.m_x-translation.m_x)*scale;
     result.m_y=(pointGlobal.m_y-translation.m_y)*scale;
@@ -349,7 +349,7 @@ void gb_pointConvertFromGlobalToScreen(CP_Point& result, CP_Point pointGlobal, d
 // pointScreen: 渴흙돨瞳팁캥麟깃溝苟돨듐;
 // scale:       渴흙돨궐절凜綾;
 // translation: 渴흙돨틱盧麟깃令。
-void gb_pointConvertFromScreenToGlobal(CP_Point& result, CP_Point pointScreen, double scale, CP_Point translation, int screenX, int screenY)
+void gb_pointConvertFromScreenToGlobal(CP_Point2& result, CP_Point2 pointScreen, double scale, CP_Point2 translation, int screenX, int screenY)
 {
     result.m_x=pointScreen.m_x - screenX/2;
     result.m_y=screenY/2-pointScreen.m_y;
@@ -584,11 +584,11 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		clockwise = false;
 
 	CP_Polygon* pn = ln.m_polygon;
-	CP_Point *p0, *p1, *p2;
+	CP_Point2 *p0, *p1, *p2;
 	int v1, v2;
 
 	//털뙤角뤠槨糠珂濾
-	CP_Point *pc;
+	CP_Point2 *pc;
 
 	int max;
 	double xmax = -1000000;
@@ -614,9 +614,9 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 	}
 	int minl = (min + np - 1) % np;
 	int minr = (min + 1) % np;
-	CP_Point &pminl = pn->m_pointArray[ln.m_pointIDArray[minl]];
-	CP_Point &pmin = pn->m_pointArray[ln.m_pointIDArray[min]];
-	CP_Point &pminr = pn->m_pointArray[ln.m_pointIDArray[minr]];
+	CP_Point2 &pminl = pn->m_pointArray[ln.m_pointIDArray[minl]];
+	CP_Point2 &pmin = pn->m_pointArray[ln.m_pointIDArray[min]];
+	CP_Point2 &pminr = pn->m_pointArray[ln.m_pointIDArray[minr]];
 	double clock = (pmin.m_x - pminl.m_x) * (pminr.m_y - pmin.m_y) - (pmin.m_y - pminl.m_y) * (pminr.m_x - pmin.m_x);
 	if(clock > 0 == clockwise){
 		return false;
@@ -630,8 +630,8 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 	for(int i = 0; i < np; i++){
 		if(i == minl || i == min || i == (minl - 1 + np) % np)
 			continue;
-		CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
-		CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
+		CP_Point2 &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
+		CP_Point2 &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
 		//횅땍殮窟렘넋
 		a = pl1.m_y - pl2.m_y;
 		b = pl2.m_x - pl1.m_x;
@@ -670,8 +670,8 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 	for(int i = 0; i < np; i++){
 		if(i == minr || i == min || i == (min + np - 1) % np)
 			continue;
-		CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
-		CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
+		CP_Point2 &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
+		CP_Point2 &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
 		//횅땍殮窟렘넋
 		a = pl1.m_y - pl2.m_y;
 		b = pl2.m_x - pl1.m_x;
@@ -736,8 +736,8 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		for(int i = 0; i < np; i++){
 			if(i == v1 || i == iP || i == (v1 - 1 + np) % np)
 				continue;
-			CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
-			CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
+			CP_Point2 &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
+			CP_Point2 &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
 			//횅땍殮窟렘넋
 			a = pl1.m_y - pl2.m_y;
 			b = pl2.m_x - pl1.m_x;
@@ -779,8 +779,8 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 		for(int i = 0; i < np; i++){
 			if(i == v2 || i == iP || i == (iP + np - 1) % np)
 				continue;
-			CP_Point &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
-			CP_Point &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
+			CP_Point2 &pl1 = pn->m_pointArray[ln.m_pointIDArray[i]];
+			CP_Point2 &pl2 = pn->m_pointArray[ln.m_pointIDArray[(i + 1) % np]];
 			//횅땍殮窟렘넋
 			a = pl1.m_y - pl2.m_y;
 			b = pl2.m_x - pl1.m_x;
@@ -812,8 +812,8 @@ bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 
 //닸瞳宮슥돨긋橙럿쀼true，뤠橙럿쀼fasle
 bool gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2){
-	vector<CP_Point> regionListBegin1, regionListBrgin2;
-	vector<CP_Point> regionListEnd1, regionListEnd2;
+	vector<CP_Point2> regionListBegin1, regionListBrgin2;
+	vector<CP_Point2> regionListEnd1, regionListEnd2;
 	CP_Polygon *polygon = region1.m_polygon;
 	for(unsigned int i = 0; i < region1.m_loopArray.size(); i++){
 		CP_Loop &loop1 = region1.m_loopArray[i];
@@ -824,10 +824,10 @@ bool gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2){
 				CP_Loop &loop2 = region2.m_loopArray[m];
 				for(unsigned int n = 0; n < loop2.m_pointIDArray.size(); n++){
 					int k2 = (n + 1) % loop2.m_pointIDArray.size();
-					CP_Point &p11 = polygon->m_pointArray[loop1.m_pointIDArray[j]];
-					CP_Point &p12 = polygon->m_pointArray[loop1.m_pointIDArray[k1]];
-					CP_Point &p21 = polygon->m_pointArray[loop2.m_pointIDArray[n]];
-					CP_Point &p22 = polygon->m_pointArray[loop2.m_pointIDArray[k2]];
+					CP_Point2 &p11 = polygon->m_pointArray[loop1.m_pointIDArray[j]];
+					CP_Point2 &p12 = polygon->m_pointArray[loop1.m_pointIDArray[k1]];
+					CP_Point2 &p21 = polygon->m_pointArray[loop2.m_pointIDArray[n]];
+					CP_Point2 &p22 = polygon->m_pointArray[loop2.m_pointIDArray[k2]];
 					if(gb_checkLineSegmentCross(&p11, &p12, &p21, &p22))
 						return true;
 				}
@@ -841,7 +841,7 @@ bool gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2){
 bool gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2){
 	int k1, k2;
 	CP_Polygon *polygon = lnin1.m_polygon;
-	CP_Point *p11, *p12, *p21, *p22;
+	CP_Point2 *p11, *p12, *p21, *p22;
 	int np1 = lnin1.m_pointIDArray.size();
 	int np2 = lnin2.m_pointIDArray.size();
 	for(int i = 0; i < np1; i++){
@@ -891,9 +891,9 @@ bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
 		return true;
 }
 
-bool gb_checkLineSegmentCross(CP_Point* p11, CP_Point* p12, CP_Point* p21, CP_Point* p22){
+bool gb_checkLineSegmentCross(CP_Point2* p11, CP_Point2* p12, CP_Point2* p21, CP_Point2* p22){
 	double ta, tb, tc, pa, pb, pc;
-	CP_Point cross;
+	CP_Point2 cross;
 	pa = p11->m_y - p12->m_y;
 	pb = p12->m_x - p11->m_x;
 	pc = p11->m_y * (p11->m_x - p12->m_x) - p11->m_x * (p11->m_y - p12->m_y);
@@ -1082,9 +1082,9 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	CP_Partition * partitionLine = new CP_Partition(*(tree->partition));
 
 	// temporary variables for gb_p_in_region
-	CP_Point pBegin, pEnd;
+	CP_Point2 pBegin, pEnd;
 	double pmin, pmax, pcross;
-	CP_Point point;
+	CP_Point2 point;
 
 	// 아래 호출에서 pcross는 쓰레기값.
 	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
@@ -1183,7 +1183,7 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	right = new CP_Partition(T);
 
 	CP_Vec2 t_vec, p_vec;
-	CP_Point point = T->intersection(P, t_vec, p_vec);
+	CP_Point2 point = T->intersection(P, t_vec, p_vec);
 
 	if (t_vec.cross_product(p_vec) < 0) {
 		left->begin = point;
@@ -1200,8 +1200,8 @@ char getPatitionPos(const CP_Partition* const partition, const CP_Partition* con
 
 	CP_Vec2 H_vector = H->end - H->begin;
 
-	CP_Point vp_begin = partition->begin;
-	CP_Point vp_end = partition->end;
+	CP_Point2 vp_begin = partition->begin;
+	CP_Point2 vp_end = partition->end;
 
 	CP_Vec2 begin_vector = vp_begin - H->begin;
 	begin_pos = H_vector.cross_product(begin_vector);
@@ -1251,9 +1251,9 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Point pBegin, pEnd;
+		CP_Point2 pBegin, pEnd;
 		double pmin, pmax, pcross;
-		CP_Point point;
+		CP_Point2 point;
 		// 아래 호출에서 pcross는 쓰레기값.
 		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
 			pBegin = tree->partition->end;
@@ -1320,8 +1320,8 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 		pDiff.normalize();
 
 		CP_Vec2 sub(pDiff * (DBL_MAX / 2));
-		CP_Point pBegin(tree->partition->begin - sub);
-		CP_Point pEnd(tree->partition->begin + sub);
+		CP_Point2 pBegin(tree->partition->begin - sub);
+		CP_Point2 pEnd(tree->partition->begin + sub);
 
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
@@ -1400,7 +1400,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* parent, 
-	const CP_Point& partitionBegin, const CP_Point& partitionEnd){
+	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd){
 	// if T is 'cell(or leaf node)' 
 	if(gb_treeIsCell(T)){
 		B_inLeft = new CP_BSPNode(T);
@@ -1409,11 +1409,11 @@ void gb_partitionBspt(
 	}
 
 	// if T is 'not cell(not leaf node)'
-	CP_Point cross_point;
+	CP_Point2 cross_point;
 	CP_Partition *partitionPush = NULL;
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
-	CP_Point pLBegin, pLEnd, pRBegin, pREnd;
+	CP_Point2 pLBegin, pLEnd, pRBegin, pREnd;
 	pLBegin = partitionBegin;
 	pLEnd = partitionEnd;
 	pRBegin = partitionBegin;
@@ -1584,9 +1584,9 @@ void gb_partitionBspt(
 	}
 }
 
-char gb_coincidentPos(CP_Partition *p, CP_Point &point){
-	CP_Point begin = p->begin;
-	CP_Point end = p->end;
+char gb_coincidentPos(CP_Partition *p, CP_Point2 &point){
+	CP_Point2 begin = p->begin;
+	CP_Point2 end = p->end;
 
 	if((point.m_x - begin.m_x > TOLERENCE && point.m_x - end.m_x < -TOLERENCE) 
 		|| (point.m_x - begin.m_x < -TOLERENCE && point.m_x - end.m_x > TOLERENCE)
@@ -1620,7 +1620,7 @@ char gb_coincidentPos(CP_Partition *p, CP_Point &point){
 }
 
 /*
-char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
+char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point2 &cross_point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
 	CP_Partition *t_bp = A->partition;
 	double pa, pb, pc, ta, tb, tc;
 	ta =t_bp->end.m_y - t_bp->begin.m_y;
@@ -1668,10 +1668,10 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 	}
 	else{//宮슥
 		//헹t뵨p돨슥듐
-		CP_Point point;
+		CP_Point2 point;
 		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-		cross_point = CP_Point();
+		cross_point = CP_Point2();
 		cross_point = point;
 
 		//털뙤슥듐角뤠瞳partitionBegin뵨partitionEnd코꼬
@@ -1710,7 +1710,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 		}
 		else{		
 			// 털뙤partition角뤠唐옵콘셨崎관벵瞳혐堵櫓돨窟뙈
-			CP_Point begin, end;
+			CP_Point2 begin, end;
 			double pmin, pmax, pcross;
 			
 			if(gb_p_in_region(A, partition, begin, end, point, pmin, pmax, pcross)){
@@ -1719,7 +1719,7 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 				t_partition->begin = A->partition->begin;
 				t_partition->end = A->partition->end;
 
-				CP_Point pos_point;
+				CP_Point2 pos_point;
 				double tmin, tmax, tcross;
 				gb_t_in_region(A, t_partition, pos_point, &point, tmin, tmax, tcross);
 
@@ -1781,8 +1781,8 @@ char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point &cross_poi
 }
 */
 // classify 
-char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point &cross_point, 
-	CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd){
+char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2 &cross_point, 
+	CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
 
 	CP_Partition *t_bp = A->partition;
 
@@ -1848,7 +1848,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			}
 		}
 		else{//殮窟宮슥
-			CP_Point point;
+			CP_Point2 point;
 			point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
 			point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 			cross_point =  point;
@@ -1879,7 +1879,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 				}
 			}
 			else{//혐堵코할꼇宮슥
-				CP_Point begin, end;
+				CP_Point2 begin, end;
 
 				//셕炬p렘蕨
 				double a, b;
@@ -1969,7 +1969,7 @@ bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partiti
 
 }
 
-bool gb_t_p_left(const CP_Point &point, const CP_Partition* const partition){
+bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition){
 	double x1 = partition->end.m_x - partition->begin.m_x;
 	double y1 = partition->end.m_y - partition->begin.m_y;
 
@@ -2009,7 +2009,7 @@ bool gb_t_p_left(const CP_Point &point, const CP_Partition* const partition){
 }
 
 // partition 이 T의 내부 영역에 존재하는지 검사한다.
-bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point& end, const CP_Point &cross, 
+bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2& end, const CP_Point2 &cross, 
 	double &pmin, double &pmax, double &pcross){
 	begin = partition->begin;
 	end = partition->end;
@@ -2053,7 +2053,7 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 		}
 		// (almost wrong) CP_Partition* t_bp = node->partition;
 		CP_Vec2 t_vec, p_vec;
-		CP_Point point = t_bp->intersection(partition, t_vec, p_vec);		
+		CP_Point2 point = t_bp->intersection(partition, t_vec, p_vec);		
 
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
 		double cross_product_tp = t_vec.cross_product(p_vec);
@@ -2108,7 +2108,7 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_
 }
 
 /*
-bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, 
+bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, 
 	double &pmin, double &pmax, double &pcross){
 	pos = partition->begin;
 	double vx = partition->end.m_x - partition->begin.m_x;
@@ -2129,7 +2129,7 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 	CP_BSPNode *node = T;
 	CP_BSPNode *child;
 	double pa, pb, pc, ta, tb, tc;
-	CP_Point point;
+	CP_Point2 point;
 	while(node->parent != NULL){
 		child = node;
 		node = node->parent;
@@ -2264,7 +2264,7 @@ bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Po
 	return true;	
 }
 */
-bool gb_isCross(CP_BSPNode* A, CP_Point &point){
+bool gb_isCross(CP_BSPNode* A, CP_Point2 &point){
 	CP_BSPNode* node = A;
 	CP_BSPNode* child;
 	double a1, b1, a2, b2;
@@ -2334,10 +2334,10 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 void releaseMemory(){
 	// erroneous
 	/*
-	for(unsigned int i = 0; i < CP_PointList.size(); i++){
-		delete CP_PointList[i];
+	for(unsigned int i = 0; i < CP_Point2List.size(); i++){
+		delete CP_Point2List[i];
 	}
-	CP_PointList.clear();
+	CP_Point2List.clear();
 
 	for(unsigned int i = 0; i < CP_PartitionList.size(); i++){
 		delete CP_PartitionList[i];
@@ -2461,8 +2461,8 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell){
 
 		polygon_face->begin = node->partition->begin;
 		polygon_face->end = node->partition->end;
-		CP_Point begin;
-		CP_Point end;
+		CP_Point2 begin;
+		CP_Point2 end;
 		if(gb_p_in_cellPolygon(cell, polygon_face, begin, end)){
 			if(child == node->rightChild){
 				gb_changePartitionDir(polygon_face);
@@ -2634,7 +2634,7 @@ bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *resul
 	}
 }
 
-bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end){
+bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end){
 	begin = partition->begin;
 	end = partition->end;
 
@@ -2658,7 +2658,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin
 
 	CP_BSPNode *node = T;
 	double pa, pb, pc, ta, tb, tc;
-	CP_Point point;
+	CP_Point2 point;
 	for(unsigned int i = 0; i < node->polygon.size(); i++){
 		CP_Partition* t_bp = node->polygon[i];
 		ta =t_bp->end.m_y - t_bp->begin.m_y;

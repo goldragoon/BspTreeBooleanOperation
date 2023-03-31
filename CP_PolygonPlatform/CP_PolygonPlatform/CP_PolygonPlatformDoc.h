@@ -15,7 +15,7 @@ public:
     CP_Polygon m_a, m_b;
     double m_tolerance; // 位置容差
     double m_scale; // 缩放比例
-    CP_Point m_translation; // 坐标平移量
+    CP_Point2 m_translation; // 坐标平移量
 
 	// //////////////////////////////////////////////////////////////
     // 下面变量不被保存
@@ -43,7 +43,7 @@ public:
 //    bool m_flagShowTriangleFace;  // true: 显示; false: 不显示。
 
  // 下面是一些临时性变量
-    CP_Point m_basePoint;
+    CP_Point2 m_basePoint;
     bool m_flagMouseDown; // true: 按下鼠标左键; false: 放开鼠标左键
 
 //sunsiyuan

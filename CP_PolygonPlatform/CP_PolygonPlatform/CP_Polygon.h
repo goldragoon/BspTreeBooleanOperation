@@ -77,43 +77,43 @@ public:
 	}
 };
 
-class CP_Point {
+class CP_Point2 {
 public:
 	double m_x, m_y;
 
-    CP_Point() : m_x(0.0), m_y(0.0) {}
-	CP_Point(const double _x, const double _y) : m_x(_x), m_y(_y) {}
-	CP_Point(const CP_Vec2 &v) : m_x(v.m_x), m_y(v.m_y) {}
-	~CP_Point(){}
+    CP_Point2() : m_x(0.0), m_y(0.0) {}
+	CP_Point2(const double _x, const double _y) : m_x(_x), m_y(_y) {}
+	CP_Point2(const CP_Vec2 &v) : m_x(v.m_x), m_y(v.m_y) {}
+	~CP_Point2(){}
 
-	CP_Vec2& operator- (const CP_Point& _rhs) const {
+	CP_Vec2& operator- (const CP_Point2& _rhs) const {
 		CP_Vec2 pt;
 		pt.m_x = m_x - _rhs.m_x;
 		pt.m_y = m_y - _rhs.m_y;
 		return pt;
 	}
 
-	CP_Vec2& operator+ (const CP_Point& _rhs) const {
+	CP_Vec2& operator+ (const CP_Point2& _rhs) const {
 		CP_Vec2 pt;
 		pt.m_x = m_x + _rhs.m_x;
 		pt.m_y = m_y + _rhs.m_y;
 		return pt;
 	}
 
-	CP_Point& operator= (const CP_Point& _rhs){
+	CP_Point2& operator= (const CP_Point2& _rhs){
 		this->m_x = _rhs.m_x;
 		this->m_y = _rhs.m_y;
 		return *this;
 	}
 
-	double dist(const CP_Point& _rhs) {
+	double dist(const CP_Point2& _rhs) {
 		return (*this - _rhs).magnitude();
 	}
 
-	//static bool equal(const CP_Point& _rhs, double _tol = 1e-6) {}
+	//static bool equal(const CP_Point2& _rhs, double _tol = 1e-6) {}
 };
 
-typedef vector<CP_Point> VT_PointArray;
+typedef vector<CP_Point2> VT_PointArray;
 
 class CP_Polygon;
 
@@ -155,12 +155,12 @@ public:
     void mb_clear( ) {m_pointArray.clear( ); m_regionArray.clear( );}
 };
 
-extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop, CP_Point& pt, CP_Polygon& pn);
-extern void     gb_distanceMinPointPolygon(double&d, int& id, CP_Point& pt, CP_Polygon& pn);
-extern double   gb_distancePointSegment(CP_Point& pt, CP_Point& p1, CP_Point& p2);
+extern void     gb_distanceMinPointLoop(double&d, int& idRegion, int& idLoop, CP_Point2& pt, CP_Polygon& pn);
+extern void     gb_distanceMinPointPolygon(double&d, int& id, CP_Point2& pt, CP_Polygon& pn);
+extern double   gb_distancePointSegment(CP_Point2& pt, CP_Point2& p1, CP_Point2& p2);
 
 extern bool     gb_findPointInLoop(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, int pointInPolygon);
-extern void     gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point& newPoint);
+extern void     gb_insertPointInPolygon(CP_Polygon& pn, int& idRegion, int& idLoop, int& idPointInLoop, CP_Point2& newPoint);
 
 extern void     gb_intArrayInit(VT_IntArray& vi, int data);
 extern void     gb_intArrayInitLoop(VT_IntArray& vi, CP_Polygon& pn, int idRgion, int idLoop, double eT);
@@ -176,8 +176,8 @@ extern void     gb_movePointIntArray(CP_Polygon& pn, VT_IntArray& vi, double vx,
 extern void     gb_movePolygon(CP_Polygon& pn, double vx, double vy);
 extern void     gb_moveRegion(CP_Polygon& pn, int idRegion, double vx, double vy);
 
-extern void     gb_pointConvertFromGlobalToScreen(CP_Point& result, CP_Point pointGlobal, double scale, CP_Point translation, int screenX, int screenY);
-extern void     gb_pointConvertFromScreenToGlobal(CP_Point& result, CP_Point pointScreen, double scale, CP_Point translation, int screenX, int screenY);
+extern void     gb_pointConvertFromGlobalToScreen(CP_Point2& result, CP_Point2 pointGlobal, double scale, CP_Point2 translation, int screenX, int screenY);
+extern void     gb_pointConvertFromScreenToGlobal(CP_Point2& result, CP_Point2 pointScreen, double scale, CP_Point2 translation, int screenX, int screenY);
 extern bool     gb_polygonNewInLoopRegular(CP_Polygon& p, int idRegion, int n, double r, double cx, double cy);
 extern void     gb_polygonNewOutLoopRegular(CP_Polygon& p, int n, double r, double cx, double cy);
 extern bool     gb_removeLoop(CP_Polygon& pn, int idRegion, int idLoop);
@@ -191,28 +191,28 @@ extern bool     gb_checkRegion(CP_Region& rn);
 extern bool     gb_checkRegionCrossRegion(CP_Region &region1, CP_Region &region2);
 extern bool     gb_checkLoopSelfIntersection(CP_Loop& ln);
 extern bool     gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2);
-extern bool     gb_checkLineSegmentCross(CP_Point* a1, CP_Point* a2, CP_Point* b1, CP_Point* b2);
+extern bool     gb_checkLineSegmentCross(CP_Point2* a1, CP_Point2* a2, CP_Point2* b1, CP_Point2* b2);
 extern CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn);
 extern CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn);
 extern CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln);
 
 class CP_Partition{
 public:
-	CP_Point begin;
-	CP_Point end;
+	CP_Point2 begin;
+	CP_Point2 end;
 
 	CP_Partition() {}
-	CP_Partition(const CP_Point &b, const CP_Point &e) : begin(b), end(e) {}
+	CP_Partition(const CP_Point2 &b, const CP_Point2 &e) : begin(b), end(e) {}
 	CP_Partition(const CP_Partition* p) { begin = p->begin; end = p->end; }
 	~CP_Partition() {}
 
 	/*
 	* \brief 벡터를 무한한 직선으로 생각하여, 두 개의 벡터 간의 intersection point를 구한다.
 	*/
-	CP_Point intersection(const CP_Partition* _partition, CP_Vec2 &coef_t_ab, CP_Vec2 &coef_p_ab) {
+	CP_Point2 intersection(const CP_Partition* _partition, CP_Vec2 &coef_t_ab, CP_Vec2 &coef_p_ab) {
 		// Proof : https://imois.in/posts/line-intersections-with-cross-products/
 
-		CP_Point point_intersection;
+		CP_Point2 point_intersection;
 
 		// calculate line equation coefficients 
 		// 1. (this) object : (ta)x + (tb)y + (tc) = 0
@@ -332,32 +332,32 @@ extern bool gb_treeIsCell(const CP_BSPNode* const node);
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
-	const CP_Point& partitionBegin, const CP_Point& partitionEnd);
+	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd);
 
 // The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)
-//extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+//extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
-extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point& point, CP_Point& partitionLBegin, CP_Point& partitionLEnd, CP_Point& partitionRBegin, CP_Point& partitionREnd);
+extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
 
-extern bool gb_isCross(CP_BSPNode* A, CP_Point &point);
+extern bool gb_isCross(CP_BSPNode* A, CP_Point2 &point);
 extern void gb_complement(CP_BSPNode* T);
-extern char gb_coincidentPos(CP_Partition *p, CP_Point &point);
+extern char gb_coincidentPos(CP_Partition *p, CP_Point2 &point);
 
 // partition이 T의 내부에 있는지 검사한다.
-extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end, const CP_Point &cross, double &pmin, double &pmax, double &pcross);
+extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
 
 bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
 extern bool gb_changePartitionDir(CP_Partition *p);
-extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point &begin, CP_Point &end);
+extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end);
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
-//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point &pos, CP_Point *cross, double &pmin, double &pmax, double &pcross);
-extern bool gb_t_p_left(const CP_Point &point, const CP_Partition* const partition);
+//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
+extern bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
 

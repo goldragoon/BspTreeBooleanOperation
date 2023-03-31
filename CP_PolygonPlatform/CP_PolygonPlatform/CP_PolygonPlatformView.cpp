@@ -388,7 +388,7 @@ void  CCP_PolygonPlatformView::mb_statusSetText(char* s1, char* s2)
 } // 类CCP_PolygonPlatformView的成员函数mb_statusSetText结束
 
 void gb_drawLoop(CDC* pDC, CP_Loop& p, 
-                 double scale, CP_Point translation, int screenX, int screenY, 
+                 double scale, CP_Point2 translation, int screenX, int screenY, 
                  int r, int g, int b, int size)
 {
     int n = p.m_pointIDArray.size( );
@@ -398,8 +398,8 @@ void gb_drawLoop(CDC* pDC, CP_Loop& p,
     CPen * penOld = (CPen *) pDC->SelectObject(&pen);
     int i, k;
     i = p.m_pointIDArray[n-1];
-    CP_Point pg = p.m_polygon->m_pointArray[i];
-    CP_Point ps;
+    CP_Point2 pg = p.m_polygon->m_pointArray[i];
+    CP_Point2 ps;
     gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
     pDC->MoveTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
     for (k=0; k<n; k++)
@@ -413,7 +413,7 @@ void gb_drawLoop(CDC* pDC, CP_Loop& p,
 } // 函数gb_drawPolygonLoop结束
 
 void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
-        double scale, CP_Point translation, int screenX, int screenY,
+        double scale, CP_Point2 translation, int screenX, int screenY,
         int r, int g, int b, int size)
 {
     int n = pa.size( );
@@ -422,8 +422,8 @@ void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
     CPen pen(0, size, RGB(r, g, b));
     CPen * penOld = (CPen *) pDC->SelectObject(&pen);
     int i;
-    CP_Point pg = pa[0];
-    CP_Point ps;
+    CP_Point2 pg = pa[0];
+    CP_Point2 ps;
     gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
     pDC->MoveTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
     for (i=0; i<n; i++)
@@ -436,7 +436,7 @@ void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
 } // 函数gb_drawPointArrayLine结束
 
 void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
-        double scale, CP_Point translation, int screenX, int screenY,
+        double scale, CP_Point2 translation, int screenX, int screenY,
         int r, int g, int b, int size)
 {
     if (tree == NULL)
@@ -452,13 +452,13 @@ void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
 	gb_drawBspTree(pDC, tree->rightChild, scale, translation, screenX, screenY, r, g, b, size);
 }
 
-void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point translation, int screenX, int screenY, int r, int g, int b, int size)
+void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point2 translation, int screenX, int screenY, int r, int g, int b, int size)
 {
 	CP_BSPNode* node = tree;
-	CP_Point ps;
+	CP_Point2 ps;
 	CPen pen(0, size, RGB(r, g, b));
     CPen * penOld = (CPen *) pDC->SelectObject(&pen);
-	CP_Point pg;
+	CP_Point2 pg;
 
 	for(unsigned int i = 0; i < node->polygon.size(); i++){
 		pg= node->polygon[i]->begin;
@@ -479,7 +479,7 @@ void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point translati
 } // 函数gb_drawBspTree结束
 
 void gb_drawPointArrayPoint(CDC* pDC, VT_PointArray& pa,
-        double scale, CP_Point translation, int screenX, int screenY,
+        double scale, CP_Point2 translation, int screenX, int screenY,
         int r, int g, int b, int size)
 {
     int n = pa.size( );
@@ -490,9 +490,9 @@ void gb_drawPointArrayPoint(CDC* pDC, VT_PointArray& pa,
     } // for结束
 } // 函数gb_drawPointArrayPoint结束
 
-void gb_drawPointGlobal(CDC* pDC, CP_Point pointGlobal, double scale, CP_Point translation, int screenX, int screenY, int r, int g, int b, int size)
+void gb_drawPointGlobal(CDC* pDC, CP_Point2 pointGlobal, double scale, CP_Point2 translation, int screenX, int screenY, int r, int g, int b, int size)
 {
-    CP_Point ps;
+    CP_Point2 ps;
     gb_pointConvertFromGlobalToScreen(ps, pointGlobal, scale, translation,screenX, screenY);
     gb_drawPointScreen(pDC, (int)(ps.m_x+0.5), (int)(ps.m_y+0.5), r, g, b, size);
 } // 函数gb_drawPointScreen结束
@@ -508,7 +508,7 @@ void gb_drawPointScreen(CDC* pDC, int x, int y, int r, int g, int b, int size)
 } // 函数gb_drawPointScreen结束
 
 void gb_drawPolygonLoop(CDC* pDC, CP_Polygon& p,
-                        double scale, CP_Point translation, int screenX, int screenY,
+                        double scale, CP_Point2 translation, int screenX, int screenY,
                         int outR, int outG, int outB, 
                         int inR,  int inG,  int inB, 
                         int size)
@@ -530,7 +530,7 @@ void gb_drawPolygonLoop(CDC* pDC, CP_Polygon& p,
     } // 外部for结束
 } // 函数gb_drawPolygonLoop结束
 
-void gb_drawPolygonPoint(CDC* pDC, CP_Polygon& p, double scale, CP_Point translation, int screenX, int screenY, int r, int g, int b, int size)
+void gb_drawPolygonPoint(CDC* pDC, CP_Polygon& p, double scale, CP_Point2 translation, int screenX, int screenY, int r, int g, int b, int size)
 {
     int n = p.m_pointArray.size( );
     int i;
@@ -541,13 +541,13 @@ void gb_drawPolygonPoint(CDC* pDC, CP_Polygon& p, double scale, CP_Point transla
 } // 函数gb_drawPolygonPoint结束
 
 void gb_drawPolygonPointID(CDC* pDC, CP_Polygon& p,
-            double scale, CP_Point translation, int screenX, int screenY,
+            double scale, CP_Point2 translation, int screenX, int screenY,
             int r, int g, int b)
 {
     COLORREF cOld = pDC->SetTextColor(RGB(r, g, b));
     int nr = p.m_regionArray.size( );
     int nL, nLv, ir, iL, iLv, v;
-    CP_Point ps;
+    CP_Point2 ps;
     char buffer[100];
     for (ir=0; ir<nr; ir++)
     {
@@ -1034,7 +1034,7 @@ void CCP_PolygonPlatformView::OnLButtonDown(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-    CP_Point ps, pg;
+    CP_Point2 ps, pg;
     ps.m_x = point.x;
     ps.m_y = point.y;
     CRect r;
@@ -1076,7 +1076,7 @@ void CCP_PolygonPlatformView::OnLButtonDown(UINT nFlags, CPoint point)
     CP_Polygon* pn1;
     VT_IntArray* pSet0;
     VT_IntArray* pSet1;
-    CP_Point p0, p1;
+    CP_Point2 p0, p1;
     switch(pDoc->m_flagSelectType)
     {
     case 1: // 点。
@@ -1242,7 +1242,7 @@ void CCP_PolygonPlatformView::OnLButtonUp(UINT nFlags, CPoint point)
         return;
     if (!pDoc->m_flagMouseDown)
         return;
-    CP_Point ps, pg;
+    CP_Point2 ps, pg;
     ps.m_x = point.x;
     ps.m_y = point.y;
     CRect r;
@@ -1307,7 +1307,7 @@ void CCP_PolygonPlatformView::OnMouseMove(UINT nFlags, CPoint point)
         return;
     if (!pDoc->m_flagMouseDown)
         return;
-    CP_Point ps, pg;
+    CP_Point2 ps, pg;
     ps.m_x = point.x;
     ps.m_y = point.y;
     CRect r;

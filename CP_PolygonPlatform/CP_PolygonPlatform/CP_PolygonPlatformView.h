@@ -84,36 +84,36 @@ public:
 };
 
 extern void gb_drawLoop(CDC* pDC, CP_Loop& p, 
-                 double scale, CP_Point translation, int screenX, int screenY, 
+                 double scale, CP_Point2 translation, int screenX, int screenY, 
                  int r, int g, int b, int size);
 extern void gb_drawPointArrayLine(CDC* pDC, VT_PointArray& pa,
-                               double scale, CP_Point translation, int screenX, int screenY,
+                               double scale, CP_Point2 translation, int screenX, int screenY,
                                int r, int g, int b, int size);
 extern void gb_drawPointArrayPoint(CDC* pDC, VT_PointArray& pa,
-                               double scale, CP_Point translation, int screenX, int screenY,
+                               double scale, CP_Point2 translation, int screenX, int screenY,
                                int r, int g, int b, int size);
-extern void gb_drawPointGlobal(CDC* pDC, CP_Point pointGlobal,
-                               double scale, CP_Point translation, int screenX, int screenY,
+extern void gb_drawPointGlobal(CDC* pDC, CP_Point2 pointGlobal,
+                               double scale, CP_Point2 translation, int screenX, int screenY,
                                int r, int g, int b, int size);
 extern void gb_drawPointScreen(CDC* pDC, int x, int y,
                                int r, int g, int b, int size);
 extern void gb_drawPolygonLoop(CDC* pDC, CP_Polygon& p,
-                        double scale, CP_Point translation, int screenX, int screenY,
+                        double scale, CP_Point2 translation, int screenX, int screenY,
                         int outR, int outG, int outB, 
                         int inR,  int inG,  int inB, 
                         int size);
 extern void gb_drawPolygonPoint(CDC* pDC, CP_Polygon& p,
-                                double scale, CP_Point translation, int screenX, int screenY,
+                                double scale, CP_Point2 translation, int screenX, int screenY,
                                 int r, int g, int b, int size);
 extern void gb_drawPolygonPointID(CDC* pDC, CP_Polygon& p,
-                                double scale, CP_Point translation, int screenX, int screenY,
+                                double scale, CP_Point2 translation, int screenX, int screenY,
                                 int r, int g, int b);
 extern void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
-        double scale, CP_Point translation, int screenX, int screenY,
+        double scale, CP_Point2 translation, int screenX, int screenY,
         int r, int g, int b, int size);
 
 extern void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree,
-        double scale, CP_Point translation, int screenX, int screenY,
+        double scale, CP_Point2 translation, int screenX, int screenY,
         int r, int g, int b, int size);
 
 #ifndef _DEBUG

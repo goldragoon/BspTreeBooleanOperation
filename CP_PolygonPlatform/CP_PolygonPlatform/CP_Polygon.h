@@ -5,9 +5,11 @@
 #include <vector>
 using namespace std;
 
+// Math
 #define DOUBLE_PI           6.28318530717958647692
 #define PI                            3.14159265358979323846
 #define HALF_PI                1.57079632679489661923
+bool compare_float(double x, double y, double epsilon = 1e-4);
 
 class CP_Vec2 {
 public:
@@ -117,6 +119,11 @@ public:
 		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
 	}
 	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
+
+	bool isParallel(const CP_Line2 &_line) const {
+		return compare_float(a * _line.b - b * _line.a, 0);
+	}
+	//bool isCoincide(const CP_Line2& _line) const {}
 };
 
 class CP_Point2 {
@@ -250,7 +257,7 @@ public:
 	~CP_Partition() {}
 
 	/*
-	* \brief 벡터를 무한한 직선으로 생각하여, 두 개의 벡터 간의 intersection point를 구한다.
+	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
 	*/
 	CP_Point2 intersection(const CP_Partition* _partition, 
 		CP_Vec2 &_t_vec, CP_Vec2 &_p_vec,
@@ -430,4 +437,3 @@ extern void releaseMemory();
 #define LINE_POS 1
 #define LINE_NEG 2
 
-bool compare_float(double x, double y, double epsilon);

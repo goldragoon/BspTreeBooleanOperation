@@ -432,12 +432,11 @@ bool gb_removeLoop(CP_Polygon& pn, int idRegion, int idLoop)
         v = pn.m_regionArray[idRegion].m_loopArray[idLoop].m_pointIDArray[iLv];
         pn.m_pointArray.erase(pn.m_pointArray.begin( )+v);
         gb_subtractOneAboveID(pn, v);
-    } // for(iLv)써監
+    }
     pn.m_regionArray[idRegion].m_loopArray.erase(
         pn.m_regionArray[idRegion].m_loopArray.begin( )+idLoop);
     return true;
-} // 변鑒gb_removeLoop써監
-
+}
 bool gb_removePoint(CP_Polygon& pn, int id)
 {
     int ir, iL, iLv, nLv;
@@ -445,15 +444,14 @@ bool gb_removePoint(CP_Polygon& pn, int id)
     if (!rf)
         return false;
     nLv = pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.size( );
-    if (nLv<4) // 뇜憐몸뻔
+    if (nLv<4)
         return (gb_removeLoop(pn, ir, iL));
     pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.erase(
         pn.m_regionArray[ir].m_loopArray[iL].m_pointIDArray.begin( )+iLv);
     pn.m_pointArray.erase(pn.m_pointArray.begin( )+id);
     gb_subtractOneAboveID(pn, id);
     return true;
-} // 변鑒gb_removePoint써監
-
+}
 bool gb_removeRegion(CP_Polygon& pn, int idRegion)
 {
     int nr, nL, nLv, iL, iLv, v;
@@ -472,11 +470,11 @@ bool gb_removeRegion(CP_Polygon& pn, int idRegion)
             v = pn.m_regionArray[idRegion].m_loopArray[iL].m_pointIDArray[iLv];
             pn.m_pointArray.erase(pn.m_pointArray.begin( )+v);
             gb_subtractOneAboveID(pn, v);
-        } // for(iLv)써監
-    } // for(iL)써監
+        }
+    }
     pn.m_regionArray.erase(pn.m_regionArray.begin( )+idRegion);
     return true;
-} // 변鑒gb_removeRegion써監
+}
 
 void gb_subtractOneAboveID(CP_Polygon& pn, int id)
 {
@@ -497,8 +495,6 @@ void gb_subtractOneAboveID(CP_Polygon& pn, int id)
     }
 }
 
-//my code
-//북랬昑쇱꿴
 bool gb_checkPolygon(CP_Polygon& pn)
 {
 	//쇱꿴데몸혐堵
@@ -531,7 +527,6 @@ bool gb_checkPolygon(CP_Polygon& pn)
 
 	return true;
 }
-
 bool gb_checkRegion(CP_Region& rn)
 {
 	//털뙤뻔돨菱슥뵨렘蕨
@@ -575,7 +570,6 @@ bool gb_checkRegion(CP_Region& rn)
 
 	return true;
 }
-
 bool gb_checkLoopSelfIntersection(CP_Loop& ln)
 {
 	int np = ln.m_pointIDArray.size();
@@ -1412,7 +1406,6 @@ void gb_partitionBspt(
 
 	// if T is 'not cell(not leaf node)'
 	CP_Point2 cross_point;
-	CP_Partition *partitionPush = NULL;
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
 	CP_Point2 pLBegin, pLEnd, pRBegin, pREnd;
@@ -1427,14 +1420,12 @@ void gb_partitionBspt(
 	case P_T_ON_POS:
 		B_inLeft = T->leftChild;
 		B_inRight = T->rightChild;
-		partitionPush = T->partition;
-		parent->pos_coincident.push_back(partitionPush);
+		parent->pos_coincident.push_back(T->partition);
 		return;
 	case P_T_ON_NEG:
 		B_inLeft = T->rightChild;
 		B_inRight = T->leftChild;
-		partitionPush = T->partition;
-		parent->neg_coincident.push_back(partitionPush);
+		parent->neg_coincident.push_back(T->partition);
 		return;
 	case P_T_POS_NEG:
 		B_inRight = new CP_BSPNode();
@@ -1797,7 +1788,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	if(t_line.isParallel(p_line)){
 
 		// line equation의 c term 비교?
-		if(//(ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
+		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
 			(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
 		{
 			// (problematic!!!!!!!!!!!!!!!!!!) not catching!!!!!!!!!!!!!!!!

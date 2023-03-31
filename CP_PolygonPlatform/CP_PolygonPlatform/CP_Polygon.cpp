@@ -1605,21 +1605,14 @@ char gb_coincidentPos(CP_Partition *p, CP_Point2 &point){
 	}
 	else{
 		double dx1, dy1, dx2, dy2;
-		dx1 = point.m_x - begin.m_x;
-		dy1 = point.m_y - begin.m_y;
-		if(dx1 < 0) dx1 *= -1;
-		if(dy1 < 0) dy1 *= -1;
+		dx1 = std::abs(point.m_x - begin.m_x);
+		dy1 = std::abs(point.m_y - begin.m_y);
 
-		dx2 = point.m_x - end.m_x;
-		dy2 = point.m_y - end.m_y;
-		if(dx2 < 0) dx2 *= -1;
-		if(dy2 < 0) dy2 *= -1;
+		dx2 = std::abs(point.m_x - end.m_x);
+		dy2 = std::abs(point.m_y - end.m_y);
 
-		if(dx1 + dy1 < dx2 + dy2){
-			return LINE_NEG;
-		}
-		else 
-			return LINE_POS;
+		if(dx1 + dy1 < dx2 + dy2) return LINE_NEG;
+		else return LINE_POS;
 	}
 }
 

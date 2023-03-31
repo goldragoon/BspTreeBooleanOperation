@@ -1120,9 +1120,9 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	if(vp.size() > 0) // Q : 이 조건이 H assign 하지 전으로 들어가야 하지 않나?
 		tree->pos_coincident.push_back(H); // 현재 노드의 hyperplane (이게 partitionLine push_back 하기 전에 들어가면 왜 문제가 되나?)
 
-	// 현재 sub tree(노드)에 남아있는 모든 파티션들을 H에 classification 하고, H로 잘라준다.
+	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
 	for(const auto &p : vp){
-		char pos = getPatitionPos(p, H);
+		char pos = getPartitionPos(p, H);
 		switch(pos){
 		case POS_LEFT:
 			F_left.push_back(p);
@@ -1190,7 +1190,7 @@ void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left,
 	}
 }
 
-char getPatitionPos(const CP_Partition* const partition, const CP_Partition* const H) {
+char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H) {
 	double begin_pos, end_pos;
 
 	CP_Vec2 H_vector = H->end - H->begin;
@@ -1214,7 +1214,7 @@ char getPatitionPos(const CP_Partition* const partition, const CP_Partition* con
 		if (end_pos < 0)return POS_RIGHT;
 		else return POS_LEFT;
 	}
-	else{
+	else{ // end_pos * begin_pos 
 		if(end_pos < 0 || begin_pos < 0)
 			return POS_RIGHT;
 		else if(end_pos > 0 || begin_pos > 0)
@@ -1790,7 +1790,6 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 
 	if(t_line.isParallel(p_line)){
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
-		
 		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
 			(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
 		{
@@ -1802,7 +1801,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		else{  
 			//not intersect (parallel)
 			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
-			if(isleft > 0){
+			if(isleft > 0) {
 				//P is to the left of T
 				partitionRBegin = partition->end;
 				partitionREnd = partition->begin;

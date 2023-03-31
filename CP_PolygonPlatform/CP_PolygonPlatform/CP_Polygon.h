@@ -365,7 +365,7 @@ extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent
 #define CHILDINFO_RIGHT 2
 
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
-extern char getPatitionPos(const CP_Partition* const partition, const CP_Partition* const H);
+extern char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H);
 
 extern bool gb_treeIsCell(const CP_BSPNode* const node);
 extern void gb_partitionBspt(

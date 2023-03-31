@@ -5,6 +5,8 @@ class CCP_PolygonPlatformView : public CView
 protected:
 	CCP_PolygonPlatformView();
 	DECLARE_DYNCREATE(CCP_PolygonPlatformView)
+public:
+	virtual ~CCP_PolygonPlatformView();
 
 public:
 	CCP_PolygonPlatformDoc* GetDocument() const;
@@ -18,20 +20,13 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-protected:
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
-public:
-	virtual ~CCP_PolygonPlatformView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
-	afx_msg void OnFilePrintPreview();
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
@@ -71,8 +66,6 @@ public:
 	afx_msg void OnViewB();
 	afx_msg void OnUpdateViewPointId(CCmdUI *pCmdUI);
 	afx_msg void OnViewPointId();
-	afx_msg void OnViewTFace();
-	afx_msg void OnUpdateViewTFace(CCmdUI *pCmdUI);
 	afx_msg void OnCheck();
 	afx_msg void OnPolygonUnion();
 	afx_msg void OnUpdateViewResult(CCmdUI *pCmdUI);

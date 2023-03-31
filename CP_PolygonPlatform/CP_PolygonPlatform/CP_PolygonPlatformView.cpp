@@ -16,9 +16,6 @@
 IMPLEMENT_DYNCREATE(CCP_PolygonPlatformView, CView)
 
 BEGIN_MESSAGE_MAP(CCP_PolygonPlatformView, CView)
-	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CCP_PolygonPlatformView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 	ON_UPDATE_COMMAND_UI(ID_COMBO_AorB, &CCP_PolygonPlatformView::OnUpdateComboAorb)
@@ -57,9 +54,12 @@ BEGIN_MESSAGE_MAP(CCP_PolygonPlatformView, CView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_POINT_ID, &CCP_PolygonPlatformView::OnUpdateViewPointId)
 	ON_COMMAND(ID_VIEW_POINT_ID, &CCP_PolygonPlatformView::OnViewPointId)
 	ON_COMMAND(ID_CHECK, &CCP_PolygonPlatformView::OnCheck)
-	ON_COMMAND(ID_POLYGON_UNION, &CCP_PolygonPlatformView::OnPolygonUnion)
+	
 	ON_UPDATE_COMMAND_UI(ID_VIEW_RESULT, &CCP_PolygonPlatformView::OnUpdateViewResult)
 	ON_COMMAND(ID_VIEW_RESULT, &CCP_PolygonPlatformView::OnViewResult)
+
+    // Boolean Operation Button 
+    ON_COMMAND(ID_POLYGON_UNION, &CCP_PolygonPlatformView::OnPolygonUnion)
 	ON_COMMAND(ID_POLYGON_INTERSECTION, &CCP_PolygonPlatformView::OnPolygonIntersection)
 	ON_COMMAND(ID_POLYGON_A_B, &CCP_PolygonPlatformView::OnPolygonAB)
 	ON_COMMAND(ID_POLYGON_B_A, &CCP_PolygonPlatformView::OnPolygonBA)
@@ -72,7 +72,6 @@ CCP_PolygonPlatformView::CCP_PolygonPlatformView()
 	m_mergeTime = 0;
 	m_generateEdgeTime = 0;
 }
-
 CCP_PolygonPlatformView::~CCP_PolygonPlatformView(){}
 
 BOOL CCP_PolygonPlatformView::PreCreateWindow(CREATESTRUCT& cs)
@@ -280,16 +279,6 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
     pDC->TextOutA(rect.right - 250, rect.top + 70, textout.GetString());
 }
 
-void CCP_PolygonPlatformView::OnFilePrintPreview()
-{
-#ifndef SHARED_HANDLERS
-	AFXPrintPreview(this);
-#endif
-}
-
-BOOL CCP_PolygonPlatformView::OnPreparePrinting(CPrintInfo* pInfo){return DoPreparePrinting(pInfo);}
-void CCP_PolygonPlatformView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/){}
-void CCP_PolygonPlatformView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/){}
 void CCP_PolygonPlatformView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
 #ifndef SHARED_HANDLERS

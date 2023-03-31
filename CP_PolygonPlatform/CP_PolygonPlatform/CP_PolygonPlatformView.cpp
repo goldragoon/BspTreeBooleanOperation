@@ -632,8 +632,8 @@ void CCP_PolygonPlatformView::OnComboAorb()
     CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
     if (pbox==NULL)
         return;
-    pbox->AddItem("Polygon A");
-    pbox->AddItem("Polygon B");
+    //pbox->AddItem("Polygon A");
+    //pbox->AddItem("Polygon B");
     int i = pbox->GetCurSel( );
     pbox->SelectItem(i);
     if (i==0)

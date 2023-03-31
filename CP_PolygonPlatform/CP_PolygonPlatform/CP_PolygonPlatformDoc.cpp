@@ -1,20 +1,5 @@
-﻿// 侶뙈 MFC 刻절都덜쯤蘿刻흔부賈痰 MFC Microsoft Office Fluent 痰빵썹충 
-// (“Fluent UI”)。맡刻절쏭묩꽝옘，
-// 痰鹿껸념《Microsoft 샘뇟잚꽝옘》뵨 
-// MFC C++ 욋흡숭踞맒돨宮밑든綾匡도。
-// 릿齡、賈痰샀롸랙 Fluent UI 돨冀옵係운角데뗌瓊묩돨。
-// 흼狼죄썩唐밑 Fluent UI 冀옵셕뺍돨圈玖斤口，헝련狂  
-// http://go.microsoft.com/fwlink/?LinkId=238214。
-//
-// 경홈杰唐(C) Microsoft Corporation
-// 괏즛杰唐홈적。
+﻿#include "stdafx.h"
 
-// CP_PolygonPlatformDoc.cpp : CCP_PolygonPlatformDoc 잚돨茄君
-//
-
-#include "stdafx.h"
-// SHARED_HANDLERS 옵鹿瞳茄君渡응、鍵쫠暠뵨鎧乞朞포얌깨돨
-// ATL 淃커櫓쏵契땍屢，깻豚冀宅맡淃커묾權匡도덜쯤。
 #ifndef SHARED_HANDLERS
 #include "CP_PolygonPlatform.h"
 #endif
@@ -37,25 +22,13 @@
 #define new DEBUG_NEW
 #endif
 
-// CCP_PolygonPlatformDoc
-
 IMPLEMENT_DYNCREATE(CCP_PolygonPlatformDoc, CDocument)
-
 BEGIN_MESSAGE_MAP(CCP_PolygonPlatformDoc, CDocument)
 END_MESSAGE_MAP()
 
+CCP_PolygonPlatformDoc::CCP_PolygonPlatformDoc(){mb_initData( );}
 
-// CCP_PolygonPlatformDoc 뭐芚/驕뭐
-
-CCP_PolygonPlatformDoc::CCP_PolygonPlatformDoc()
-{
-	// TODO: 瞳늪警속寧늴昑뭐芚덜쯤
-	mb_initData( );
-}
-
-CCP_PolygonPlatformDoc::~CCP_PolygonPlatformDoc()
-{
-}
+CCP_PolygonPlatformDoc::~CCP_PolygonPlatformDoc(){}
 
 void CCP_PolygonPlatformDoc::mb_initData( )
 {
@@ -85,8 +58,7 @@ void CCP_PolygonPlatformDoc::mb_initData( )
 
 	m_showBsptree = false;
 	m_bspTree = NULL;
-} // 잚CCP_PolygonPlatformDoc돨냥逃변鑒mb_initData써監
-
+}
 BOOL CCP_PolygonPlatformDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
@@ -107,17 +79,12 @@ BOOL CCP_PolygonPlatformDoc::OnNewDocument()
     CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 삿혤긍서움얌깨
     if (pbox==NULL)
         return TRUE;
-    pbox->AddItem("뜩긋近A");
-    pbox->AddItem("뜩긋近B");
+    pbox->AddItem("Polygon A");
+    pbox->AddItem("Polygon B");
     pbox->SelectItem(0);
 
 	return TRUE;
 }
-
-
-
-
-// CCP_PolygonPlatformDoc 埼죗뺏
 
 void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 {
@@ -125,9 +92,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 
 	if (ar.IsStoring())
 	{
-		// TODO: 瞳늪警속닸뇨덜쯤
-		ar.WriteString("# Polygon Data(啖에베: 셕炬샙릅燎섯부芚謹(헌빽댕欺, 2014헬))\r\n");
-        ar.WriteString("# 匡숭눼쉔珂쇌: ");
+		ar.WriteString("# Polygon Data\r\n");
         SYSTEMTIME st;
         CString strDate,strTime;
         GetLocalTime(&st);
@@ -148,7 +113,6 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
 	}
 	else
 	{
-		// TODO: 瞳늪警속속潼덜쯤
 		mb_initData( );
         while(ar.ReadString(line))
         {
@@ -163,7 +127,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while써監
+        }
 
 		while(ar.ReadString(line))
         {
@@ -178,7 +142,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while써監
+        }
 
 		while(ar.ReadString(line))
         {
@@ -190,7 +154,7 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while써監
+        }
 
 		while(ar.ReadString(line))
         {
@@ -202,73 +166,73 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
                     break;
                 }
             }
-        } // while써監
+        }
+
 		CString string;
-        CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //삿혤Ribbon bar 얌깨
+        CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
         if (robbon_bar==NULL)
             return;
-        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // 삿혤긍서움얌깨
+        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE);
         if (slider==NULL)
             return;
         string.Format("%g", m_tolerance);
         slider->SetEditText(string);
-        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 삿혤긍서움얌깨
+        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
         if (pbox==NULL)
             return;
-        pbox->AddItem("뜩긋近A");
-        pbox->AddItem("뜩긋近B");
+        pbox->AddItem("Polygon A");
+        pbox->AddItem("Polygon B");
         pbox->SelectItem(0);
 	}
 }
 
-// CCP_PolygonPlatformDoc 츱즈
 void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
 {
     CString line;
     unsigned int i, j, k;
     if (ar.IsStoring())
     {	// storing code
-        line.Format("Pointsize %d\r\n", p.m_pointArray.size( ));
+        line.Format("Pointsize %d\r\n", p.m_pointArray.size());
         ar.WriteString(line.GetString());
-        for (i=0; i<p.m_pointArray.size( ); i++)
+        for (i = 0; i < p.m_pointArray.size(); i++)
         {
             line.Format("%g %g\r\n", p.m_pointArray[i].m_x, p.m_pointArray[i].m_y);
             ar.WriteString(line.GetString());
-        } // for써監
-        line.Format("\r\nRegionsize %d\r\n", p.m_regionArray.size( ));
-        ar.WriteString(line.GetString()); 
-		for (i=0; i<p.m_regionArray.size( ); i++)
+        }
+        line.Format("\r\nRegionsize %d\r\n", p.m_regionArray.size());
+        ar.WriteString(line.GetString());
+        for (i = 0; i < p.m_regionArray.size(); i++)
         {
             line.Format("Region %d\r\n", i);
             ar.WriteString(line.GetString());
-            line.Format("Loopsize %d\r\n", p.m_regionArray[i].m_loopArray.size( ));
+            line.Format("Loopsize %d\r\n", p.m_regionArray[i].m_loopArray.size());
             ar.WriteString(line.GetString());
-            for (j=0; j<p.m_regionArray[i].m_loopArray.size( ); j++)
+            for (j = 0; j < p.m_regionArray[i].m_loopArray.size(); j++)
             {
                 line.Format("Loop %d\r\n", j);
                 ar.WriteString(line.GetString());
-                line.Format("PointIDsize %d\r\n", p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( ));
+                line.Format("PointIDsize %d\r\n", p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size());
                 ar.WriteString(line.GetString());
-				for (k=0; k<p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( ); k++)
+                for (k = 0; k < p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size(); k++)
                 {
                     line.Format("%d ", p.m_regionArray[i].m_loopArray[j].m_pointIDArray[k]);
                     ar.WriteString(line.GetString());
-                } // for써監
-                if (p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( )>0)
+                }
+                if (p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size() > 0)
                 {
                     line.Format("\r\n");
                     ar.WriteString(line.GetString());
                 }
-            } // for써監
-        } // for써監
+            }
+        }
         line.Format("\r\n");
         ar.WriteString(line.GetString());
     }
-	else
+    else
     {	// loading code
-        p.m_pointArray.clear( );
-        p.m_regionArray.clear( );
-        while(ar.ReadString(line))
+        p.m_pointArray.clear();
+        p.m_regionArray.clear();
+        while (ar.ReadString(line))
         {
             if (!line.IsEmpty())
             {
@@ -281,18 +245,18 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                     break;
                 }
             }
-        } // while써監
-		if (i==0)
+        }
+        if (i == 0)
             return;
         p.m_pointArray.resize(i);
-        for (i=0; i<p.m_pointArray.size( ); i++)
+        for (i = 0; i < p.m_pointArray.size(); i++)
         {
             ar.ReadString(line);
             stringstream ss(line.GetString());
             ss >> p.m_pointArray[i].m_x;
             ss >> p.m_pointArray[i].m_y;
-        } // for써監
-		while(ar.ReadString(line))
+        }
+        while (ar.ReadString(line))
         {
             if (!line.IsEmpty())
             {
@@ -305,13 +269,13 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                     break;
                 }
             }
-        } // while써監
-		if (i==0)
+        }
+        if (i == 0)
             return;
         p.m_regionArray.resize(i);
-        for (i=0; i<p.m_regionArray.size( ); i++)
+        for (i = 0; i < p.m_regionArray.size(); i++)
         {
-            p.m_regionArray[i].m_polygon = & p;
+            p.m_regionArray[i].m_polygon = &p;
             p.m_regionArray[i].m_regionIDinPolygon = i;
             ar.ReadString(line);
             ar.ReadString(line);
@@ -320,9 +284,9 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
             ss >> temp;
             ss >> j;
             p.m_regionArray[i].m_loopArray.resize(j);
-			for (j=0; j<p.m_regionArray[i].m_loopArray.size( ); j++)
+            for (j = 0; j < p.m_regionArray[i].m_loopArray.size(); j++)
             {
-                p.m_regionArray[i].m_loopArray[j].m_polygon = & p;
+                p.m_regionArray[i].m_loopArray[j].m_polygon = &p;
                 p.m_regionArray[i].m_loopArray[j].m_regionIDinPolygon = i;
                 p.m_regionArray[i].m_loopArray[j].m_loopIDinRegion = j;
                 ar.ReadString(line);
@@ -332,19 +296,19 @@ void gb_SerializePolygon(CArchive& ar, CP_Polygon& p)
                 ss >> temp;
                 ss >> k;
                 p.m_regionArray[i].m_loopArray[j].m_pointIDArray.resize(k);
-				if (k>0)
+                if (k > 0)
                 {
                     ar.ReadString(line);
                     stringstream ss(line.GetString());
-                    for (k=0; k<p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size( ); k++)
+                    for (k = 0; k < p.m_regionArray[i].m_loopArray[j].m_pointIDArray.size(); k++)
                     {
                         ss >> p.m_regionArray[i].m_loopArray[j].m_pointIDArray[k];
-                    } // for써監
-                } // if써監
-            } // for써監
-        } // for써監
-    } // 棍鍋if/else써監
-} // 변鑒gb_SerializePolygon써監
+                    }
+                }
+            }
+        }
+    }
+}
 
 #ifdef SHARED_HANDLERS
 
@@ -398,9 +362,7 @@ void CCP_PolygonPlatformDoc::SetSearchContent(const CString& value)
 	}
 }
 
-#endif // SHARED_HANDLERS
-
-// CCP_PolygonPlatformDoc 閭뙤
+#endif 
 
 #ifdef _DEBUG
 void CCP_PolygonPlatformDoc::AssertValid() const
@@ -413,6 +375,3 @@ void CCP_PolygonPlatformDoc::Dump(CDumpContext& dc) const
 	CDocument::Dump(dc);
 }
 #endif //_DEBUG
-
-
-// CCP_PolygonPlatformDoc 츱즈

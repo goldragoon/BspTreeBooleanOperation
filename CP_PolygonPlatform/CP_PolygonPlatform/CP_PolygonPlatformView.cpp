@@ -599,10 +599,10 @@ void CCP_PolygonPlatformView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CCP_PolygonPlatformView::OnUpdateComboAorb(CCmdUI *pCmdUI)
 {
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
-    if (robbon_bar==NULL)
+    CMFCRibbonBar* ribbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
+    if (ribbon_bar==NULL)
         return;
-    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 获取编辑框句柄
+    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)ribbon_bar->FindByID(ID_COMBO_AorB); // 获取编辑框句柄
     if (pbox==NULL)
         return;
     pbox->AddItem("Polygon A");
@@ -616,10 +616,10 @@ void CCP_PolygonPlatformView::OnComboAorb()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
-    if (robbon_bar==NULL)
+    CMFCRibbonBar* ribbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
+    if (ribbon_bar==NULL)
         return;
-    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
+    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)ribbon_bar->FindByID(ID_COMBO_AorB);
     if (pbox==NULL)
         return;
     pbox->AddItem("Polygon A");
@@ -641,10 +641,10 @@ void CCP_PolygonPlatformView::OnEdgeNumber()
 	if (!pDoc)
 		return;
     CString string;
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
-    if (robbon_bar==NULL)
+    CMFCRibbonBar* ribbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
+    if (ribbon_bar==NULL)
         return;
-    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_EDGE_NUMBER);
+    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)ribbon_bar->FindByID(ID_EDGE_NUMBER);
     if (slider==NULL)
         return;
     string= slider->GetEditText(); // 获取数字
@@ -666,10 +666,10 @@ void CCP_PolygonPlatformView::OnTolerance()
 	if (!pDoc)
 		return;
     CString string;
-    CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //获取Ribbon bar 句柄
-    if (robbon_bar==NULL)
+    CMFCRibbonBar* ribbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar(); //获取Ribbon bar 句柄
+    if (ribbon_bar==NULL)
         return;
-    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // 获取编辑框句柄
+    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)ribbon_bar->FindByID(ID_TOLERANCE); // 获取编辑框句柄
     if (slider==NULL)
         return;
     string= slider->GetEditText(); // 获取数字

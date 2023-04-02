@@ -10,7 +10,6 @@
 #include <afxpanecontainermanager.h>
 #endif
 
-#include <propkey.h>
 #include <sstream>
 #include <string>
 
@@ -28,27 +27,32 @@ CCP_PolygonPlatformDoc::~CCP_PolygonPlatformDoc(){}
 
 void CCP_PolygonPlatformDoc::mb_initData( )
 {
+    // Clearing Polygon (BSP)
     m_a.mb_clear( );
     m_b.mb_clear( );
-    m_tolerance = 1e-6; // 貫零휭뀌
-    m_scale = 1.0; // 鍵렴궐절
-    m_translation.m_x = 0.0; // 麟깃틱盧좆
-    m_translation.m_y = 0.0; // 麟깃틱盧좆
-    m_result.mb_clear( );
+    m_result.mb_clear();
+
+    m_tolerance = 1e-6;
+    m_scale = 1.0;
+    m_translation.m_x = 0.0;
+    m_translation.m_y = 0.0;
+    m_edgeNumber = 3; // Number of edges in the polygon
+
     m_flagBuildA = true; // true: A; false B。
     m_flagSelect = false; 
     m_flagSelectType = 0; 
     m_flagSelectPolygon = 0;
     m_flagSelectRegion = 0;
-    m_flagSelectID = 0; // 땍貫歌혤돨코휭
-	m_flagShowSelect = false; // true:怜鞫刻朞嶝섞。
-    m_edgeNumber = 3; // 攣뜩긋近돨긋鑒。
-    m_flagMouseDown = false; // true: 객苟柑깃璘숩
+    m_flagSelectID = 0;
+	m_flagShowSelect = false;
+    m_flagMouseDown = false;
     m_flagAdd = 0;
     m_flagShowA = true;
     m_flagShowB = true;
     m_flagShowPointID = false;
     m_flagMoveSame = false;
+
+    // Clearing Selection Vector/Array
     m_flagSelectIDSetInA.clear( );
     m_flagSelectIDSetInB.clear( );
 
@@ -62,17 +66,21 @@ BOOL CCP_PolygonPlatformDoc::OnNewDocument()
 
 	mb_initData( );
 	CString string;
-    auto window = (CFrameWndEx*)(AfxGetApp()->GetMainWnd());
 
-    CMFCRibbonBar* robbon_bar = window->GetRibbonBar(); //삿혤Ribbon bar 얌깨
-    if (robbon_bar==NULL)
+    auto window = (CFrameWndEx*)(AfxGetApp()->GetMainWnd());
+    if (window == NULL) return TRUE;
+
+    CMFCRibbonBar* ribbon_bar = window->GetRibbonBar();
+    if (ribbon_bar==NULL)
         return TRUE;
-    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE); // 삿혤긍서움얌깨
+
+    CMFCRibbonEdit* slider = (CMFCRibbonEdit*)ribbon_bar->FindByID(ID_TOLERANCE);
     if (slider==NULL)
         return TRUE;
     string.Format("%g", m_tolerance);
     slider->SetEditText(string);
-    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB); // 삿혤긍서움얌깨
+
+    CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)ribbon_bar->FindByID(ID_COMBO_AorB);
     if (pbox==NULL)
         return TRUE;
     pbox->AddItem("Polygon A");
@@ -165,15 +173,15 @@ void CCP_PolygonPlatformDoc::Serialize(CArchive& ar)
         }
 
 		CString string;
-        CMFCRibbonBar* robbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
-        if (robbon_bar==NULL)
+        CMFCRibbonBar* ribbon_bar = ((CFrameWndEx*)AfxGetMainWnd())->GetRibbonBar();
+        if (ribbon_bar==NULL)
             return;
-        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)robbon_bar->FindByID(ID_TOLERANCE);
+        CMFCRibbonEdit* slider = (CMFCRibbonEdit*)ribbon_bar->FindByID(ID_TOLERANCE);
         if (slider==NULL)
             return;
         string.Format("%g", m_tolerance);
         slider->SetEditText(string);
-        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)robbon_bar->FindByID(ID_COMBO_AorB);
+        CMFCRibbonComboBox* pbox = (CMFCRibbonComboBox*)ribbon_bar->FindByID(ID_COMBO_AorB);
         if (pbox==NULL)
             return;
         pbox->AddItem("Polygon A");

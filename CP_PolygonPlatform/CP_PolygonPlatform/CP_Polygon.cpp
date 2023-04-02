@@ -1270,21 +1270,16 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 			mean_xy[0] = vx > 0 ? 1: -1;
 			mean_xy[1] = vy > 0 ? 1: -1;
 
-			int x_or_y = 0;
-
-			if(vx * vx < vy * vy)
-				x_or_y = 1;
+			bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
 			if(x_or_y == 0){
 				pBegin.m_x = pmin * mean_xy[0] + tree->partition->begin.m_x;
 				pEnd.m_x = pmax * mean_xy[0] + tree->partition->begin.m_x;
-				//pBegin.m_y = pmin * mean_xy[0] + tree->partition->begin.m_x;
 				pBegin.m_y = (pBegin.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
 				pEnd.m_y = (pEnd.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
 			}
 			else{
 				pBegin.m_y = pmin * mean_xy[1] + tree->partition->begin.m_y;
 				pEnd.m_y = pmax * mean_xy[1] + tree->partition->begin.m_y;
-				//pBegin.m_y = pmin * mean_xy[0] + tree->partition->begin.m_x;
 				pBegin.m_x = (pBegin.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
 				pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
 			}
@@ -2017,9 +2012,7 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP
 	mean_xy[1] = vy > 0 ? 1: -1;
 
 	// dx, dy 중어느 것이 더 큰지 검사.
-	int x_or_y = 0;
-	if(vx * vx < vy * vy)
-		x_or_y = 1;
+	bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
 
 	double min = DBL_MAX / 2 * -1;
 	double max = DBL_MAX / 2;

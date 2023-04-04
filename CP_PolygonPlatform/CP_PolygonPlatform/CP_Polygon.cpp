@@ -1488,13 +1488,11 @@ void gb_partitionBspt(
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			CP_Partition *right = NULL;
-			CP_Partition *left = NULL;
 			switch(gb_coincidentPos(T->neg_coincident[i], cross_point)){
 			case LINE_IN:			
 			{
-				left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
-				right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
+				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
+				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
@@ -1568,8 +1566,8 @@ void gb_partitionBspt(
 }
 
 char gb_coincidentPos(CP_Partition *partition, CP_Point2 &point){
-	CP_Vec2 begin2point = point - partition->begin;
-	CP_Vec2 end2point = point - partition->end;
+	CP_Vec2 begin2point = point - partition->begin; // vector
+	CP_Vec2 end2point = point - partition->end;     // vector
 
 	if(
 		(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE) 
@@ -1577,7 +1575,7 @@ char gb_coincidentPos(CP_Partition *partition, CP_Point2 &point){
 		|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
 		|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
 	{
-		// point가 partition 위에 있다면...?
+		// point가 partition 위에 있다면...? 근데 왜 이렇게 검사하지..
 		return LINE_IN;
 	}
 	else{
@@ -1595,6 +1593,40 @@ char gb_coincidentPos(CP_Partition *partition, CP_Point2 &point){
 			return LINE_POS;
 		}
 	}
+
+	/*
+	* // Just for Debugging
+	CP_Partition partitionL2(CP_Point2(0,0), CP_Point2(3,3));
+	double d;
+	auto closest = partitionL2.closestPoint(CP_Point2(4,4), d);
+
+	double d2;
+	auto closest2 = partitionL2.closestPoint(CP_Point2(3.000001, 3.00001), d);
+	*/
+	/*
+	* // 위에는 이 조건이랑 좀 다름...
+	CP_Partition partitionL(partitionLBegin, partitionLEnd);
+	if (partitionL.is_point_on(point_intersection)) {
+		crossInpartition_new = true;
+	}
+
+	if (crossInpartition_new != crossInpartition) {
+		printf("partition check is different! (%d, %d)\n", crossInpartition, crossInpartition_new);
+		printf("\t- begin : (%lf, %lf), end : (%lf, %lf)\n",
+			partitionLBegin.m_x, partitionLBegin.m_y,
+			partitionLEnd.m_x, partitionLEnd.m_y
+		);
+		printf("\t- point_intersection : (%lf, %lf)\n",
+			point_intersection.m_x, point_intersection.m_y
+		);
+
+		double dist;
+		auto closest = partitionL.closestPoint(point_intersection, dist);
+		printf("\t- intersection point 2 partition dist : %lf\n", dist);
+
+	}
+	crossInpartition = crossInpartition_new;
+	*/
 }
 
 /*
@@ -1799,64 +1831,22 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			}
 		}
 	}
-	else{
-		// line intersection
-		cross_point = point_intersection;
-		bool crossInpartition = false;
-		bool crossInpartition_new = false;
+	else {
+		// t_line is intersected with p_line(line intersection)
+
+		cross_point = point_intersection; // output variable...
+
 		///////////// Check cross_point is on the line segment (partition) ////////////
 		// 지금 시점에서는 partitionL == partitoinR
 		// crossPoint가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
 		// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
-		if (
-			// check x-coordinate
-			((partitionLEnd.m_y - point_intersection.m_y > TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y > TOLERENCE))
-			|| ((partitionLEnd.m_y - point_intersection.m_y < -TOLERENCE) && (point_intersection.m_y - partitionLBegin.m_y < -TOLERENCE))
-			// check y-coordinate
-			|| ((partitionLEnd.m_x - point_intersection.m_x > TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x > TOLERENCE))
-			|| ((partitionLEnd.m_x - point_intersection.m_x < -TOLERENCE) && (point_intersection.m_x - partitionLBegin.m_x < -TOLERENCE)))
-		{ 
-			//in
-			crossInpartition = true;
-		}
+		CP_Partition* partitionL = new CP_Partition(partitionLBegin, partitionLEnd);
 
-		/*
-		* // Just for Debugging
-		CP_Partition partitionL2(CP_Point2(0,0), CP_Point2(3,3));
-		double d;
-		auto closest = partitionL2.closestPoint(CP_Point2(4,4), d);
-
-		double d2;
-		auto closest2 = partitionL2.closestPoint(CP_Point2(3.000001, 3.00001), d);
-		*/
-		/*
-		* // 위에는 이 조건이랑 좀 다름...
-		CP_Partition partitionL(partitionLBegin, partitionLEnd);
-		if (partitionL.is_point_on(point_intersection)) {
-			crossInpartition_new = true;
-		}
-		
-		if (crossInpartition_new != crossInpartition) {
-			printf("partition check is different! (%d, %d)\n", crossInpartition, crossInpartition_new);
-			printf("\t- begin : (%lf, %lf), end : (%lf, %lf)\n", 
-				partitionLBegin.m_x, partitionLBegin.m_y,
-				partitionLEnd.m_x, partitionLEnd.m_y
-			);
-			printf("\t- point_intersection : (%lf, %lf)\n",
-				point_intersection.m_x, point_intersection.m_y
-			);
-
-			double dist;
-			auto closest = partitionL.closestPoint(point_intersection, dist);
-			printf("\t- intersection point 2 partition dist : %lf\n", dist);
-
-		}
-		crossInpartition = crossInpartition_new;
-		*/
 		///////////// Check cross_point is on the line segment (partition) ////////////
-
 		// partitionL, partitoinR을 알맞게 잘라서 할당해줌.
-		if (crossInpartition) {
+
+		// if crossInPartition
+		if (gb_coincidentPos(partitionL, point_intersection) == LINE_IN) { 
 			if (t_vec.cross_product(p_vec) > 0) {
 				partitionLBegin = point_intersection;
 				partitionREnd = point_intersection;
@@ -1875,17 +1865,13 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			double a, b;
 			if (std::abs(pa) > std::abs(pb)) { 
 				//y방향
-				a = partitionLBegin.m_y - point_intersection.m_y;
-				b = partitionLEnd.m_y - point_intersection.m_y;
-				if (a < 0) a *= -1;
-				if (b < 0) b *= -1;
+				a = std::abs(partitionLBegin.m_y - point_intersection.m_y);
+				b = std::abs(partitionLEnd.m_y - point_intersection.m_y);
 			}
 			else {
 				//x방향
-				a = partitionLBegin.m_x - point_intersection.m_x;
-				b = partitionLEnd.m_x - point_intersection.m_x;
-				if (a < 0) a *= -1;
-				if (b < 0) b *= -1;
+				a = std::abs(partitionLBegin.m_x - point_intersection.m_x);
+				b = std::abs(partitionLEnd.m_x - point_intersection.m_x);
 			}
 
 			double dirP = a - b;
@@ -1895,6 +1881,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			// Calculate the t direction
 			if (std::abs(ta) > std::abs(tb)) {
 				//y방향
+				//A node의 현재 binary partition(A->pos_coincident[0]) H랑 비교하는건가?
 				a = std::abs(A->pos_coincident[0]->begin.m_y - point_intersection.m_y);
 				b = std::abs(A->pos_coincident[0]->end.m_y - point_intersection.m_y);
 			}
@@ -2642,8 +2629,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 		pb =partition->begin.m_x - partition->end.m_x;
 		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
 
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta <= TOLERENCE){//틱契 君瞳솝땍路북샀諒틱契瞳Tnode-partition璘긋떼옵鹿
-			// node-partition蕨좆（-tb,ta）
+		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta <= TOLERENCE){
 			double v1 = partition->begin.m_x - t_bp->begin.m_x;
 			double v2 = partition->begin.m_y - t_bp->begin.m_y;
 			if((-tb) * v2 - ta * v1 >= 0){

@@ -473,7 +473,6 @@ public:
 	void _complement(CP_BSPNode* node) {
 		if (node->isCell()) {
 			node->side = (node->side == Sideness::INSIDE) ? Sideness::OUTSIDE : Sideness::INSIDE;
-			//node->side = 3 - node->side;
 			return;
 		}
 		_complement(node->leftChild);
@@ -511,7 +510,7 @@ extern void gb_partitionBspt(
 // time-consuming is O(n)
 extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, 
 	CP_Point2& cross_point, 
-	CP_Partition* partitionL, CP_Partition* partitionR);
+	CP_Partition& partitionL, CP_Partition& partitionR);
 
 // [Visualization & Output Related]
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);

@@ -267,7 +267,7 @@ public:
 	/*
 	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
 	*/
-	CP_Point2 intersection(const CP_Partition* _partition, 
+	CP_Point2 intersection(const CP_Partition& _partition, 
 		CP_Vec2 &_t_vec, CP_Vec2 &_p_vec,
 		CP_Line2 &_t_line, CP_Line2 &_p_line
 	) const {
@@ -281,8 +281,8 @@ public:
 		CP_Line2 t_line(this->begin.as_vec(), this->end.as_vec());
 		CP_Vec3 t_line_coeff = t_line.as_vec();
 		// 2. (_partition) object
-		CP_Vec2 p_vec = _partition->end - _partition->begin;
-		CP_Line2 p_line(_partition->begin.as_vec(), _partition->end.as_vec());
+		CP_Vec2 p_vec = _partition.end - _partition.begin;
+		CP_Line2 p_line(_partition.begin.as_vec(), _partition.end.as_vec());
 		CP_Vec3 p_line_coeff = p_line.as_vec();
 
 		CP_Vec3 cp = t_line_coeff.cross_product(p_line_coeff);
@@ -484,7 +484,7 @@ public:
 
 // [BSP Build Merge Both]
 // - partition이 T의 내부에 있는지 검사한다.
-extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2& begin, CP_Point2& end, const CP_Point2& cross, double& pmin, double& pmax, double& pcross);
+extern bool gb_p_in_region(CP_BSPNode* T, const CP_Partition& partition, CP_Point2& begin, CP_Point2& end, const CP_Point2& cross, double& pmin, double& pmax, double& pcross);
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 
 // [BSP Build Related]
@@ -492,8 +492,8 @@ extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent
 #define CHILDINFO_NO 0
 #define CHILDINFO_LEFT 1
 #define CHILDINFO_RIGHT 2
-extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
-extern char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H);
+extern void gb_getCrossPartition(const CP_Partition& T, const CP_Partition& P, CP_Partition &left, CP_Partition &right);
+extern char getPartitionPos(const CP_Partition& partition, const CP_Partition& H);
 
 // [BSP Merge Related]
 extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);

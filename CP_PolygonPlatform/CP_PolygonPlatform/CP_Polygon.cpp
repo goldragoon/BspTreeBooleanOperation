@@ -1094,7 +1094,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 		mean_xy[1] = dy > 0 ? 1: -1;
 
 		int x_or_y = 0; // manitude comparison?
-		if(dx * dx < dy * dy)
+		if(abs(dx) < abs(dy))
 			x_or_y = 1;
 
 		if(x_or_y == 0){ // ||dx|| > ||dy||
@@ -1121,8 +1121,8 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 		tree->pos_coincident.push_back(H); // 현재 노드의 hyperplane (이게 partitionLine push_back 하기 전에 들어가면 왜 문제가 되나?)
 
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
-	for(const auto &p : vp){
-		char pos = getPartitionPos(p, H);
+	for(CP_Partition* p : vp){
+		char pos = getPartitionPos(*p, *H);
 		switch(pos){
 		case POS_LEFT:
 			F_left.push_back(p);
@@ -1137,9 +1137,9 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 			F_right.push_back(p);
 			break;
 		case POS_CROSS:
-			CP_Partition *left = NULL;
-			CP_Partition * right = NULL;
-			gb_getCrossPartition(p, H, left, right);
+			CP_Partition *left = new CP_Partition();
+			CP_Partition * right = new CP_Partition();
+			gb_getCrossPartition(*p, *H, *left, *right);
 			F_left.push_back(left);
 			F_right.push_back(right);
 			break;
@@ -1176,40 +1176,41 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 // 이미 확실히 T와 P가 cross되는 것이 보장된 상태임을 가정한다.
 // (outplace) T를 P로 자르고, left, right(내외부)로 파티션을 새로 생성한다.
-void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right){
-	left = new CP_Partition(T);
-	right = new CP_Partition(T);
+void gb_getCrossPartition(const CP_Partition& T, const CP_Partition& P, CP_Partition& left, CP_Partition& right) 
+{
+	left = CP_Partition(T);
+	right = CP_Partition(T);
 
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
-	CP_Point2 point = T->intersection(P, t_vec, p_vec, t_line, p_line);
+	CP_Point2 point = T.intersection(P, t_vec, p_vec, t_line, p_line);
 
 	if (t_vec.cross_product(p_vec) < 0) {
-		left->begin = point;
-		right->end = point;
+		left.begin = point;
+		right.end = point;
 	}
 	else {
-		left->end = point;
-		right->begin = point;
+		left.end = point;
+		right.begin = point;
 	}
 }
 
 char getPartitionPos(
-	const CP_Partition* const partition,   // H를 자르기 위해서 비교해야 되는 binary partitioner.
-	const CP_Partition* const H            // 이미 생성된 BSP tree 노드의 binary partitioner.
+	const CP_Partition &partition,   // H를 자르기 위해서 비교해야 되는 binary partitioner. ~= 'P'
+	const CP_Partition &H            // 이미 생성된 BSP tree 노드의 binary partitioner. : ~= 'T'
 ) {
 	// Naylor Figure 3.1. Check Spatial relationships between two binary partitioners.
 	double begin_pos, end_pos;
 
-	CP_Vec2 H_vector = H->end - H->begin; 
+	CP_Vec2 H_vector = H.end - H.begin; 
 
-	CP_Point2 vp_begin = partition->begin;
-	CP_Point2 vp_end = partition->end;
+	CP_Point2 vp_begin = partition.begin;
+	CP_Point2 vp_end = partition.end;
 
-	CP_Vec2 begin_vector = vp_begin - H->begin;
+	CP_Vec2 begin_vector = vp_begin - H.begin;
 	begin_pos = H_vector.cross_product(begin_vector); // check begin point coincides or...
 
-	CP_Vec2 end_vector = vp_end - H->end;
+	CP_Vec2 end_vector = vp_end - H.end;
 	end_pos = H_vector.cross_product(end_vector); // check end point is coincides or...
 
 	if(compare_float(end_pos, 0)) end_pos = 0;
@@ -1721,16 +1722,16 @@ char gb_t_p_Position3(
 
 // partition 이 T의 내부 영역에 존재하는지 검사한다.
 bool gb_p_in_region(
-	CP_BSPNode* T, CP_Partition* partition, 
+	CP_BSPNode* T, const CP_Partition& partition, 
 	CP_Point2 &begin, CP_Point2& end, 
 	const CP_Point2 &cross, 
 	double &pmin, double &pmax, double &pcross){
-	begin = partition->begin;
-	end = partition->end;
+	begin = partition.begin;
+	end = partition.end;
 
 	// diff
-	double vx = partition->end.m_x - partition->begin.m_x;
-	double vy = partition->end.m_y - partition->begin.m_y;
+	double vx = partition.end.m_x - partition.begin.m_x;
+	double vy = partition.end.m_y - partition.begin.m_y;
 	
 	// 사분면 중 어디로 향하는지 나타냄?
 	double mean_xy[2];
@@ -1773,7 +1774,7 @@ bool gb_p_in_region(
 		if(compare_float(cross_product_tp, 0)){
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..
-			CP_Vec2 v = partition->begin - t_bp->begin;
+			CP_Vec2 v = partition.begin - t_bp->begin;
 			if(t_vec.cross_product(v) >= 0) {
 				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
 				continue;
@@ -1787,8 +1788,8 @@ bool gb_p_in_region(
 		if(cross_product_tp > TOLERENCE)
 		{
 			double currentMin = (x_or_y == 0) ?
-				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
 			if (currentMin >= max) return false;
 			else
@@ -1799,8 +1800,8 @@ bool gb_p_in_region(
 		}
 		else{
 			double currentMax = (x_or_y == 0) ?
-				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
 			if (currentMax <= min) return false;
 			else
@@ -1812,9 +1813,9 @@ bool gb_p_in_region(
 	}
 
 	if(x_or_y == 0)
-		pcross = (cross.m_x - partition->begin.m_x) * mean_xy[x_or_y];
+		pcross = (cross.m_x - partition.begin.m_x) * mean_xy[x_or_y];
 	else if(x_or_y == 1)
-		pcross = (cross.m_y - partition->begin.m_y) * mean_xy[x_or_y];
+		pcross = (cross.m_y - partition.begin.m_y) * mean_xy[x_or_y];
 	pmin = min;
 	pmax = max;
 	return true;	

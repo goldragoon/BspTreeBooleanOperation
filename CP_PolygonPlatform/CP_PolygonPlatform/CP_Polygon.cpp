@@ -1397,26 +1397,27 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 }
 
 void gb_partitionBspt(
-	const CP_BSPNode* const T, // partition할 BSP Node.
-	const CP_Partition* const partition, // BSP를 자를 파티션. 
+	const CP_BSPNode* const T, // partition할 BSP 'T'.
+	const CP_Partition* const partition, // BSP를 자를 파티션 'P'. 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
 	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
+
+	// partition 'P'를 reqursive 하게 잘라나가는 중간 과정의 결과가가 저장되는 곳.
 	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
 ){ 
-	// if T is 'cell(or leaf node)' 
+	// A. if T is 'cell(or leaf node)' 
 	if(T->isCell()){
 		B_inLeft = new CP_BSPNode(T);
 		B_inRight = new CP_BSPNode(T);	
 		return;
 	}
 
-	// if T is 'not cell(not leaf node)'
-	
+	// B. if T is 'not cell(not leaf node)'
 	/*
 	* \brief	cross point는 T->partition, 그리고 partition 을 무한한 직선으로 생각했을 때의 교점.
 	* \details	두 직선이 평행/일치할 경우 cross_point에는 쓰레기 값이 들어있게 됨. (ON_POS, ON_NEG, POS_POS, NEG_NEG).
 	*/ 
-	CP_Point2 cross_point; // P_T_ON_POS, P_T_ON_NEG, P_T_POS_NEG, P_T_POS_NEG 에서는 교차점이 없으므로 쓰레기 값이 리턴됨.
+	CP_Point2 cross_point; 
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
 
@@ -1513,9 +1514,9 @@ void gb_partitionBspt(
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
+		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
 		B_inRight->partition = T->partition;
-		B_inLeft->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
 			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
@@ -1539,8 +1540,8 @@ void gb_partitionBspt(
 			switch(T->neg_coincident[i]->coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
 				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
+				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;

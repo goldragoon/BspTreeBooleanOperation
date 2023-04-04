@@ -100,7 +100,7 @@ public:
 		CP_Vec3 ret;
 		// this, cp 벡터의 세번째 element가 1일때의 공식. (s.t. homogeneous 2d point)
 		ret.m_x = m_y * cp.m_z - m_z * cp.m_y; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
-		ret.m_y = -(m_z * cp.m_x - m_x * cp.m_z); // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
+		ret.m_y = m_z * cp.m_x - m_x * cp.m_z; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
 		ret.m_z = m_x * cp.m_y - cp.m_x * m_y;
 		return ret;
 	}
@@ -280,8 +280,8 @@ public:
 		CP_Line2 p_line(_partition->begin.as_vec(), _partition->end.as_vec());
 		
 		// projective/homogeneous equation으로 교점 (3차원 버전에서는 교선으로 바꿀 것)
-		double denominator = t_line.b * p_line.a - t_line.a * p_line.b;
-		point_intersection.m_x = (t_line.c * p_line.b - t_line.b * p_line.c) / denominator;
+		double denominator = t_line.a * p_line.b - t_line.b * p_line.a;
+		point_intersection.m_x = (t_line.b * p_line.c - t_line.c * p_line.b) / denominator;
 		point_intersection.m_y = (t_line.c * p_line.a - t_line.a * p_line.c) / denominator;
 
 		// additional return for performance optimization

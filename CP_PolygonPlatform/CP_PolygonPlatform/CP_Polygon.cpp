@@ -1583,14 +1583,14 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
 		if((compare_float(cp_t_p.m_x, 0) && compare_float(cp_t_p.m_y, 0))) // intersection point의 x와 y 좌표가 모두 0
-		{// (t_line and p_line) are intersect (coincide)
-			// [Warning from Gyu Jin Choi] : (problematic) never enters
+		{   
+			// (t_line and p_line) are intersect (coincide)
+			// [Warning from Gyu Jin Choi] : (problematic) never enters (maybe very rare?, a==0, b==0, c==0...)
 			
 			if(ta * pa > 0 || tb * pb < 0) return P_T_ON_POS;
 			else return P_T_ON_NEG;
 		}
 		else{ //(t_line and p_line) are not intersect (parallel)
-			
 			/*
 			double isleft = ta * (partition->end.m_x - t_bp->end.m_x) - tb * (partition->end.m_y - t_bp->end.m_y);
 			if(isleft > 0) {
@@ -1699,7 +1699,6 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 					return P_T_POS_NEG;
 				}
 			}
-
 		}
 	}	
 }

@@ -359,14 +359,13 @@ public:
 
 		//partition 시작 정점이랑 똑같은지 검사..?
 		//if(!partition->is_point_on_points(point))// && !partition->end.is_point_on(point))
-
 		if (
 			(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE)
 			|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
 			|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
 			|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
 		{
-			// point가 partition 위에 있다면...? 근데 왜 이렇게 검사하지..
+			// point가 partition 점 위에 있지 않다면...? 근데 왜 전부 or case로 검사하지..
 			return PointSideness::LINE_IN;
 		}
 		else {
@@ -406,18 +405,22 @@ public:
 	CP_BSPNode *parent;
 	CP_BSPNode *leftChild;
 	CP_BSPNode *rightChild;
+	
+	// 현재 노드의 binary partition과, 나뉘어진 하위 파티션들..
 	CP_Partition * partition;
 	vector<CP_Partition*> pos_coincident;
 	vector<CP_Partition*> neg_coincident;
-	vector<CP_Partition*> polygon;
 
+	// visualization/output purpose.
+	vector<CP_Partition*> polygon;
 	vector<CP_Partition*> leftIn;
 	vector<CP_Partition*> leftOut;
 	vector<CP_Partition*> rightIn;
 	vector<CP_Partition*> rightOut;
-	char position;
 
-	CP_BSPNode():parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), position(0){}
+	char position; // 0 : Nothing , 1 : Region In, 2 : Region Out 
+
+	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), position(0){}
 	CP_BSPNode(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
@@ -458,10 +461,7 @@ public:
 			return false;
 	}
 
-	void complement() {
-		_complement(this);
-	}
-
+	void complement() {_complement(this);}
 	void _complement(CP_BSPNode* node) {
 		if (node->isCell()) {
 			node->position = 3 - node->position;
@@ -473,22 +473,23 @@ public:
 	~CP_BSPNode(){}
 };
 
-extern bool     gb_treeHasInCell(CP_BSPNode* tree);
-extern bool     gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
-extern bool     gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
+// [BSP Build Merge Both]
+// - partition이 T의 내부에 있는지 검사한다.
+extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2& begin, CP_Point2& end, const CP_Point2& cross, double& pmin, double& pmax, double& pcross);
+//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 
-// BSP Merge Related
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
-extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
-
+// [BSP Build Related]
 extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char childInfo);
 #define CHILDINFO_NO 0
 #define CHILDINFO_LEFT 1
 #define CHILDINFO_RIGHT 2
-
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
 extern char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H);
+
+// [BSP Merge Related]
+extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
+extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
+extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
@@ -500,10 +501,7 @@ extern void gb_partitionBspt(
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
 extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
 
-// partition이 T의 내부에 있는지 검사한다.
-extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
-//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
-
+// [Visualization & Output Related]
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
@@ -511,14 +509,17 @@ extern bool gb_changePartitionDir(CP_Partition *p);
 extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end);
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
-
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
+extern bool gb_treeHasInCell(CP_BSPNode* tree);
+extern bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
+extern bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
 
-// debug
+// [Pure Debugging Purpose]
 extern void debugBsptree(CP_BSPNode* T);
 extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);// call by debugBsptree
 
+// [MFC Memory Management.]
 extern void releaseMemory();
 
 #define POS_LEFT 0

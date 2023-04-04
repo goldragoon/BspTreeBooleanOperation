@@ -99,8 +99,8 @@ public:
 	CP_Vec3 cross_product(const CP_Vec3& cp) const {
 		CP_Vec3 ret;
 		// this, cp 벡터의 세번째 element가 1일때의 공식. (s.t. homogeneous 2d point)
-		ret.m_x = m_y - cp.m_y; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
-		ret.m_y = m_x - cp.m_x; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
+		ret.m_x = m_y * cp.m_z - m_z * cp.m_y; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
+		ret.m_y = -(m_z * cp.m_x - m_x * cp.m_z); // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
 		ret.m_z = m_x * cp.m_y - cp.m_x * m_y;
 		return ret;
 	}

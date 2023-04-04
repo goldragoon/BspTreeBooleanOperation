@@ -390,14 +390,14 @@ void gb_drawBspTree(CDC* pDC, CP_BSPNode* tree,
     if (tree == NULL)
         return;
 
-	if(gb_treeIsCell(tree)){
+	if(tree->isCell()){
 		return;
 	}
 	else{
 		gb_drawBspNode(pDC, tree, scale, translation, screenX, screenY, r, g, b, size);
+        gb_drawBspTree(pDC, tree->leftChild, scale, translation, screenX, screenY, r, g, b, size);
+        gb_drawBspTree(pDC, tree->rightChild, scale, translation, screenX, screenY, r, g, b, size);
 	}
-	gb_drawBspTree(pDC, tree->leftChild, scale, translation, screenX, screenY, r, g, b, size);
-	gb_drawBspTree(pDC, tree->rightChild, scale, translation, screenX, screenY, r, g, b, size);
 }
 
 void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point2 translation, int screenX, int screenY, int r, int g, int b, int size)

@@ -1836,7 +1836,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			if (dirAP > 0) dirAP = 1;
 			else dirAP = -1;
 
-			if (gb_t_p_left(A->pos_coincident[0]->begin, partition)) {
+			if (partition->is_left_side(A->pos_coincident[0]->begin)) {
 				if (dirAP * dirP < 0) {
 					partitionRBegin = partition->end;
 					partitionREnd = partition->begin;
@@ -1865,52 +1865,11 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	}	
 }
 
-/*
-bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition){
-	double x1 = partition->end.m_x - partition->begin.m_x;
-	double y1 = partition->end.m_y - partition->begin.m_y;
-
-	double x2 = tp->end.m_x - partition->end.m_x;
-	double y2 = tp->end.m_y - partition->end.m_y;
-
-	if(x1 * y2 - x2 * y1 > 0)
-		return true;
-	else 
-		return false;
-
-}
-*/
-
-bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition){
-	CP_Vec2 partition_vec = partition->end - partition->begin;
-
-	double x1 = partition->end.m_x - partition->begin.m_x;
-	double y1 = partition->end.m_y - partition->begin.m_y;
-
-	double x2 = point.m_x - partition->end.m_x;
-	double y2 = point.m_y - partition->end.m_y;
-	
-	/////////////////////////// why this is required for inner ring data?
-
-	double lengthx1 = std::abs(x1);
-	double lengthy1 = std::abs(y1);
-	lengthx1 = max(lengthx1, lengthy1);
-	x1 /= lengthx1;
-	y1 /= lengthx1;
-
-	double lengthx2 = std::abs(x2);
-	double lengthy2 = std::abs(y2);
-	lengthx2 = max(lengthx2, lengthy2);
-	x2 /= lengthx2;
-	y2 /= lengthx2;
-	///////////////////////////
-
-	if(x1 * y2 - x2 * y1 > 0) return true; // left (inside)
-	else return false; // on or right (outside)
-}
-
 // partition 이 T의 내부 영역에 존재하는지 검사한다.
-bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2& end, const CP_Point2 &cross, 
+bool gb_p_in_region(
+	CP_BSPNode* T, CP_Partition* partition, 
+	CP_Point2 &begin, CP_Point2& end, 
+	const CP_Point2 &cross, 
 	double &pmin, double &pmax, double &pcross){
 	begin = partition->begin;
 	end = partition->end;
@@ -1927,8 +1886,8 @@ bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP
 	// dx, dy 중어느 것이 더 큰지 검사.
 	bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
 
-	double min = DBL_MAX / 2 * -1;
-	double max = DBL_MAX / 2;
+	double min = DBL_MAX / 10e200 * -1;
+	double max = DBL_MAX / 10e200;
 
 	CP_BSPNode *node = T;
 	CP_BSPNode *child = NULL;

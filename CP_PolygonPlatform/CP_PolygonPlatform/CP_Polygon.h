@@ -292,6 +292,24 @@ public:
 	}
 
 	/*
+	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하고, 
+	* point가 벡터로 나눠지는 공간의 (벡터의 진행 방향) 왼쪽에 있으면 true, (벡터의 진행 방향) 오른쪽에 있으면 false를 반환한다.
+	*/
+	bool is_left_side(const CP_Point2& point) const{
+		CP_Vec2 partition_vec = end - begin;
+		// cross product의 floating-point overflow를 막기위한 normalization이 필요할 수 있음.
+		//partition_vec.normalize(); 
+
+		// end, begin 중 아무거나 골라도 상관없음..
+		CP_Vec2 partition2point = point - end;
+		// cross product의 floating-point overflow를 막기위한 normalization이 필요할 수 있음.
+		//partition2point.normalize();
+
+		if (partition_vec.cross_product(partition2point) > 0) return true; // left (inside)
+		else return false; // on or right (outside)
+	}
+
+	/*
 	* \brief check that point(_pt) is on is partition line segment(end ~ begin).
 	*/
 	bool is_point_on_lineseg(const CP_Point2 &_pt) const {
@@ -450,7 +468,6 @@ extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* cons
 
 extern bool gb_isCross(CP_BSPNode* A, CP_Point2 &point);
 extern void gb_complement(CP_BSPNode* T);
-extern char gb_coincidentPos(CP_Partition *p, CP_Point2 &point);
 
 // partition이 T의 내부에 있는지 검사한다.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
@@ -464,7 +481,6 @@ extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
-extern bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
 

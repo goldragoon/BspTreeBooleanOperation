@@ -1749,29 +1749,29 @@ bool gb_p_in_region(
 		child = node;
 		node = node->parent;
 
-		CP_Partition* t_bp = new CP_Partition(); // (tree)_(binary)(partition)
+		CP_Partition t_bp; // (tree)_(binary)(partition)
 		if(child == node->leftChild){ 
 			// 만약 현재 노드가 parent 기준 양의 영역에 있는 경우..
-			t_bp->begin = node->partition.begin;
-			t_bp->end = node->partition.end;
+			t_bp.begin = node->partition.begin;
+			t_bp.end = node->partition.end;
 		}
 		else{
 			// 만약 현재 노드가 parent 기준 음의 영역에 있는 경우..
 			// Q : 왜 바꿔주지? -> vector의 방향을 바꾸어서 내/외부 검사?
-			t_bp->begin = node->partition.end;
-			t_bp->end = node->partition.begin;
+			t_bp.begin = node->partition.end;
+			t_bp.end = node->partition.begin;
 		}
 		// (almost wrong) CP_Partition* t_bp = node->partition;
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
-		CP_Point2 point = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);		
+		CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);		
 
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
 		double cross_product_tp = t_vec.cross_product(p_vec);
 		if(compare_float(cross_product_tp, 0)){
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..
-			CP_Vec2 v = partition.begin - t_bp->begin;
+			CP_Vec2 v = partition.begin - t_bp.begin;
 			if(t_vec.cross_product(v) >= 0) {
 				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
 				continue;

@@ -1716,7 +1716,7 @@ char gb_t_p_Position3(
 				}
 			}
 		}
-	}	
+	}
 }
 
 // partition 이 T의 내부 영역에 존재하는지 검사한다.

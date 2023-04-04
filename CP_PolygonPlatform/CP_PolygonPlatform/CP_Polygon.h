@@ -434,6 +434,26 @@ public:
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
 	}
+
+	bool isCell() const {
+		if (leftChild == NULL && rightChild == NULL)
+			return true;
+		else
+			return false;
+	}
+
+	void complement() {
+		_complement(this);
+	}
+
+	void _complement(CP_BSPNode* node) {
+		if (node->isCell()) {
+			node->position = 3 - node->position;
+			return;
+		}
+		_complement(node->leftChild);
+		_complement(node->rightChild);
+	}
 	~CP_BSPNode(){}
 };
 
@@ -454,7 +474,6 @@ extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
 extern char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H);
 
-extern bool gb_treeIsCell(const CP_BSPNode* const node);
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
@@ -465,13 +484,11 @@ extern void gb_partitionBspt(
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
 extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
-
 extern bool gb_isCross(CP_BSPNode* A, CP_Point2 &point);
-extern void gb_complement(CP_BSPNode* T);
 
 // partition이 T의 내부에 있는지 검사한다.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
-//bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partition);
+//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
@@ -480,13 +497,12 @@ extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 
-//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
 extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
 
+// debug
 extern void debugBsptree(CP_BSPNode* T);
-// call by debugBsptree
-extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);
+extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);// call by debugBsptree
 
 extern void releaseMemory();
 

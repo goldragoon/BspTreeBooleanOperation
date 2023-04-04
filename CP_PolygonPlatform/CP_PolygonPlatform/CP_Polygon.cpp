@@ -855,9 +855,8 @@ bool gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2){
 	return false;
 }
 
-//털뙤寧몸bsptree櫓角뤠唐in돨秊綾쌘듐
 bool gb_treeHasInCell(CP_BSPNode* tree){
-	if(gb_treeIsCell(tree)){
+	if(tree->isCell()){
 		if(tree->position == REGION_IN)
 			return true;
 		else 
@@ -1243,7 +1242,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 	CP_BSPNode* B_inRight = NULL;
 	CP_BSPNode* B_inLeft = NULL;
 
-	if(gb_treeIsCell(A) || gb_treeIsCell(B)){
+	if(A->isCell() || B->isCell()) {
 		tree = gb_mergeTreeWithCell(A, B, op);
 		tree->parent = parent;
 		if(left) tree->parent->leftChild = tree;
@@ -1305,9 +1304,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 
 	CP_BSPNode* tree = NULL;
-
-
-	if(gb_treeIsCell(A) || gb_treeIsCell(B)){
+	if(A->isCell() || B->isCell()) {
 		tree = gb_mergeTreeWithCell(A, B, op);
 	}
 	else{
@@ -1336,7 +1333,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 }
 
 CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
-	if(gb_treeIsCell(T1)){
+	if(T1->isCell()){
 		// Same as the Figure 5.1 in Naylor's paper.
 		if(T1->position == REGION_IN){
 			switch(op){
@@ -1345,7 +1342,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 			case CP_BSPOp::INTERSECTION:
 				return T2;
 			case CP_BSPOp::SUBTRACTION:
-				gb_complement(T2);
+				T2->complement();
 				return T2;
 			}
 		}
@@ -1402,7 +1399,7 @@ void gb_partitionBspt(
 	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
 ){ 
 	// if T is 'cell(or leaf node)' 
-	if(gb_treeIsCell(T)){
+	if(T->isCell()){
 		B_inLeft = new CP_BSPNode(T);
 		B_inRight = new CP_BSPNode(T);	
 		return;
@@ -1556,11 +1553,11 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, pRBegin, pREnd);
 		break;
 	}
-	if(!gb_treeIsCell(B_inLeft)){
+	if(!B_inLeft->isCell()){
 			B_inLeft->leftChild->parent = B_inLeft;
 			B_inLeft->rightChild->parent = B_inLeft;
 	}
-	if(!gb_treeIsCell(B_inRight)){
+	if(!B_inRight->isCell()){
 			B_inRight->leftChild->parent = B_inRight;
 			B_inRight->rightChild->parent = B_inRight;
 	}
@@ -2147,22 +2144,6 @@ bool gb_isCross(CP_BSPNode* A, CP_Point2 &point){
 	return true;
 }
 
-bool gb_treeIsCell(const CP_BSPNode* const node){
-	if(node->leftChild == NULL && node->rightChild == NULL)
-		return true;
-	else 
-		return false;
-}
-
-void gb_complement(CP_BSPNode* T){
-	if(gb_treeIsCell(T)){
-		T->position = 3 - T->position;
-		return;
-	}
-	gb_complement(T->leftChild);
-	gb_complement(T->rightChild);
-}
-
 void debugBsptree(CP_BSPNode* T){
 	char filename[] = "debug.txt";
 	std::ofstream fout;
@@ -2334,7 +2315,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell){
 }
 
 bool gb_generateCellPolygons(CP_BSPNode *node){
-	if(gb_treeIsCell(node)){
+	if(node->isCell()){
 		gb_generateCellPolygonPre(node);
 		gb_generateCellPolygon(node);
 		return true;
@@ -2413,7 +2394,7 @@ bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 }
 
 bool gb_generateBSPTreeFaces(CP_BSPNode *node){
-	if(gb_treeIsCell(node))
+	if(node->isCell())
 		return true;
 	else{
 		gb_generateBSPTreeFace(node);
@@ -2443,14 +2424,14 @@ bool gb_generateBSPTreeFace(CP_BSPNode *node){
 	if(node->leftOut.size() * node->rightIn.size() != 0){
 		for(unsigned int i = 0; i < node->leftOut.size(); i++){
 			CP_Partition *p =  node->leftOut[i];
-			CP_Partition *f;
+			
 			for(unsigned int j = 0; j < node->rightIn.size(); j++){
-				f = node->rightIn[j];
-				//혤놔f宅p路북돨꼬롸
+
+				CP_Partition* f = node->rightIn[j];
 				CP_Partition *result = new CP_Partition();
-				if(gb_cutParallelFace(p, f, result)){
+				if(gb_cutParallelFace(p, f, result))
 					node->polygon.push_back(result);
-				}
+
 			}
 		}
 	}

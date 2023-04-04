@@ -417,15 +417,19 @@ public:
 	vector<CP_Partition*> rightIn;
 	vector<CP_Partition*> rightOut;
 
-	char position; // 0 : Nothing , 1 : Region In, 2 : Region Out 
+	enum class Sideness { // BSP Node의 BSPTree 기준 위치를 나타냄.
+		UNDEFINED, INSIDE, OUTSIDE
+	};
 
-	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), position(0){}
+	Sideness side; // 0 : Nothing , 1 : Region In, 2 : Region Out 
+
+	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), side(Sideness::UNDEFINED){}
 	CP_BSPNode(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
 		partition = node->partition;
-		position = node->position;
+		side = node->side;
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
 
@@ -437,7 +441,7 @@ public:
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
 		partition = node->partition;
-		position = node->position;
+		side = node->side;
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
 
@@ -463,7 +467,8 @@ public:
 	void complement() {_complement(this);}
 	void _complement(CP_BSPNode* node) {
 		if (node->isCell()) {
-			node->position = 3 - node->position;
+			node->side = (node->side == Sideness::INSIDE) ? Sideness::OUTSIDE : Sideness::INSIDE;
+			//node->side = 3 - node->side;
 			return;
 		}
 		_complement(node->leftChild);
@@ -526,11 +531,6 @@ extern void releaseMemory();
 #define POS_NEG_ON 2
 #define POS_RIGHT 3
 #define POS_CROSS 4
-
-// position of BSP Tree?
-#define REGION_IN 1
-#define REGION_OUT 2
-
 
 //left side pos right side neg
 #define P_T_ON_POS 0

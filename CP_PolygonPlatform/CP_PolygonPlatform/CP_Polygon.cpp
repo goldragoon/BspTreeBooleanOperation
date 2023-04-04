@@ -1258,9 +1258,9 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 
 		CP_Point2 pBegin, pEnd;
 		double pmin, pmax, pcross;
-		CP_Point2 point;
+		CP_Point2 cross_point;
 		// 아래 호출에서 pcross는 쓰레기값.
-		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
+		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, cross_point, pmin, pmax, pcross)){
 			pBegin = tree->partition.end;
 			pEnd = tree->partition.begin;
 		}
@@ -1761,7 +1761,7 @@ bool gb_p_in_region(
 			t_bp.begin = node->partition.end;
 			t_bp.end = node->partition.begin;
 		}
-		// (almost wrong) CP_Partition* t_bp = node->partition;
+
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
 		CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);		
@@ -1774,6 +1774,7 @@ bool gb_p_in_region(
 			CP_Vec2 v = partition.begin - t_bp.begin;
 			if(t_vec.cross_product(v) >= 0) {
 				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
+				// 어쨋든 안쪽에 있긴 하므로 자식 노드를 검사.
 				continue;
 			}
 			else{ 
@@ -1784,7 +1785,7 @@ bool gb_p_in_region(
 		// 만약 두 개의 벡터가 평행하지 않은 경우...
 		if(cross_product_tp > TOLERENCE)
 		{
-			double currentMin = (x_or_y == 0) ?
+			double currentMin = !x_or_y ?
 				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
@@ -1796,7 +1797,7 @@ bool gb_p_in_region(
 				}
 		}
 		else{
-			double currentMax = (x_or_y == 0) ?
+			double currentMax = !x_or_y ?
 				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 

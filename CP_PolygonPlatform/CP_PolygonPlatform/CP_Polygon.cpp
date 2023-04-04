@@ -1473,15 +1473,8 @@ void gb_partitionBspt(
 			switch(gb_coincidentPos(T->pos_coincident[i], cross_point)){
 			case LINE_IN: 
 			{
-				CP_Partition* right = new CP_Partition();
-				CP_Partition* left = new CP_Partition();
-
-				left->begin = T->pos_coincident[i]->begin;
-				left->end = cross_point;
-
-				right->begin = cross_point;
-				right->end = T->pos_coincident[i]->end;
-
+				CP_Partition* left = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
+				CP_Partition* right = new CP_Partition(cross_point, T->pos_coincident[i]->end);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
@@ -1498,17 +1491,14 @@ void gb_partitionBspt(
 			CP_Partition *right = NULL;
 			CP_Partition *left = NULL;
 			switch(gb_coincidentPos(T->neg_coincident[i], cross_point)){
-			case LINE_IN:				
-				right = new CP_Partition();
-				left = new CP_Partition();
-
-				left->begin = cross_point;
-				left->end = T->neg_coincident[i]->end;
-				right->begin = T->neg_coincident[i]->begin;
-				right->end = cross_point;
+			case LINE_IN:			
+			{
+				left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
+				right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
+			}
 			case LINE_POS:
 				B_inRight->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
@@ -1527,20 +1517,15 @@ void gb_partitionBspt(
 		B_inLeft->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			CP_Partition *right = NULL;
-			CP_Partition *left = NULL;
 			switch(gb_coincidentPos(T->pos_coincident[i], cross_point)){
 			case LINE_IN:				
-				right = new CP_Partition();
-				left = new CP_Partition();
-
-				left->begin = cross_point;
-				left->end = T->pos_coincident[i]->end;
-				right->begin = T->pos_coincident[i]->begin;
-				right->end = cross_point;
+			{
+				CP_Partition* left = new CP_Partition(cross_point, T->pos_coincident[i]->end);
+				CP_Partition* right = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
+			}
 			case LINE_POS:
 				B_inRight->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
@@ -1550,20 +1535,15 @@ void gb_partitionBspt(
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			CP_Partition *right = NULL;
-			CP_Partition *left = NULL;
 			switch(gb_coincidentPos(T->neg_coincident[i], cross_point)){
 			case LINE_IN:				
-				right = new CP_Partition();
-				left = new CP_Partition();
-				left->begin = T->neg_coincident[i]->begin;
-				left->end = cross_point;
-				right->begin = cross_point;
-				right->end = T->neg_coincident[i]->end;
-
+			{
+				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
+				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
+			}
 			case LINE_POS:
 				B_inLeft->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
@@ -1587,27 +1567,33 @@ void gb_partitionBspt(
 	}
 }
 
-char gb_coincidentPos(CP_Partition *p, CP_Point2 &point){
-	CP_Point2 begin = p->begin;
-	CP_Point2 end = p->end;
+char gb_coincidentPos(CP_Partition *partition, CP_Point2 &point){
+	CP_Vec2 begin2point = point - partition->begin;
+	CP_Vec2 end2point = point - partition->end;
 
-	if((point.m_x - begin.m_x > TOLERENCE && point.m_x - end.m_x < -TOLERENCE) 
-		|| (point.m_x - begin.m_x < -TOLERENCE && point.m_x - end.m_x > TOLERENCE)
-		|| (point.m_y - begin.m_y > TOLERENCE && point.m_y - end.m_y < -TOLERENCE)
-		|| (point.m_y - begin.m_y < -TOLERENCE && point.m_y - end.m_y > TOLERENCE))
+	if(
+		(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE) 
+		|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
+		|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
+		|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
 	{
+		// point가 partition 위에 있다면...?
 		return LINE_IN;
 	}
 	else{
 		double dx1, dy1, dx2, dy2;
-		dx1 = std::abs(point.m_x - begin.m_x);
-		dy1 = std::abs(point.m_y - begin.m_y);
+		dx1 = std::abs(begin2point.m_x);
+		dy1 = std::abs(begin2point.m_y);
 
-		dx2 = std::abs(point.m_x - end.m_x);
-		dy2 = std::abs(point.m_y - end.m_y);
+		dx2 = std::abs(end2point.m_x);
+		dy2 = std::abs(end2point.m_y);
 
-		if(dx1 + dy1 < dx2 + dy2) return LINE_NEG;
-		else return LINE_POS;
+		if (dx1 + dy1 < dx2 + dy2) {
+			return LINE_NEG;
+		}
+		else {
+			return LINE_POS;
+		}
 	}
 }
 

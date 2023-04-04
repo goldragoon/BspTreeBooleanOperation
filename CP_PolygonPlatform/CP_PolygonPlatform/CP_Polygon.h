@@ -518,6 +518,7 @@ extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition &part
 	CP_Partition& partitionL, CP_Partition& partitionR);
 
 // [Visualization & Output Related]
+// Lazy TODO : detach CP_Partition pointer from here. (not crucial.. these are just visualization methods.)
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
@@ -538,12 +539,14 @@ extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);// call 
 // [MFC Memory Management.]
 extern void releaseMemory();
 
+// Classification of bp(binary partitioner) to other bp.
 #define POS_LEFT 0
 #define POS_POS_ON 1
 #define POS_NEG_ON 2
 #define POS_RIGHT 3
 #define POS_CROSS 4
 
+// pair-ed classification of binary partitioner.
 /*
 * \brief this seven cases are defined by [Nayler et al, 1990] Chapter 3, (check figure 3.1)
 * \details left side of partition is pos, right side of partition is neg

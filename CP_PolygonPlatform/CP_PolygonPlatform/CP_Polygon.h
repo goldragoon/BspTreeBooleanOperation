@@ -499,7 +499,7 @@ extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* par
 extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
 extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
 extern void gb_partitionBspt(
-	const CP_BSPNode* const T, const CP_Partition* const partition, 
+	const CP_BSPNode* const T, const CP_Partition& partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
 	const CP_Partition& splited_partition);
 
@@ -508,7 +508,7 @@ extern void gb_partitionBspt(
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree,
 // time-consuming is O(n)
-extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, 
+extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition &partition, 
 	CP_Point2& cross_point, 
 	CP_Partition& partitionL, CP_Partition& partitionR);
 

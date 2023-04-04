@@ -261,7 +261,7 @@ public:
 
 	CP_Partition() {}
 	CP_Partition(const CP_Point2 &b, const CP_Point2 &e) : begin(b), end(e) {}
-	CP_Partition(const CP_Partition* p) { begin = p->begin; end = p->end; }
+	CP_Partition(const CP_Partition* const p) { begin = p->begin; end = p->end; }
 	~CP_Partition() {}
 
 	/*
@@ -510,7 +510,9 @@ extern void gb_partitionBspt(
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree,
 // time-consuming is O(n)
-extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
+extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, 
+	CP_Point2& cross_point, 
+	CP_Partition* partitionL, CP_Partition* partitionR);
 
 // [Visualization & Output Related]
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);

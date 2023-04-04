@@ -1400,7 +1400,7 @@ void gb_partitionBspt(
 	const CP_BSPNode* const T, // partition할 BSP Node.
 	const CP_Partition* const partition, // BSP를 자를 파티션. 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
-	CP_BSPNode* parent, 
+	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
 	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
 ){ 
 	// if T is 'cell(or leaf node)' 
@@ -1419,14 +1419,14 @@ void gb_partitionBspt(
 	CP_Point2 cross_point; // P_T_ON_POS, P_T_ON_NEG, P_T_POS_NEG, P_T_POS_NEG 에서는 교차점이 없으므로 쓰레기 값이 리턴됨.
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
-	CP_Point2 pLBegin, pLEnd, pRBegin, pREnd;
-	pLBegin = partitionBegin;
-	pLEnd = partitionEnd;
-	pRBegin = partitionBegin;
-	pREnd = partitionEnd;
+
+	// the binary partitioner of T splited by P (if intersects) is stored in partitionL(inside) and partitionR(outside).
+	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not chaning'
+	CP_Partition* partitionL = new CP_Partition(partitionBegin, partitionEnd);
+	CP_Partition* partitionR = new CP_Partition(partitionBegin, partitionEnd);
 
 	// pos has 7 cases
-	char pos = gb_t_p_Position3(T, partition, cross_point, pLBegin, pLEnd, pRBegin, pREnd);
+	char pos = gb_t_p_Position3(T, partition, cross_point, partitionL, partitionR);
 	switch(pos){
 	case P_T_ON_POS:
 		B_inLeft = T->leftChild;
@@ -1443,28 +1443,28 @@ void gb_partitionBspt(
 		B_inRight->rightChild = T->rightChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, pLBegin, pLEnd);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, partitionL->begin, partitionL->end);
 		break;
 	case P_T_POS_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->rightChild = T->rightChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, pLBegin, pLEnd);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, partitionL->begin, partitionL->end);
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->leftChild = T->leftChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, pRBegin, pREnd);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, partitionR->begin, partitionR->end);
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
 		B_inRight->leftChild = T->leftChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, pRBegin, pREnd);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, partitionR->begin, partitionR->end);
 		break;
 	case P_T_BOTH_POS:
 		B_inLeft = new CP_BSPNode();
@@ -1508,8 +1508,8 @@ void gb_partitionBspt(
 				break;
 			}
 		}
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, pLBegin, pLEnd);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, pRBegin, pREnd);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, partitionL->begin, partitionL->end);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, partitionR->begin, partitionR->end);
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
@@ -1554,8 +1554,8 @@ void gb_partitionBspt(
 			}
 		}
 		
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, pLBegin, pLEnd);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, pRBegin, pREnd);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, partitionL->begin, partitionL->end);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, partitionR->begin, partitionR->end);
 		break;
 	}
 	if(!B_inLeft->isCell()){
@@ -1568,8 +1568,9 @@ void gb_partitionBspt(
 	}
 }
 
-char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2 &cross_point, 
-	CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
+char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, 
+	CP_Point2& cross_point,
+	CP_Partition* partitionL, CP_Partition* partitionR){
 
 	// [Notation]
 	// 't' prefix states the 'tree'
@@ -1635,24 +1636,21 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		cross_point = point_intersection; // output variable...
 
 		///////////// Check cross_point is on the line segment (partition) ////////////
-		// 지금 시점에서는 partitionL == partitoinR
-		// crossPoint가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
+		// Note : 지금 시점에서는 partitionL == partitoinR
+		// point_intersection가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
 		// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
-		CP_Partition* partitionL = new CP_Partition(partitionLBegin, partitionLEnd);
-
-		///////////// Check cross_point is on the line segment (partition) ////////////
-		// partitionL, partitoinR을 알맞게 잘라서 할당해줌.
+		// - partitionL, partitoinR을 알맞게 잘라서 할당해줌.
 
 		// if crossInPartition
 		if (partitionL->coincidentPos(point_intersection) == CP_Partition::PointSideness::LINE_IN) { 
 			if (t_vec.cross_product(p_vec) > 0) {
-				partitionLBegin = point_intersection;
-				partitionREnd = point_intersection;
+				partitionL->begin = point_intersection;
+				partitionR->end = point_intersection;
 				return P_T_BOTH_POS;
 			}
 			else {
-				partitionRBegin = point_intersection;
-				partitionLEnd = point_intersection;
+				partitionR->begin = point_intersection;
+				partitionL->end = point_intersection;
 				return P_T_BOTH_NEG;
 			}
 		}
@@ -1663,13 +1661,13 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			double a, b;
 			if (std::abs(pa) > std::abs(pb)) { 
 				//y방향
-				a = std::abs(partitionLBegin.m_y - point_intersection.m_y);
-				b = std::abs(partitionLEnd.m_y - point_intersection.m_y);
+				a = std::abs(partitionL->begin.m_y - point_intersection.m_y);
+				b = std::abs(partitionL->end.m_y - point_intersection.m_y);
 			}
 			else {
 				//x방향
-				a = std::abs(partitionLBegin.m_x - point_intersection.m_x);
-				b = std::abs(partitionLEnd.m_x - point_intersection.m_x);
+				a = std::abs(partitionL->begin.m_x - point_intersection.m_x);
+				b = std::abs(partitionL->end.m_x - point_intersection.m_x);
 			}
 
 			double dirP = a - b;
@@ -1693,27 +1691,24 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			if (dirAP > 0) dirAP = 1;
 			else dirAP = -1;
 
+			CP_Partition _p(partition->end, partition->begin);
 			if (partition->is_left_side(A->pos_coincident[0]->begin)) {
 				if (dirAP * dirP < 0) {
-					partitionRBegin = partition->end;
-					partitionREnd = partition->begin;
+					*partitionR = _p;
 					return P_T_POS_POS;
 				}
 				else {
-					partitionLBegin = partition->end;
-					partitionLEnd = partition->begin;
+					*partitionL = _p;
 					return P_T_NEG_POS;
 				}
 			}
 			else {
 				if (dirAP * dirP < 0) {
-					partitionLBegin = partition->end;
-					partitionLEnd = partition->begin;
+					*partitionL = _p;
 					return P_T_NEG_NEG;
 				}
 				else {
-					partitionRBegin = partition->end;
-					partitionREnd = partition->begin;
+					*partitionR = _p;
 					return P_T_POS_NEG;
 				}
 			}

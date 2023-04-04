@@ -1148,21 +1148,25 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	// H로 Tree를 Cut한 결과에 따라 하위 노드를 만들어 준다.
 	if(F_left.size() == 0){
+		// leaf
 		tree->leftChild = new CP_BSPNode();
 		tree->leftChild->side = CP_BSPNode::Sideness::INSIDE;
 		tree->leftChild->parent = tree;
 	}
 	else {
+		// internal (sideness is undefined)
 		tree->leftChild = gb_buildBSPTree(F_left, tree, CHILDINFO_LEFT);
 		tree->leftChild->parent = tree;
 	}
 
 	if(F_right.size() == 0){
+		// leaf
 		tree->rightChild = new CP_BSPNode();
 		tree->rightChild->side = CP_BSPNode::Sideness::OUTSIDE;
 		tree->rightChild->parent = tree;
 	}
 	else {
+		// internal (sideness is undefined)
 		tree->rightChild = gb_buildBSPTree(F_right, tree, CHILDINFO_RIGHT);
 		tree->rightChild->parent = tree;
 	}
@@ -1301,10 +1305,9 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 	return tree;
 }
 
-CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
-
+CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	CP_BSPNode* tree = NULL;
-	if(A->isCell() || B->isCell()) {
+	if(A->isCell() || B->isCell()) { // isLeaf
 		tree = gb_mergeTreeWithCell(A, B, op);
 	}
 	else{
@@ -1394,8 +1397,10 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 }
 
 void gb_partitionBspt(
-	const CP_BSPNode* const T, const CP_Partition* const partition, 
-	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, CP_BSPNode* parent, 
+	const CP_BSPNode* const T, // partition할 BSP Node.
+	const CP_Partition* const partition, // BSP를 자를 파티션. 
+	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
+	CP_BSPNode* parent, 
 	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
 ){ 
 	// if T is 'cell(or leaf node)' 
@@ -1411,7 +1416,7 @@ void gb_partitionBspt(
 	* \brief	cross point는 T->partition, 그리고 partition 을 무한한 직선으로 생각했을 때의 교점.
 	* \details	두 직선이 평행/일치할 경우 cross_point에는 쓰레기 값이 들어있게 됨. (ON_POS, ON_NEG, POS_POS, NEG_NEG).
 	*/ 
-	CP_Point2 cross_point; 
+	CP_Point2 cross_point; // P_T_ON_POS, P_T_ON_NEG, P_T_POS_NEG, P_T_POS_NEG 에서는 교차점이 없으므로 쓰레기 값이 리턴됨.
 	const CP_Partition *leftPartition = partition;
 	const CP_Partition *rightPartition = partition;
 	CP_Point2 pLBegin, pLEnd, pRBegin, pREnd;
@@ -1563,7 +1568,6 @@ void gb_partitionBspt(
 	}
 }
 
-// classify 
 char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2 &cross_point, 
 	CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
 
@@ -1578,6 +1582,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	const CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
 	const double &ta = t_line.a, &tb = t_line.b, &tc = t_line.c;
 	const double &pa = p_line.a, &pb = p_line.b, &pc = p_line.c;
+
 	CP_Vec3 cp_t_p = t_line.as_vec().cross_product(p_line.as_vec());
 
 	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
@@ -1595,17 +1600,30 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 			double isleft = ta * (partition->end.m_x - t_bp->end.m_x) - tb * (partition->end.m_y - t_bp->end.m_y);
 			if(isleft > 0) {
 			*/
-			if(t_bp->is_ccw_rot(partition->end - t_bp->end)) {
+			if(t_bp->is_ccw_rot(partition->end - t_bp->end)) { // is_ccw_rot ~= P is left of T(t_bp) ?
 				//P is to the left of T
-				partitionRBegin = partition->end;
+				
+				/*
+				// 서로 교차하는게 아닌데.. 굳이 partition을 넣어줄 필요는 없지만, 구색을 맞추기 위해 넣음.
+				partitionRBegin = partition->end; 
 				partitionREnd = partition->begin;
+				*/
+
+				// 두 개의 n-hyperplane의 normal을 비교하여 서로의 위치를 최종적으로 결정함.
+				// - 이 프로젝트에서는 normal을 명시적으로 저장하지 않고, 2D 직선의 방향을 이용하여 법선을 표시하고 있음에 유의할 것.
 				if(ta * pa > 0 || tb * pb > 0) return P_T_POS_NEG;
-				else return P_T_POS_POS;
+				else return P_T_POS_POS; // Note : CP_Partition::intersection 안쪽에서 cross product에 들어가는 line segment의 begin, end 순서에 따라 법선 방향이 뒤집힘.
 			}
 			else{
 				//P is to the right of T
+
+				/*
+				// 서로 교차하는게 아닌데.. 굳이 partition을 넣어줄 필요는 없지만, 구색을 맞추기 위해 넣음.
+				// 필요하다면 활성화 할것.
 				partitionLBegin = partition->end;
 				partitionLEnd = partition->begin;
+				*/
+
 				if(ta * pa > 0 || tb * pb > 0) return P_T_NEG_POS;
 				else return P_T_NEG_NEG;
 			}
@@ -1874,7 +1892,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 			if(!no_useful){
 				//Determine whether it contributes to the polygon of the node
-				CP_Partition *node_face = new CP_Partition(p);
+				CP_Partition* node_face = new CP_Partition(p);
 				if(child == node->rightChild){
 					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->rightIn.push_back(node_face);

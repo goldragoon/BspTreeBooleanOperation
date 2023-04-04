@@ -353,6 +353,9 @@ public:
 	}
 
 	// 목적이 불분명.
+	/*
+	* P_T_BOTH_POS, P_T_BOTH_NEG를 반환하고/검사하는 용도로만 사용됨.
+	*/
 	PointSideness coincidentPos(const CP_Point2& point) const {
 		CP_Vec2 begin2point = point - begin; // vector
 		CP_Vec2 end2point = point - end;     // vector
@@ -402,6 +405,7 @@ enum class CP_BSPOp {
 
 class CP_BSPNode{
 public:
+	// relationship with 'other bsp nodes'.
 	CP_BSPNode *parent;
 	CP_BSPNode *leftChild;
 	CP_BSPNode *rightChild;
@@ -418,7 +422,11 @@ public:
 	vector<CP_Partition*> rightIn;
 	vector<CP_Partition*> rightOut;
 
-	enum class Sideness { // BSP Node의 BSPTree 기준 위치를 나타냄.
+	/*
+	* \brief BSP Node의 BSPTree 기준 위치를 나타냄.
+	* \details UNDEFINED의 존재 이유?
+	*/ 
+	enum class Sideness {
 		UNDEFINED, INSIDE, OUTSIDE
 	};
 
@@ -503,7 +511,8 @@ extern void gb_partitionBspt(
 // The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)
 //extern char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
 
-// New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
+// New improved method for judging the positional relationship between T and P when splitting Bsptree,
+// time-consuming is O(n)
 extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
 
 // [Visualization & Output Related]
@@ -533,10 +542,13 @@ extern void releaseMemory();
 #define POS_RIGHT 3
 #define POS_CROSS 4
 
-//left side pos right side neg
-#define P_T_ON_POS 0
-#define P_T_ON_NEG 1
-#define P_T_POS_NEG 2
+/*
+* \brief this seven cases are defined by [Nayler et al, 1990] Chapter 3, (check figure 3.1)
+* \details left side of partition is pos, right side of partition is neg
+*/
+#define P_T_ON_POS 0 // Anti-parallel On
+#define P_T_ON_NEG 1 // Parallel On
+#define P_T_POS_NEG 2 //
 #define P_T_POS_POS 3
 #define P_T_NEG_POS 4
 #define P_T_NEG_NEG 5

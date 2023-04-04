@@ -857,7 +857,7 @@ bool gb_checkLoopIntersection(CP_Loop& lnin1, CP_Loop& lnin2){
 
 bool gb_treeHasInCell(CP_BSPNode* tree){
 	if(tree->isCell()){
-		if(tree->position == REGION_IN)
+		if(tree->side == CP_BSPNode::Sideness::INSIDE)
 			return true;
 		else 
 			return false;
@@ -1149,7 +1149,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	// H로 Tree를 Cut한 결과에 따라 하위 노드를 만들어 준다.
 	if(F_left.size() == 0){
 		tree->leftChild = new CP_BSPNode();
-		tree->leftChild->position = REGION_IN;
+		tree->leftChild->side = CP_BSPNode::Sideness::INSIDE;
 		tree->leftChild->parent = tree;
 	}
 	else {
@@ -1159,7 +1159,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	if(F_right.size() == 0){
 		tree->rightChild = new CP_BSPNode();
-		tree->rightChild->position = REGION_OUT;
+		tree->rightChild->side = CP_BSPNode::Sideness::OUTSIDE;
 		tree->rightChild->parent = tree;
 	}
 	else {
@@ -1335,7 +1335,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op){
 CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 	if(T1->isCell()){
 		// Same as the Figure 5.1 in Naylor's paper.
-		if(T1->position == REGION_IN){
+		if(T1->side == CP_BSPNode::Sideness::INSIDE){
 			switch(op){
 			case CP_BSPOp::UNION:
 				return T1;
@@ -1360,7 +1360,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 	// Q : why below is different than naylor's work?!?!?!
 	//if (gb_treeIsCell(T2)) return gb_mergeTreeWithCell(T2, T1, op); 
 	else{
-		if(T2->position == REGION_IN){
+		if(T2->side == CP_BSPNode::Sideness::INSIDE){
 			switch(op){
 			case CP_BSPOp::UNION:
 				return T2;
@@ -1369,7 +1369,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 			case CP_BSPOp::SUBTRACTION:
 				
 				CP_BSPNode *node = new CP_BSPNode();
-				node->position = REGION_OUT;
+				node->side = CP_BSPNode::Sideness::OUTSIDE;
 				return node;
 				
 				/*
@@ -1817,13 +1817,13 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 	for(int i = 0; i < floor; i++)
 		str[i] = ' ';
 	str[floor] = 0;
-	if(T->position == 0){
+	if(T->side == CP_BSPNode::Sideness::UNDEFINED){
 		fout<<str<<"("<<T->partition->begin.m_x<<","<<T->partition->begin.m_y<<")---->("<<T->partition->end.m_x<<","<<T->partition->end.m_y<<")"<<endl;
 		_debugFoutBsptree(T->leftChild, floor + 3, fout);
 		_debugFoutBsptree(T->rightChild, floor + 3, fout);
 	}
 	else{	
-		if(T->position == 1)
+		if(T->side == CP_BSPNode::Sideness::INSIDE)
 			fout<<str<<"IN"<<endl;
 		else
 			fout<<str<<"OUT"<<endl;
@@ -1876,7 +1876,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 				//Determine whether it contributes to the polygon of the node
 				CP_Partition *node_face = new CP_Partition(p);
 				if(child == node->rightChild){
-					if(cell->position == REGION_IN){
+					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->rightIn.push_back(node_face);
 					}
 					else{
@@ -1885,7 +1885,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 				}
 				else{
-					if(cell->position == REGION_IN){
+					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->leftIn.push_back(node_face);
 					}
 					else{
@@ -1917,7 +1917,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 				if(child == node->rightChild){
 			
-					if(cell->position == REGION_IN){
+					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->rightIn.push_back(node_face);
 					}
 					else{
@@ -1926,7 +1926,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 				}
 				else{
-					if(cell->position == REGION_IN){
+					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->leftIn.push_back(node_face);
 					}
 					else{

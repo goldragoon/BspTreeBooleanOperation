@@ -985,7 +985,7 @@ bool gb_checkLineSegmentCross(CP_Point2* p11, CP_Point2* p12, CP_Point2* p21, CP
 }
 
 // generate partition as 2d line segment(shoulnd't be 2d plane?)
-void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
+void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition>& vp){
 	printf("\t\tgb_getLoopPartition\n"); // debug
 	CP_Polygon *polygon = ln.m_polygon;
 	int size = ln.m_pointIDArray.size();
@@ -996,7 +996,7 @@ void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition*>& vp){
 	for(int i = 0; i < size; i++){
 		int j = (i + direction + size) % size;
 		printf("\t\t\t- (i,j) = (%d, %d)\n", i, j); // debug
-		CP_Partition* p = new CP_Partition(polygon->m_pointArray[ln.m_pointIDArray[i]], polygon->m_pointArray[ln.m_pointIDArray[j]]);
+		CP_Partition p(polygon->m_pointArray[ln.m_pointIDArray[i]], polygon->m_pointArray[ln.m_pointIDArray[j]]);
 		vp.push_back(p);
 	}
 }
@@ -1046,7 +1046,7 @@ CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 	printf("\tgb_buildLoopBSPTree\n");
 
 	// polygon의 에지 개수만큼..
-	vector<CP_Partition*> partitionArray;
+	vector<CP_Partition> partitionArray;
 	gb_getLoopPartition(ln, partitionArray);
 
 	CP_BSPNode *tree = NULL;
@@ -1055,12 +1055,12 @@ CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 	return tree;
 }
 
-CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char childInfo) {
-	vector<CP_Partition*> F_right;
-	vector<CP_Partition*> F_left;
+CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, char childInfo) {
+	vector<CP_Partition> F_right;
+	vector<CP_Partition> F_left;
 	//vector<CP_Partition*> F_coincident; need it?
 
-	CP_Partition *H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
+	const CP_Partition &H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
 
 	// 새로운 노드 생성.
 	CP_BSPNode *tree = new CP_BSPNode();
@@ -1073,7 +1073,7 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 	// else (childInfo == CHILDINFO_NO) 인 경우는 root node일 때밖에 없음.
 
 	// partitionLine is used to record the part of the line where the partition is located inside the area
-	CP_Partition * partitionLine = new CP_Partition(*(tree->partition));
+	CP_Partition partitionLine(tree->partition);
 
 	// temporary variables for gb_p_in_region
 	CP_Point2 pBegin, pEnd;
@@ -1082,11 +1082,11 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 
 	// 아래 호출에서 pcross는 쓰레기값.
 	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
-		pBegin = tree->partition->end;
-		pEnd = tree->partition->begin;
+		pBegin = tree->partition.end;
+		pEnd = tree->partition.begin;
 	}
 	else{
-		CP_Vec2 diff = tree->partition->end - tree->partition->begin;
+		CP_Vec2 diff = tree->partition.end - tree->partition.begin;
 		double &dx = diff.m_x, &dy = diff.m_y;
 
 		double mean_xy[2];
@@ -1098,21 +1098,19 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 			x_or_y = 1;
 
 		if(x_or_y == 0){ // ||dx|| > ||dy||
-			pBegin.m_x = pmin * mean_xy[0] + tree->partition->begin.m_x;
-			pEnd.m_x = pmax * mean_xy[0] + tree->partition->begin.m_x;
-			pBegin.m_y = (pBegin.m_x - tree->partition->begin.m_x) * (dy / dx) + tree->partition->begin.m_y;
-			pEnd.m_y = (pEnd.m_x - tree->partition->begin.m_x) * (dy / dx) + tree->partition->begin.m_y;
+			pBegin.m_x = pmin * mean_xy[0] + tree->partition.begin.m_x;
+			pEnd.m_x = pmax * mean_xy[0] + tree->partition.begin.m_x;
+			pBegin.m_y = (pBegin.m_x - tree->partition.begin.m_x) * (dy / dx) + tree->partition.begin.m_y;
+			pEnd.m_y = (pEnd.m_x - tree->partition.begin.m_x) * (dy / dx) + tree->partition.begin.m_y;
 		}
 		else{
-			pBegin.m_y = pmin * mean_xy[1] + tree->partition->begin.m_y;
-			pEnd.m_y = pmax * mean_xy[1] + tree->partition->begin.m_y;
-			pBegin.m_x = (pBegin.m_y - tree->partition->begin.m_y) * (dx / dy) + tree->partition->begin.m_x;
-			pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (dx / dy) + tree->partition->begin.m_x;
+			pBegin.m_y = pmin * mean_xy[1] + tree->partition.begin.m_y;
+			pEnd.m_y = pmax * mean_xy[1] + tree->partition.begin.m_y;
+			pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
+			pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 		}
 	}
-
-	partitionLine->begin = pBegin;
-	partitionLine->end = pEnd;
+	partitionLine = CP_Partition(pBegin, pEnd);
 
 	tree->pos_coincident.push_back(partitionLine);
 	//partitionLine initialization ends
@@ -1121,8 +1119,8 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 		tree->pos_coincident.push_back(H); // 현재 노드의 hyperplane (이게 partitionLine push_back 하기 전에 들어가면 왜 문제가 되나?)
 
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
-	for(CP_Partition* p : vp){
-		char pos = getPartitionPos(*p, *H);
+	for(const CP_Partition &p : vp){
+		char pos = getPartitionPos(p, H);
 		switch(pos){
 		case POS_LEFT:
 			F_left.push_back(p);
@@ -1137,9 +1135,8 @@ CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char 
 			F_right.push_back(p);
 			break;
 		case POS_CROSS:
-			CP_Partition *left = new CP_Partition();
-			CP_Partition * right = new CP_Partition();
-			gb_getCrossPartition(*p, *H, *left, *right);
+			CP_Partition left, right;
+			gb_getCrossPartition(p, H, left, right);
 			F_left.push_back(left);
 			F_right.push_back(right);
 			break;
@@ -1264,12 +1261,12 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		CP_Point2 point;
 		// 아래 호출에서 pcross는 쓰레기값.
 		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, point, pmin, pmax, pcross)){
-			pBegin = tree->partition->end;
-			pEnd = tree->partition->begin;
+			pBegin = tree->partition.end;
+			pEnd = tree->partition.begin;
 		}
 		else{
-			double vx = tree->partition->end.m_x - tree->partition->begin.m_x;
-			double vy = tree->partition->end.m_y - tree->partition->begin.m_y;
+			double vx = tree->partition.end.m_x - tree->partition.begin.m_x;
+			double vy = tree->partition.end.m_y - tree->partition.begin.m_y;
 	
 			double mean_xy[2];
 			mean_xy[0] = vx > 0 ? 1: -1;
@@ -1277,19 +1274,19 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 
 			bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
 			if(x_or_y == 0){
-				pBegin.m_x = pmin * mean_xy[0] + tree->partition->begin.m_x;
-				pEnd.m_x = pmax * mean_xy[0] + tree->partition->begin.m_x;
-				pBegin.m_y = (pBegin.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
-				pEnd.m_y = (pEnd.m_x - tree->partition->begin.m_x) * (vy / vx) + tree->partition->begin.m_y;
+				pBegin.m_x = pmin * mean_xy[0] + tree->partition.begin.m_x;
+				pEnd.m_x = pmax * mean_xy[0] + tree->partition.begin.m_x;
+				pBegin.m_y = (pBegin.m_x - tree->partition.begin.m_x) * (vy / vx) + tree->partition.begin.m_y;
+				pEnd.m_y = (pEnd.m_x - tree->partition.begin.m_x) * (vy / vx) + tree->partition.begin.m_y;
 			}
 			else{
-				pBegin.m_y = pmin * mean_xy[1] + tree->partition->begin.m_y;
-				pEnd.m_y = pmax * mean_xy[1] + tree->partition->begin.m_y;
-				pBegin.m_x = (pBegin.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
-				pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
+				pBegin.m_y = pmin * mean_xy[1] + tree->partition.begin.m_y;
+				pEnd.m_y = pmax * mean_xy[1] + tree->partition.begin.m_y;
+				pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (vx / vy) + tree->partition.begin.m_x;
+				pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (vx / vy) + tree->partition.begin.m_x;
 			}
 		}
-		gb_partitionBspt(B, *tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
+		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
@@ -1316,16 +1313,16 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Vec2 pDiff = tree->partition->end - tree->partition->begin;
+		CP_Vec2 pDiff = tree->partition.end - tree->partition.begin;
 		pDiff.normalize();
 
 		CP_Vec2 sub(pDiff * (DBL_MAX / 10e200));
 		// 무한하게 연장된 line...
-		CP_Point2 pBegin(tree->partition->begin - sub); 
-		CP_Point2 pEnd(tree->partition->begin + sub);
+		CP_Point2 pBegin(tree->partition.begin - sub); 
+		CP_Point2 pEnd(tree->partition.begin + sub);
 
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, *tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
+		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
 		tree->leftChild = B_inLeft;
@@ -1476,11 +1473,11 @@ void gb_partitionBspt(
 		B_inRight->partition = T->partition;
 		
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
+			switch(T->pos_coincident[i].coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN: 
 			{
-				CP_Partition* left = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
-				CP_Partition* right = new CP_Partition(cross_point, T->pos_coincident[i]->end);
+				CP_Partition left(T->pos_coincident[i].begin, cross_point);
+				CP_Partition right(cross_point, T->pos_coincident[i].end);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
@@ -1494,11 +1491,11 @@ void gb_partitionBspt(
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(T->neg_coincident[i]->coincidentPos(cross_point)){
+			switch(T->neg_coincident[i].coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
-				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
+				CP_Partition left(cross_point, T->neg_coincident[i].end);
+				CP_Partition right(T->neg_coincident[i].begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
@@ -1521,11 +1518,11 @@ void gb_partitionBspt(
 		B_inRight->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
+			switch(T->pos_coincident[i].coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition* left = new CP_Partition(cross_point, T->pos_coincident[i]->end);
-				CP_Partition* right = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
+				CP_Partition left(cross_point, T->pos_coincident[i].end);
+				CP_Partition right(T->pos_coincident[i].begin, cross_point);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
@@ -1539,11 +1536,11 @@ void gb_partitionBspt(
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(T->neg_coincident[i]->coincidentPos(cross_point)){
+			switch(T->neg_coincident[i].coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
-				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
+				CP_Partition left(cross_point, T->neg_coincident[i].end);
+				CP_Partition right(T->neg_coincident[i].begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
@@ -1580,11 +1577,11 @@ char gb_t_p_Position3(
 	// 't' prefix states the 'tree'
 	// 'p' prefix states the 'partition'
 
-	const CP_Partition* const t_bp = A->partition;
+	const CP_Partition& t_bp = A->partition;
 
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
-	const CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
+	const CP_Point2 point_intersection = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);
 	const double &ta = t_line.a, &tb = t_line.b, &tc = t_line.c;
 	const double &pa = p_line.a, &pb = p_line.b, &pc = p_line.c;
 
@@ -1684,13 +1681,13 @@ char gb_t_p_Position3(
 			if (std::abs(ta) > std::abs(tb)) {
 				//y방향
 				//A node의 현재 binary partition(A->pos_coincident[0]) H랑 비교하는건가?
-				a = std::abs(A->pos_coincident[0]->begin.m_y - point_intersection.m_y);
-				b = std::abs(A->pos_coincident[0]->end.m_y - point_intersection.m_y);
+				a = std::abs(A->pos_coincident[0].begin.m_y - point_intersection.m_y);
+				b = std::abs(A->pos_coincident[0].end.m_y - point_intersection.m_y);
 			}
 			else {
 				//x방향
-				a = std::abs(A->pos_coincident[0]->begin.m_x - point_intersection.m_x);
-				b = std::abs(A->pos_coincident[0]->end.m_x - point_intersection.m_x);
+				a = std::abs(A->pos_coincident[0].begin.m_x - point_intersection.m_x);
+				b = std::abs(A->pos_coincident[0].end.m_x - point_intersection.m_x);
 			}
 
 			double dirAP = a - b;
@@ -1698,7 +1695,7 @@ char gb_t_p_Position3(
 			else dirAP = -1;
 
 			CP_Partition _p(partition.end, partition.begin); // temporary object for assignment.
-			if (partition.is_left_side(A->pos_coincident[0]->begin)) {
+			if (partition.is_left_side(A->pos_coincident[0].begin)) {
 				if (dirAP * dirP < 0) {
 					partitionR = _p;
 					return P_T_POS_POS;
@@ -1757,14 +1754,14 @@ bool gb_p_in_region(
 		CP_Partition* t_bp = new CP_Partition(); // (tree)_(binary)(partition)
 		if(child == node->leftChild){ 
 			// 만약 현재 노드가 parent 기준 양의 영역에 있는 경우..
-			t_bp->begin = node->partition->begin;
-			t_bp->end = node->partition->end;
+			t_bp->begin = node->partition.begin;
+			t_bp->end = node->partition.end;
 		}
 		else{
 			// 만약 현재 노드가 parent 기준 음의 영역에 있는 경우..
 			// Q : 왜 바꿔주지? -> vector의 방향을 바꾸어서 내/외부 검사?
-			t_bp->begin = node->partition->end;
-			t_bp->end = node->partition->begin;
+			t_bp->begin = node->partition.end;
+			t_bp->end = node->partition.begin;
 		}
 		// (almost wrong) CP_Partition* t_bp = node->partition;
 		CP_Vec2 t_vec, p_vec;
@@ -1837,7 +1834,7 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 		str[i] = ' ';
 	str[floor] = 0;
 	if(T->side == CP_BSPNode::Sideness::UNDEFINED){
-		fout<<str<<"("<<T->partition->begin.m_x<<","<<T->partition->begin.m_y<<")---->("<<T->partition->end.m_x<<","<<T->partition->end.m_y<<")"<<endl;
+		fout<<str<<"("<<T->partition.begin.m_x<<","<<T->partition.begin.m_y<<")---->("<<T->partition.end.m_x<<","<<T->partition.end.m_y<<")"<<endl;
 		_debugFoutBsptree(T->leftChild, floor + 3, fout);
 		_debugFoutBsptree(T->rightChild, floor + 3, fout);
 	}
@@ -1879,8 +1876,8 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		CP_Partition *p = new CP_Partition();
 
 		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){//凜槨0角션쩌돨殮窟，痰黨털뙤T,P貫零珂션쩌T돨partition瞳혐堵코돨꼬롸
-			p->begin = node->pos_coincident[i]->begin;
-			p->end = node->pos_coincident[i]->end;
+			p->begin = node->pos_coincident[i].begin;
+			p->end = node->pos_coincident[i].end;
 
 			bool no_useful = false;
 			for(unsigned int i = 0; i < cell->polygon.size(); i++){
@@ -1893,7 +1890,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 			if(!no_useful){
 				//Determine whether it contributes to the polygon of the node
-				CP_Partition* node_face = new CP_Partition(p);
+				CP_Partition* node_face = new CP_Partition(*p);
 				if(child == node->rightChild){
 					if(cell->side == CP_BSPNode::Sideness::INSIDE){
 						node->rightIn.push_back(node_face);
@@ -1915,8 +1912,8 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		}
 
 		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){
-			p->begin = node->neg_coincident[i]->begin;
-			p->end = node->neg_coincident[i]->end;
+			p->begin = node->neg_coincident[i].begin;
+			p->end = node->neg_coincident[i].end;
 
 			bool no_useful = false;
 			for(unsigned int i = 0; i < cell->polygon.size(); i++){
@@ -1967,14 +1964,14 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell){
 		node = node->parent;
 		CP_Partition *p = new CP_Partition();
 
-		p->begin = node->partition->begin;
-		p->end = node->partition->end;
+		p->begin = node->partition.begin;
+		p->end = node->partition.end;
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
 		CP_Partition *polygon_face = new CP_Partition();
 
-		polygon_face->begin = node->partition->begin;
-		polygon_face->end = node->partition->end;
+		polygon_face->begin = node->partition.begin;
+		polygon_face->end = node->partition.end;
 		CP_Point2 begin;
 		CP_Point2 end;
 		if(gb_p_in_cellPolygon(cell, polygon_face, begin, end)){

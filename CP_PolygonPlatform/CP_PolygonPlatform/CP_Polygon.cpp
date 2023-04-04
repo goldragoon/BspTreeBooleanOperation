@@ -1701,7 +1701,6 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 					return P_T_POS_NEG;
 				}
 			}
-
 		}
 	}	
 }

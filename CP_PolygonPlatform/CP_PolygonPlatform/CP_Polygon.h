@@ -466,10 +466,7 @@ public:
 	}
 
 	bool isCell() const {
-		if (leftChild == NULL && rightChild == NULL)
-			return true;
-		else
-			return false;
+		return (leftChild == NULL) && (rightChild == NULL);
 	}
 
 	void complement() {_complement(this);}

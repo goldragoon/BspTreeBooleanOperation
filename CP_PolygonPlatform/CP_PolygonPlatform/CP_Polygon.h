@@ -269,7 +269,7 @@ public:
 	CP_Point2 intersection(const CP_Partition* _partition, 
 		CP_Vec2 &_t_vec, CP_Vec2 &_p_vec,
 		CP_Line2 &_t_line, CP_Line2 &_p_line
-	) {
+	) const {
 		// Proof : https://imois.in/posts/line-intersections-with-cross-products/
 
 		CP_Point2 point_intersection;
@@ -297,10 +297,10 @@ public:
 	}
 
 	/*
-	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하고, 
+	* \brief 파티션(direction = end - begin)를 무한한 길이를 가지는 벡터로 생각하고
 	* point가 벡터로 나눠지는 공간의 (벡터의 진행 방향) 왼쪽에 있으면 true, (벡터의 진행 방향) 오른쪽에 있으면 false를 반환한다.
 	*/
-	bool is_left_side(const CP_Point2& point) const{
+	bool is_left_side(const CP_Point2& point) const{ // is_ccw_side 가 더 정확하지 않을까..
 		CP_Vec2 partition_vec = end - begin;
 		// cross product의 floating-point overflow를 막기위한 normalization이 필요할 수 있음.
 		//partition_vec.normalize(); 
@@ -311,6 +311,16 @@ public:
 		//partition2point.normalize();
 
 		if (partition_vec.cross_product(partition2point) > 0) return true; // left (inside)
+		else return false; // on or right (outside)
+	}
+
+	/*
+	* \brief 파티션(direction = end - begin)를 무한한 길이를 가지는 벡터로 생각하고
+	* 다른 벡터 _p가 this 파티션을 기준으로 CCW(left)로 회전하면 true 아니면 false를 반환한다.
+	*/
+	bool is_ccw_rot(const CP_Vec2 &_v) const {
+		CP_Vec2 partition_vec = end - begin;
+		if (partition_vec.cross_product(_v) > 0) return true; // left (inside)
 		else return false; // on or right (outside)
 	}
 
@@ -478,7 +488,6 @@ extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent
 
 extern void gb_getCrossPartition(CP_Partition* T, CP_Partition* P, CP_Partition* &left, CP_Partition* &right);
 extern char getPartitionPos(const CP_Partition* const partition, const CP_Partition* const H);
-
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
@@ -489,11 +498,11 @@ extern void gb_partitionBspt(
 
 // New improved method for judging the positional relationship between T and P when splitting Bsptree, time-consuming is O(n)
 extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2& point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd);
-extern bool gb_isCross(CP_BSPNode* A, CP_Point2 &point);
 
 // partition이 T의 내부에 있는지 검사한다.
 extern bool gb_p_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end, const CP_Point2 &cross, double &pmin, double &pmax, double &pcross);
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
+
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);

@@ -1289,7 +1289,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 				pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
 			}
 		}
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
+		gb_partitionBspt(B, *tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
@@ -1325,7 +1325,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 		CP_Point2 pEnd(tree->partition->begin + sub);
 
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
+		gb_partitionBspt(B, *tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
 		tree->leftChild = B_inLeft;
@@ -1400,7 +1400,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 
 void gb_partitionBspt(
 	const CP_BSPNode* const T, // partition할 BSP 'T'.
-	const CP_Partition* const partition, // BSP를 자를 원본 파티션 'P'. 
+	const CP_Partition& partition, // BSP를 자를 원본 파티션 'P'. 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
 	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
 
@@ -1420,8 +1420,8 @@ void gb_partitionBspt(
 	* \details	두 직선이 평행/일치할 경우 cross_point에는 쓰레기 값이 들어있게 됨. (ON_POS, ON_NEG, POS_POS, NEG_NEG).
 	*/ 
 	CP_Point2 cross_point; 
-	const CP_Partition *leftPartition = partition;
-	const CP_Partition *rightPartition = partition;
+	const CP_Partition &leftPartition = partition;
+	const CP_Partition &rightPartition = partition;
 
 	// the binary partitioner of T splited by P (if intersects) is stored in partitionL(inside) and partitionR(outside).
 	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not chaning'
@@ -1572,7 +1572,7 @@ void gb_partitionBspt(
 }
 
 char gb_t_p_Position3(
-	const CP_BSPNode* const A, const CP_Partition* const partition, 
+	const CP_BSPNode* const A, const CP_Partition& partition, 
 	CP_Point2& cross_point,
 	CP_Partition& partitionL, CP_Partition& partitionR) {
 
@@ -1605,7 +1605,7 @@ char gb_t_p_Position3(
 			double isleft = ta * (partition->end.m_x - t_bp->end.m_x) - tb * (partition->end.m_y - t_bp->end.m_y);
 			if(isleft > 0) {
 			*/
-			if(t_bp->is_ccw_rot(partition->end - t_bp->end)) { // is_ccw_rot ~= P is left of T(t_bp) ?
+			if(t_bp->is_ccw_rot(partition.end - t_bp->end)) { // is_ccw_rot ~= P is left of T(t_bp) ?
 				//P is to the left of T
 				
 				/*
@@ -1695,8 +1695,8 @@ char gb_t_p_Position3(
 			if (dirAP > 0) dirAP = 1;
 			else dirAP = -1;
 
-			CP_Partition _p(partition->end, partition->begin); // temporary object for assignment.
-			if (partition->is_left_side(A->pos_coincident[0]->begin)) {
+			CP_Partition _p(partition.end, partition.begin); // temporary object for assignment.
+			if (partition.is_left_side(A->pos_coincident[0]->begin)) {
 				if (dirAP * dirP < 0) {
 					partitionR = _p;
 					return P_T_POS_POS;

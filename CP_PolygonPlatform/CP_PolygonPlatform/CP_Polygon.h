@@ -14,6 +14,8 @@ using namespace std;
 #define DOUBLE_PI           6.28318530717958647692
 #define PI                            3.14159265358979323846
 #define HALF_PI                1.57079632679489661923
+#define TOLERENCE 1e-4 // global tolerance
+
 bool compare_float(double x, double y, double epsilon = 1e-4);
 
 class CP_Vec2 {
@@ -97,8 +99,8 @@ public:
 	CP_Vec3 cross_product(const CP_Vec3& cp) const {
 		CP_Vec3 ret;
 		// this, cp 벡터의 세번째 element가 1일때의 공식. (s.t. homogeneous 2d point)
-		ret.m_x = m_y - cp.m_y;
-		ret.m_y = m_x - cp.m_x;
+		ret.m_x = m_y - cp.m_y; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
+		ret.m_y = m_x - cp.m_x; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
 		ret.m_z = m_x * cp.m_y - cp.m_x * m_y;
 		return ret;
 	}
@@ -152,7 +154,7 @@ public:
 		return *this;
 	}
 
-	double dist(const CP_Point2& _rhs) {
+	double dist(const CP_Point2& _rhs) const {
 		return (*this - _rhs).magnitude();
 	}
 
@@ -245,8 +247,12 @@ extern CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln);
 
 class CP_Partition{
 public:
-	CP_Point2 begin;
-	CP_Point2 end;
+	CP_Point2 begin, end;
+
+	// 어떤 point의 CP_Partition에 대한 상대적 위치를 나타냄.
+	enum class PointSideness {
+		LINE_IN, LINE_POS, LINE_NEG,
+	};
 
 	CP_Partition() {}
 	CP_Partition(const CP_Point2 &b, const CP_Point2 &e) : begin(b), end(e) {}
@@ -286,21 +292,66 @@ public:
 	}
 
 	/*
-	* \brief check that point is on is partition line segment(end ~ begin).
+	* \brief check that point(_pt) is on is partition line segment(end ~ begin).
 	*/
-	bool is_point_on(const CP_Point2 &_pt) const {
+	bool is_point_on_lineseg(const CP_Point2 &_pt) const {
 		double d;
 		closestPoint(_pt, d);
 		return compare_float(d, 0);
 	}
-	
+
+	/*
+	* \brief check that point equivalent is partition line segment points(end, begin).
+	*/
+	bool is_point_on_points(const CP_Point2& _pt) const {
+		return compare_float(_pt.dist(this->begin), 0) && compare_float(_pt.dist(this->end), 0);
+	}
+
+	bool is_point_on_line(const CP_Point2& _pt) const {
+		return compare_float(_pt.dist(this->begin), 0) && compare_float(_pt.dist(this->end), 0);
+	}
+
 	CP_Point2 closestPoint(const CP_Point2& point, double& d) const
 	{
 		CP_Vec2 dir = end - begin;
 		d = std::clamp(((point - begin) * dir) / dir.magnitude_squared(), 0.0, 1.0);
 		return begin + dir * d;
 	}
-	
+
+	// 목적이 불분명.
+	PointSideness coincidentPos(const CP_Point2& point) const {
+		CP_Vec2 begin2point = point - begin; // vector
+		CP_Vec2 end2point = point - end;     // vector
+
+		//partition 시작 정점이랑 똑같은지 검사..?
+		//if(!partition->is_point_on_points(point))// && !partition->end.is_point_on(point))
+
+		if (
+			(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE)
+			|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
+			|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
+			|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
+		{
+			// point가 partition 위에 있다면...? 근데 왜 이렇게 검사하지..
+			return PointSideness::LINE_IN;
+		}
+		else {
+			double dx1, dy1, dx2, dy2;
+			dx1 = std::abs(begin2point.m_x);
+			dy1 = std::abs(begin2point.m_y);
+
+			dx2 = std::abs(end2point.m_x);
+			dy2 = std::abs(end2point.m_y);
+
+			if (dx1 + dy1 < dx2 + dy2) {
+				return PointSideness::LINE_NEG;
+			}
+			else {
+				return PointSideness::LINE_POS;
+			}
+		}
+	}
+
 	/*
 	CP_Partition* operator= (CP_Partition* p){
 		CP_Partition* r = new CP_Partition();
@@ -433,7 +484,6 @@ extern void releaseMemory();
 #define REGION_IN 1
 #define REGION_OUT 2
 
-#define TOLERENCE 1e-4
 
 //left side pos right side neg
 #define P_T_ON_POS 0
@@ -444,8 +494,3 @@ extern void releaseMemory();
 #define P_T_NEG_NEG 5
 #define P_T_BOTH_POS 6
 #define P_T_BOTH_NEG 7
-
-#define LINE_IN 0
-#define LINE_POS 1
-#define LINE_NEG 2
-

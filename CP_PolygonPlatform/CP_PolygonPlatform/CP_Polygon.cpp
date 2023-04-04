@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -1470,8 +1471,8 @@ void gb_partitionBspt(
 		B_inLeft->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(gb_coincidentPos(T->pos_coincident[i], cross_point)){
-			case LINE_IN: 
+			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
+			case CP_Partition::PointSideness::LINE_IN: 
 			{
 				CP_Partition* left = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
 				CP_Partition* right = new CP_Partition(cross_point, T->pos_coincident[i]->end);
@@ -1479,17 +1480,17 @@ void gb_partitionBspt(
 				B_inRight->pos_coincident.push_back(right);
 				break;
 			}
-			case LINE_POS:
+			case CP_Partition::PointSideness::LINE_POS:
 				B_inLeft->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
-			case LINE_NEG:
+			case CP_Partition::PointSideness::LINE_NEG:
 				B_inRight->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(gb_coincidentPos(T->neg_coincident[i], cross_point)){
-			case LINE_IN:			
+			switch(T->neg_coincident[i]->coincidentPos(cross_point)){
+			case CP_Partition::PointSideness::LINE_IN:
 			{
 				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
 				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
@@ -1497,10 +1498,10 @@ void gb_partitionBspt(
 				B_inRight->neg_coincident.push_back(right);
 				break;
 			}
-			case LINE_POS:
+			case CP_Partition::PointSideness::LINE_POS:
 				B_inRight->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
-			case LINE_NEG:
+			case CP_Partition::PointSideness::LINE_NEG:
 				B_inLeft->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
 			}
@@ -1515,8 +1516,8 @@ void gb_partitionBspt(
 		B_inLeft->partition = T->partition;
 
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(gb_coincidentPos(T->pos_coincident[i], cross_point)){
-			case LINE_IN:				
+			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
+			case CP_Partition::PointSideness::LINE_IN:
 			{
 				CP_Partition* left = new CP_Partition(cross_point, T->pos_coincident[i]->end);
 				CP_Partition* right = new CP_Partition(T->pos_coincident[i]->begin, cross_point);
@@ -1524,17 +1525,17 @@ void gb_partitionBspt(
 				B_inRight->pos_coincident.push_back(right);
 				break;
 			}
-			case LINE_POS:
+			case CP_Partition::PointSideness::LINE_POS:
 				B_inRight->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
-			case LINE_NEG:
+			case CP_Partition::PointSideness::LINE_NEG:
 				B_inLeft->pos_coincident.push_back(T->pos_coincident[i]);
 				break;
 			}
 		}
 		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(gb_coincidentPos(T->neg_coincident[i], cross_point)){
-			case LINE_IN:				
+			switch(T->neg_coincident[i]->coincidentPos(cross_point)){
+			case CP_Partition::PointSideness::LINE_IN:
 			{
 				CP_Partition* right = new CP_Partition(T->neg_coincident[i]->begin, cross_point);
 				CP_Partition* left = new CP_Partition(cross_point, T->neg_coincident[i]->end);
@@ -1542,10 +1543,10 @@ void gb_partitionBspt(
 				B_inRight->neg_coincident.push_back(right);
 				break;
 			}
-			case LINE_POS:
+			case CP_Partition::PointSideness::LINE_POS:
 				B_inLeft->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
-			case LINE_NEG:
+			case CP_Partition::PointSideness::LINE_NEG:
 				B_inRight->neg_coincident.push_back(T->neg_coincident[i]);
 				break;
 			}
@@ -1563,70 +1564,6 @@ void gb_partitionBspt(
 			B_inRight->leftChild->parent = B_inRight;
 			B_inRight->rightChild->parent = B_inRight;
 	}
-}
-
-char gb_coincidentPos(CP_Partition *partition, CP_Point2 &point){
-	CP_Vec2 begin2point = point - partition->begin; // vector
-	CP_Vec2 end2point = point - partition->end;     // vector
-
-	if(
-		(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE) 
-		|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
-		|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
-		|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
-	{
-		// point가 partition 위에 있다면...? 근데 왜 이렇게 검사하지..
-		return LINE_IN;
-	}
-	else{
-		double dx1, dy1, dx2, dy2;
-		dx1 = std::abs(begin2point.m_x);
-		dy1 = std::abs(begin2point.m_y);
-
-		dx2 = std::abs(end2point.m_x);
-		dy2 = std::abs(end2point.m_y);
-
-		if (dx1 + dy1 < dx2 + dy2) {
-			return LINE_NEG;
-		}
-		else {
-			return LINE_POS;
-		}
-	}
-
-	/*
-	* // Just for Debugging
-	CP_Partition partitionL2(CP_Point2(0,0), CP_Point2(3,3));
-	double d;
-	auto closest = partitionL2.closestPoint(CP_Point2(4,4), d);
-
-	double d2;
-	auto closest2 = partitionL2.closestPoint(CP_Point2(3.000001, 3.00001), d);
-	*/
-	/*
-	* // 위에는 이 조건이랑 좀 다름...
-	CP_Partition partitionL(partitionLBegin, partitionLEnd);
-	if (partitionL.is_point_on(point_intersection)) {
-		crossInpartition_new = true;
-	}
-
-	if (crossInpartition_new != crossInpartition) {
-		printf("partition check is different! (%d, %d)\n", crossInpartition, crossInpartition_new);
-		printf("\t- begin : (%lf, %lf), end : (%lf, %lf)\n",
-			partitionLBegin.m_x, partitionLBegin.m_y,
-			partitionLEnd.m_x, partitionLEnd.m_y
-		);
-		printf("\t- point_intersection : (%lf, %lf)\n",
-			point_intersection.m_x, point_intersection.m_y
-		);
-
-		double dist;
-		auto closest = partitionL.closestPoint(point_intersection, dist);
-		printf("\t- intersection point 2 partition dist : %lf\n", dist);
-
-	}
-	crossInpartition = crossInpartition_new;
-	*/
 }
 
 /*
@@ -1814,7 +1751,11 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		}
 		else{  
 			//not intersect (parallel)
-			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
+
+
+
+			// cross product.
+			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) - ta * (partition->end.m_x - t_bp->end.m_x);
 			if(isleft > 0) {
 				//P is to the left of T
 				partitionRBegin = partition->end;
@@ -1846,7 +1787,7 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 		// partitionL, partitoinR을 알맞게 잘라서 할당해줌.
 
 		// if crossInPartition
-		if (gb_coincidentPos(partitionL, point_intersection) == LINE_IN) { 
+		if (partitionL->coincidentPos(point_intersection) == CP_Partition::PointSideness::LINE_IN) { 
 			if (t_vec.cross_product(p_vec) > 0) {
 				partitionLBegin = point_intersection;
 				partitionREnd = point_intersection;
@@ -1939,7 +1880,6 @@ bool gb_t_p_left(const CP_Partition* const tp, const CP_Partition* const partiti
 
 }
 */
-#include <algorithm>
 
 bool gb_t_p_left(const CP_Point2 &point, const CP_Partition* const partition){
 	CP_Vec2 partition_vec = partition->end - partition->begin;

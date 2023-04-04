@@ -1463,10 +1463,10 @@ void gb_partitionBspt(
 		break;
 	case P_T_BOTH_POS:
 		B_inLeft = new CP_BSPNode();
+		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
 		B_inRight->partition = T->partition;
-		B_inLeft->partition = T->partition;
-
+		
 		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
 			switch(T->pos_coincident[i]->coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN: 
@@ -1554,206 +1554,48 @@ void gb_partitionBspt(
 		break;
 	}
 	if(!B_inLeft->isCell()){
-			B_inLeft->leftChild->parent = B_inLeft;
-			B_inLeft->rightChild->parent = B_inLeft;
+		B_inLeft->leftChild->parent = B_inLeft;
+		B_inLeft->rightChild->parent = B_inLeft;
 	}
 	if(!B_inRight->isCell()){
-			B_inRight->leftChild->parent = B_inRight;
-			B_inRight->rightChild->parent = B_inRight;
+		B_inRight->leftChild->parent = B_inRight;
+		B_inRight->rightChild->parent = B_inRight;
 	}
 }
 
-/*
-char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point2 &cross_point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
-	CP_Partition *t_bp = A->partition;
-	double pa, pb, pc, ta, tb, tc;
-	ta =t_bp->end.m_y - t_bp->begin.m_y;
-	tb =t_bp->begin.m_x - t_bp->end.m_x;
-	tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
-
-	pa =partition->end.m_y - partition->begin.m_y;
-	pb =partition->begin.m_x - partition->end.m_x;
-	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
-
-	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){ // parallel
-		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) // concide
-		{
-			if(ta * pa > 0 || tb * pb > 0){
-				return P_T_ON_POS;
-			}
-			else {
-				return P_T_ON_NEG;
-			}
-		}
-		else{  //꼇宮슥
-			double isleft = -tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
-			if(isleft > 0){ //P瞳T璘긋
-				partitionRBegin = partition->end;
-				partitionREnd = partition->begin;
-				if(ta * pa > 0 || tb * pb > 0){
-					return P_T_POS_NEG;
-				}
-				else{
-					return P_T_POS_POS;
-				}
-			}
-			else{//P瞳T塘긋
-				partitionLBegin = partition->end;
-				partitionLEnd = partition->begin;
-				if(ta * pa > 0 || tb * pb > 0){
-					return P_T_NEG_POS;
-				}
-				else{
-					return P_T_NEG_NEG;
-				}
-			}
-		}
-	}
-	else{//宮슥
-		//헹t뵨p돨슥듐
-		CP_Point2 point;
-		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-		cross_point = CP_Point2();
-		cross_point = point;
-
-		//털뙤슥듐角뤠瞳partitionBegin뵨partitionEnd코꼬
-		double dx = partitionLEnd.m_x - partitionLBegin.m_x;
-		double dy = partitionLEnd.m_y - partitionLBegin.m_y;
-		bool crossInpartition = false;
-		if(pa * pa > pb * pb){ //y렘蕨
-			if(((partitionLEnd.m_y - point.m_y > TOLERENCE) && (point.m_y - partitionLBegin.m_y > TOLERENCE))
-				|| ((partitionLEnd.m_y - point.m_y < -TOLERENCE) && (point.m_y - partitionLBegin.m_y < -TOLERENCE))){ //in
-				crossInpartition = true;
-			}
-			if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
-				crossInpartition = false;
-		}
-		else{//x렘蕨
-			if(((partitionLEnd.m_x - point.m_x > TOLERENCE) && (point.m_x - partitionLBegin.m_x > TOLERENCE))
-				|| ((partitionLEnd.m_x - point.m_x < -TOLERENCE) && (point.m_x - partitionLBegin.m_x < -TOLERENCE))){ //in
-				crossInpartition = true;
-			}
-			if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
-				crossInpartition = false;
-		}
-
-
-		if(crossInpartition){
-			if((-tb) * pa - (-pb) * ta > 0){
-				partitionLBegin = point;
-				partitionREnd = point;
-				return P_T_BOTH_POS;
-			}
-			else{
-				partitionRBegin = point;
-				partitionLEnd = point;
-				return P_T_BOTH_NEG;
-			}
-		}
-		else{		
-			// 털뙤partition角뤠唐옵콘셨崎관벵瞳혐堵櫓돨窟뙈
-			CP_Point2 begin, end;
-			double pmin, pmax, pcross;
-			
-			if(gb_p_in_region(A, partition, begin, end, point, pmin, pmax, pcross)){
-				
-				CP_Partition *t_partition = new CP_Partition();
-				t_partition->begin = A->partition->begin;
-				t_partition->end = A->partition->end;
-
-				CP_Point2 pos_point;
-				double tmin, tmax, tcross;
-				gb_t_in_region(A, t_partition, pos_point, &point, tmin, tmax, tcross);
-
-				CP_Partition *currentp = new CP_Partition();
-				currentp->begin = begin;
-				currentp->end = end;
-
-				double a = tmin - tcross;
-				double b = tmax - tcross;
-
-				if(a < 0) a *= -1;
-				if(b < 0) b *= -1;
-
-				double dirAP = a - b;
-
-				a = pmin - pcross;
-				b = pmax - pcross;
-
-				if(a < 0) a *= -1;
-				if(b < 0) b *= -1;
-
-				double dirP = a - b;
-				if(gb_t_p_left(pos_point, partition)){
-					if(dirAP * dirP < 0){
-						partitionRBegin = partition->end;
-						partitionREnd = partition->begin;
-						return P_T_POS_POS;
-					}
-					else{
-						partitionLBegin = partition->end;
-						partitionLEnd = partition->begin;
-						return P_T_NEG_POS;
-					}
-				}
-				else{
-					if(dirAP * dirP < 0){
-						partitionLBegin = partition->end;
-						partitionLEnd = partition->begin;
-						return P_T_NEG_NEG;
-					}
-					else{
-						partitionRBegin = partition->end;
-						partitionREnd = partition->begin;
-						return P_T_POS_NEG;
-					}
-				}
-			}
-			else{
-				partitionLBegin = partition->end;
-				partitionLEnd = partition->begin;
-				partitionRBegin = partition->end;
-				partitionREnd = partition->begin;
-				if(gb_t_p_left(A->partition, partition)) return P_T_NEG_POS;
-				else return P_T_NEG_NEG;
-			}
-		}
-	}
-
-}
-*/
 // classify 
 char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const partition, CP_Point2 &cross_point, 
 	CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
 
-	CP_Partition *t_bp = A->partition;
+	// [Notation]
+	// 't' prefix states the 'tree'
+	// 'p' prefix states the 'partition'
+
+	const CP_Partition* const t_bp = A->partition;
 
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
-	CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
-	double ta = -t_line.a, tb = -t_line.b, tc = -t_line.c;
-	double pa = -p_line.a, pb = -p_line.b, pc = -p_line.c;
+	const CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
+	const double &ta = t_line.a, &tb = t_line.b, &tc = t_line.c;
+	const double &pa = p_line.a, &pb = p_line.b, &pc = p_line.c;
+	CP_Vec3 cp_t_p = t_line.as_vec().cross_product(p_line.as_vec());
 
-	if(t_line.isParallel(p_line)){
+	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
-		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
-			(-tb * pc + tc * pb <= TOLERENCE && -tb * pc + tc * pb >= -TOLERENCE)) 
-		{
+		if((compare_float(cp_t_p.m_x, 0) && compare_float(cp_t_p.m_y, 0))) // intersection point의 x와 y 좌표가 모두 0
+		{// (t_line and p_line) are intersect (coincide)
 			// [Warning from Gyu Jin Choi] : (problematic) never enters
-			// intersect (coincide)
+			
 			if(ta * pa > 0 || tb * pb < 0) return P_T_ON_POS;
 			else return P_T_ON_NEG;
 		}
-		else{  
-			//not intersect (parallel)
-
-
-
-			// cross product.
-			double isleft = tb * (partition->end.m_y - t_bp->end.m_y) - ta * (partition->end.m_x - t_bp->end.m_x);
+		else{ //(t_line and p_line) are not intersect (parallel)
+			
+			/*
+			double isleft = ta * (partition->end.m_x - t_bp->end.m_x) - tb * (partition->end.m_y - t_bp->end.m_y);
 			if(isleft > 0) {
+			*/
+			if(t_bp->is_ccw_rot(partition->end - t_bp->end)) {
 				//P is to the left of T
 				partitionRBegin = partition->end;
 				partitionREnd = partition->begin;
@@ -1963,187 +1805,6 @@ bool gb_p_in_region(
 	return true;	
 }
 
-/*
-bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, 
-	double &pmin, double &pmax, double &pcross){
-	pos = partition->begin;
-	double vx = partition->end.m_x - partition->begin.m_x;
-	double vy = partition->end.m_y - partition->begin.m_y;
-	
-	double mean_xy[2];
-	mean_xy[0] = vx > 0 ? 1: -1;
-	mean_xy[1] = vy > 0 ? 1: -1;
-
-	int x_or_y = 0;
-
-	if(vx * vx < vy * vy)
-		x_or_y = 1;
-
-	double min = DBL_MAX * -1;
-	double max = DBL_MAX;
-
-	CP_BSPNode *node = T;
-	CP_BSPNode *child;
-	double pa, pb, pc, ta, tb, tc;
-	CP_Point2 point;
-	while(node->parent != NULL){
-		child = node;
-		node = node->parent;
-		CP_Partition* t_bp = new CP_Partition();
-
-		if(child == node->leftChild){
-			t_bp->begin = node->partition->begin;
-			t_bp->end = node->partition->end;
-		}
-		else{
-			t_bp->begin = node->partition->end;
-			t_bp->end = node->partition->begin;
-		}
-		//CP_Partition* t_bp = node->partition;
-		ta =t_bp->end.m_y - t_bp->begin.m_y;
-		tb =t_bp->begin.m_x - t_bp->end.m_x;
-		tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
-
-		pa =partition->end.m_y - partition->begin.m_y;
-		pb =partition->begin.m_x - partition->end.m_x;
-		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
-
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){
-			//틱契 君瞳솝땍路북샀諒틱契瞳Tnode-partition璘긋떼옵鹿
-			// node-partition蕨좆（-tb,ta）
-			double v1 = partition->begin.m_x - t_bp->begin.m_x;
-			double v2 = partition->begin.m_y - t_bp->begin.m_y;
-			if((-tb) * v2 - ta * v1 >= 0){
-				continue;
-			}
-			else{
-				return false;
-			}
-		}
-		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-
-		if((-tb) * pa - (-pb) * ta > TOLERENCE)
-		{
-			if(x_or_y == 0){
-				double currentMin = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						pos = point;
-
-					}
-			}
-			else if(x_or_y == 1){
-				double currentMin = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						pos = point;
-					}
-			}
-		}
-		else{
-			if(x_or_y == 0){
-				double currentMax = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						pos = point;
-					}
-			}
-			else if(x_or_y == 1){
-				double currentMax = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						pos = point;
-					}
-			}
-		}
-	}
-
-	if(x_or_y == 0)
-		pcross = (cross->m_x - partition->begin.m_x) * mean_xy[x_or_y];
-	else if(x_or_y == 1)
-		pcross = (cross->m_y - partition->begin.m_y) * mean_xy[x_or_y];
-
-	if(min >= -TOLERENCE && min <= TOLERENCE)
-		min = 0;
-	if(max >= -TOLERENCE && max <= TOLERENCE)
-		max = 0;
-
-	pmin = min;
-	pmax = max;
-	double posmax = max;
-	double posmin = min;
-	if(posmax < 0) posmax *= -1;
-	if(posmin < 0) posmin *= -1;
-
-	double mean;
-	if(posmax + posmin == 0)
-		mean = 0;
-	else if(posmax == 0){
-		mean = min / 2;
-		if(mean > 1)
-			mean = 1;
-		else if(mean < -1)
-			mean = -1;
-	}
-	else if(posmin == 0){
-		mean = max / 2;
-		if(mean > 1)
-			mean = 1;
-		else if(mean < -1)
-			mean = -1;
-	}
-	else
-	    mean = min * (posmax  / (posmax + posmin)) + max * (posmin / (posmax + posmin));
-	if(x_or_y == 0){
-		pos.m_x = partition->begin.m_x + mean * mean_xy[0];
-		double disy = mean * vy * mean_xy[1]/ (vx * mean_xy[0]);
-		pos.m_y = partition->begin.m_y + disy * mean_xy[1];
-	}
-	else if(x_or_y == 1){
-		pos.m_y = partition->begin.m_y + mean * mean_xy[1];
-		double disx = mean * vx * mean_xy[0]/ (vy * mean_xy[1]);
-		pos.m_x = partition->begin.m_x + disx * mean_xy[0];
-	}
-	return true;	
-}
-*/
-bool gb_isCross(CP_BSPNode* A, CP_Point2 &point){
-	CP_BSPNode* node = A;
-	CP_BSPNode* child;
-	double a1, b1, a2, b2;
-	while(node->parent != NULL){
-		child = node;
-		node = node->parent;
-		a1 = node->partition->end.m_x - node->partition->begin.m_x;
-		b1 = node->partition->end.m_y - node->partition->begin.m_y;
-		if(child == node->rightChild){
-			a1 *= -1;
-			b1 *= -1;
-		}
-
-		a2 = point.m_x - node->partition->begin.m_x;
-		b2 = point.m_y - node->partition->begin.m_y;
-		if(a1 * b2 - b1 * a2 > TOLERENCE)
-			continue;
-		else
-			return false;
-	}
-	return true;
-}
-
 void debugBsptree(CP_BSPNode* T){
 	char filename[] = "debug.txt";
 	std::ofstream fout;
@@ -2214,13 +1875,8 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 			if(!no_useful){
 				//Determine whether it contributes to the polygon of the node
-				CP_Partition *node_face = new CP_Partition();
-
-				node_face->begin = p->begin;
-				node_face->end = p->end;
-
+				CP_Partition *node_face = new CP_Partition(p);
 				if(child == node->rightChild){
-			
 					if(cell->position == REGION_IN){
 						node->rightIn.push_back(node_face);
 					}
@@ -2571,3 +2227,325 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 
 	return true;	
 }
+
+
+/*
+char gb_t_p_Position(CP_BSPNode* A, CP_Partition* partition, CP_Point2 &cross_point, CP_Point2& partitionLBegin, CP_Point2& partitionLEnd, CP_Point2& partitionRBegin, CP_Point2& partitionREnd){
+	CP_Partition *t_bp = A->partition;
+	double pa, pb, pc, ta, tb, tc;
+	ta =t_bp->end.m_y - t_bp->begin.m_y;
+	tb =t_bp->begin.m_x - t_bp->end.m_x;
+	tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
+
+	pa =partition->end.m_y - partition->begin.m_y;
+	pb =partition->begin.m_x - partition->end.m_x;
+	pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
+
+	if(ta * pb - tb * pa <= TOLERENCE && ta * pb - tb * pa >= -TOLERENCE){ // parallel
+		if((ta * pc - tc * pa <= TOLERENCE && ta * pc - tc * pa >= -TOLERENCE) &&
+			(tb * pc - tc * pb <= TOLERENCE && tb * pc - tc * pb >= -TOLERENCE)) // concide
+		{
+			if(ta * pa > 0 || tb * pb > 0){
+				return P_T_ON_POS;
+			}
+			else {
+				return P_T_ON_NEG;
+			}
+		}
+		else{  //꼇宮슥
+			double isleft = -tb * (partition->end.m_y - t_bp->end.m_y) -ta * (partition->end.m_x - t_bp->end.m_x);
+			if(isleft > 0){ //P瞳T璘긋
+				partitionRBegin = partition->end;
+				partitionREnd = partition->begin;
+				if(ta * pa > 0 || tb * pb > 0){
+					return P_T_POS_NEG;
+				}
+				else{
+					return P_T_POS_POS;
+				}
+			}
+			else{//P瞳T塘긋
+				partitionLBegin = partition->end;
+				partitionLEnd = partition->begin;
+				if(ta * pa > 0 || tb * pb > 0){
+					return P_T_NEG_POS;
+				}
+				else{
+					return P_T_NEG_NEG;
+				}
+			}
+		}
+	}
+	else{//宮슥
+		//헹t뵨p돨슥듐
+		CP_Point2 point;
+		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
+		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
+		cross_point = CP_Point2();
+		cross_point = point;
+
+		//털뙤슥듐角뤠瞳partitionBegin뵨partitionEnd코꼬
+		double dx = partitionLEnd.m_x - partitionLBegin.m_x;
+		double dy = partitionLEnd.m_y - partitionLBegin.m_y;
+		bool crossInpartition = false;
+		if(pa * pa > pb * pb){ //y렘蕨
+			if(((partitionLEnd.m_y - point.m_y > TOLERENCE) && (point.m_y - partitionLBegin.m_y > TOLERENCE))
+				|| ((partitionLEnd.m_y - point.m_y < -TOLERENCE) && (point.m_y - partitionLBegin.m_y < -TOLERENCE))){ //in
+				crossInpartition = true;
+			}
+			if(partitionLEnd.m_y / pa - partitionLBegin.m_y / pa < 0)
+				crossInpartition = false;
+		}
+		else{//x렘蕨
+			if(((partitionLEnd.m_x - point.m_x > TOLERENCE) && (point.m_x - partitionLBegin.m_x > TOLERENCE))
+				|| ((partitionLEnd.m_x - point.m_x < -TOLERENCE) && (point.m_x - partitionLBegin.m_x < -TOLERENCE))){ //in
+				crossInpartition = true;
+			}
+			if(partitionLEnd.m_x / (-pb) - partitionLBegin.m_x / (-pb) < 0)
+				crossInpartition = false;
+		}
+
+
+		if(crossInpartition){
+			if((-tb) * pa - (-pb) * ta > 0){
+				partitionLBegin = point;
+				partitionREnd = point;
+				return P_T_BOTH_POS;
+			}
+			else{
+				partitionRBegin = point;
+				partitionLEnd = point;
+				return P_T_BOTH_NEG;
+			}
+		}
+		else{
+			// 털뙤partition角뤠唐옵콘셨崎관벵瞳혐堵櫓돨窟뙈
+			CP_Point2 begin, end;
+			double pmin, pmax, pcross;
+
+			if(gb_p_in_region(A, partition, begin, end, point, pmin, pmax, pcross)){
+
+				CP_Partition *t_partition = new CP_Partition();
+				t_partition->begin = A->partition->begin;
+				t_partition->end = A->partition->end;
+
+				CP_Point2 pos_point;
+				double tmin, tmax, tcross;
+				gb_t_in_region(A, t_partition, pos_point, &point, tmin, tmax, tcross);
+
+				CP_Partition *currentp = new CP_Partition();
+				currentp->begin = begin;
+				currentp->end = end;
+
+				double a = tmin - tcross;
+				double b = tmax - tcross;
+
+				if(a < 0) a *= -1;
+				if(b < 0) b *= -1;
+
+				double dirAP = a - b;
+
+				a = pmin - pcross;
+				b = pmax - pcross;
+
+				if(a < 0) a *= -1;
+				if(b < 0) b *= -1;
+
+				double dirP = a - b;
+				if(gb_t_p_left(pos_point, partition)){
+					if(dirAP * dirP < 0){
+						partitionRBegin = partition->end;
+						partitionREnd = partition->begin;
+						return P_T_POS_POS;
+					}
+					else{
+						partitionLBegin = partition->end;
+						partitionLEnd = partition->begin;
+						return P_T_NEG_POS;
+					}
+				}
+				else{
+					if(dirAP * dirP < 0){
+						partitionLBegin = partition->end;
+						partitionLEnd = partition->begin;
+						return P_T_NEG_NEG;
+					}
+					else{
+						partitionRBegin = partition->end;
+						partitionREnd = partition->begin;
+						return P_T_POS_NEG;
+					}
+				}
+			}
+			else{
+				partitionLBegin = partition->end;
+				partitionLEnd = partition->begin;
+				partitionRBegin = partition->end;
+				partitionREnd = partition->begin;
+				if(gb_t_p_left(A->partition, partition)) return P_T_NEG_POS;
+				else return P_T_NEG_NEG;
+			}
+		}
+	}
+
+}
+*/
+
+
+/*
+bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross,
+	double &pmin, double &pmax, double &pcross){
+	pos = partition->begin;
+	double vx = partition->end.m_x - partition->begin.m_x;
+	double vy = partition->end.m_y - partition->begin.m_y;
+
+	double mean_xy[2];
+	mean_xy[0] = vx > 0 ? 1: -1;
+	mean_xy[1] = vy > 0 ? 1: -1;
+
+	int x_or_y = 0;
+
+	if(vx * vx < vy * vy)
+		x_or_y = 1;
+
+	double min = DBL_MAX * -1;
+	double max = DBL_MAX;
+
+	CP_BSPNode *node = T;
+	CP_BSPNode *child;
+	double pa, pb, pc, ta, tb, tc;
+	CP_Point2 point;
+	while(node->parent != NULL){
+		child = node;
+		node = node->parent;
+		CP_Partition* t_bp = new CP_Partition();
+
+		if(child == node->leftChild){
+			t_bp->begin = node->partition->begin;
+			t_bp->end = node->partition->end;
+		}
+		else{
+			t_bp->begin = node->partition->end;
+			t_bp->end = node->partition->begin;
+		}
+		//CP_Partition* t_bp = node->partition;
+		ta =t_bp->end.m_y - t_bp->begin.m_y;
+		tb =t_bp->begin.m_x - t_bp->end.m_x;
+		tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
+
+		pa =partition->end.m_y - partition->begin.m_y;
+		pb =partition->begin.m_x - partition->end.m_x;
+		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
+
+		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta  <= TOLERENCE){
+			//틱契 君瞳솝땍路북샀諒틱契瞳Tnode-partition璘긋떼옵鹿
+			// node-partition蕨좆（-tb,ta）
+			double v1 = partition->begin.m_x - t_bp->begin.m_x;
+			double v2 = partition->begin.m_y - t_bp->begin.m_y;
+			if((-tb) * v2 - ta * v1 >= 0){
+				continue;
+			}
+			else{
+				return false;
+			}
+		}
+		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
+		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
+
+		if((-tb) * pa - (-pb) * ta > TOLERENCE)
+		{
+			if(x_or_y == 0){
+				double currentMin = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
+				if(currentMin >= max)
+					return false;
+				else
+					if(currentMin > min){
+						min = currentMin;
+						pos = point;
+
+					}
+			}
+			else if(x_or_y == 1){
+				double currentMin = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
+				if(currentMin >= max)
+					return false;
+				else
+					if(currentMin > min){
+						min = currentMin;
+						pos = point;
+					}
+			}
+		}
+		else{
+			if(x_or_y == 0){
+				double currentMax = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
+				if(currentMax <= min)
+					return false;
+				else
+					if(currentMax < max){
+						max = currentMax;
+						pos = point;
+					}
+			}
+			else if(x_or_y == 1){
+				double currentMax = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
+				if(currentMax <= min)
+					return false;
+				else
+					if(currentMax < max){
+						max = currentMax;
+						pos = point;
+					}
+			}
+		}
+	}
+
+	if(x_or_y == 0)
+		pcross = (cross->m_x - partition->begin.m_x) * mean_xy[x_or_y];
+	else if(x_or_y == 1)
+		pcross = (cross->m_y - partition->begin.m_y) * mean_xy[x_or_y];
+
+	if(min >= -TOLERENCE && min <= TOLERENCE)
+		min = 0;
+	if(max >= -TOLERENCE && max <= TOLERENCE)
+		max = 0;
+
+	pmin = min;
+	pmax = max;
+	double posmax = max;
+	double posmin = min;
+	if(posmax < 0) posmax *= -1;
+	if(posmin < 0) posmin *= -1;
+
+	double mean;
+	if(posmax + posmin == 0)
+		mean = 0;
+	else if(posmax == 0){
+		mean = min / 2;
+		if(mean > 1)
+			mean = 1;
+		else if(mean < -1)
+			mean = -1;
+	}
+	else if(posmin == 0){
+		mean = max / 2;
+		if(mean > 1)
+			mean = 1;
+		else if(mean < -1)
+			mean = -1;
+	}
+	else
+		mean = min * (posmax  / (posmax + posmin)) + max * (posmin / (posmax + posmin));
+	if(x_or_y == 0){
+		pos.m_x = partition->begin.m_x + mean * mean_xy[0];
+		double disy = mean * vy * mean_xy[1]/ (vx * mean_xy[0]);
+		pos.m_y = partition->begin.m_y + disy * mean_xy[1];
+	}
+	else if(x_or_y == 1){
+		pos.m_y = partition->begin.m_y + mean * mean_xy[1];
+		double disx = mean * vx * mean_xy[0]/ (vy * mean_xy[1]);
+		pos.m_x = partition->begin.m_x + disx * mean_xy[0];
+	}
+	return true;
+}
+*/

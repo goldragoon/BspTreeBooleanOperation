@@ -1288,7 +1288,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 				pEnd.m_x = (pEnd.m_y - tree->partition->begin.m_y) * (vx / vy) + tree->partition->begin.m_x;
 			}
 		}
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
+		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
@@ -1319,11 +1319,12 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 		pDiff.normalize();
 
 		CP_Vec2 sub(pDiff * (DBL_MAX / 10e200));
-		CP_Point2 pBegin(tree->partition->begin - sub);
+		// 무한하게 연장된 line...
+		CP_Point2 pBegin(tree->partition->begin - sub); 
 		CP_Point2 pEnd(tree->partition->begin + sub);
 
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, pBegin, pEnd);
+		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
 		tree->leftChild = B_inLeft;
@@ -1398,12 +1399,12 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 
 void gb_partitionBspt(
 	const CP_BSPNode* const T, // partition할 BSP 'T'.
-	const CP_Partition* const partition, // BSP를 자를 파티션 'P'. 
+	const CP_Partition* const partition, // BSP를 자를 원본 파티션 'P'. 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
 	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
 
-	// partition 'P'를 reqursive 하게 잘라나가는 중간 과정의 결과가가 저장되는 곳.
-	const CP_Point2& partitionBegin, const CP_Point2& partitionEnd // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
+	// partition 'P'를 reqursive 하게 잘라나가는 중간 과정의 결과가 저장되는 곳.
+	const CP_Partition& splited_partition // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
 ){ 
 	// A. if T is 'cell(or leaf node)' 
 	if(T->isCell()){
@@ -1423,11 +1424,11 @@ void gb_partitionBspt(
 
 	// the binary partitioner of T splited by P (if intersects) is stored in partitionL(inside) and partitionR(outside).
 	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not chaning'
-	CP_Partition partitionL, partitionR;
-	partitionL = partitionR = CP_Partition(partitionBegin, partitionEnd);
+	CP_Partition spl_partitionL, spl_partitionR;
+	spl_partitionL = spl_partitionR = CP_Partition(splited_partition);
 
 	// pos has 7 cases
-	char pos = gb_t_p_Position3(T, partition, cross_point, partitionL, partitionR);
+	char pos = gb_t_p_Position3(T, partition, cross_point, spl_partitionL, spl_partitionR);
 	switch(pos){
 	case P_T_ON_POS:
 		B_inLeft = T->leftChild;
@@ -1444,28 +1445,28 @@ void gb_partitionBspt(
 		B_inRight->rightChild = T->rightChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, partitionL.begin, partitionL.end);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, spl_partitionL);
 		break;
 	case P_T_POS_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->rightChild = T->rightChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, partitionL.begin, partitionL.end);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, spl_partitionL);
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->leftChild = T->leftChild;
 		B_inLeft->partition = T->partition;
 		B_inLeft->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, partitionR.begin, partitionR.end);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, spl_partitionR);
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
 		B_inRight->leftChild = T->leftChild;
 		B_inRight->partition = T->partition;
 		B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, partitionR.begin, partitionR.end);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
 		B_inLeft = new CP_BSPNode();
@@ -1509,8 +1510,8 @@ void gb_partitionBspt(
 				break;
 			}
 		}
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, partitionL.begin, partitionL.end);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, partitionR.begin, partitionR.end);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
@@ -1555,8 +1556,8 @@ void gb_partitionBspt(
 			}
 		}
 		
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, partitionL.begin, partitionL.end);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, partitionR.begin, partitionR.end);
+		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
+		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	}
 	if(!B_inLeft->isCell()){

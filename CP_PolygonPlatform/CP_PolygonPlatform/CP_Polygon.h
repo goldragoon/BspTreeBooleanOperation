@@ -261,7 +261,7 @@ public:
 
 	CP_Partition() {}
 	CP_Partition(const CP_Point2 &b, const CP_Point2 &e) : begin(b), end(e) {}
-	CP_Partition(const CP_Partition* const p) { begin = p->begin; end = p->end; }
+	CP_Partition(const CP_Partition &p) { begin = p.begin; end = p.end; }
 	~CP_Partition() {}
 
 	/*
@@ -388,13 +388,17 @@ public:
 		}
 	}
 
-	/*
-	CP_Partition* operator= (CP_Partition* p){
-		CP_Partition* r = new CP_Partition();
-		r->begin = p->begin;
-		r->end = p->end;
-		return r;
-	}*/
+	
+	CP_Partition& operator= (const CP_Partition& p) {
+
+		if (this == &p)
+			return *this;
+
+		this->begin = p.begin;
+		this->end = p.end;
+		return *this;
+	}
+	
 };
 
 enum class CP_BSPOp {
@@ -411,9 +415,9 @@ public:
 	CP_BSPNode *rightChild;
 	
 	// 현재 노드의 binary partition과, 나뉘어진 하위 파티션들..
-	CP_Partition * partition;
-	vector<CP_Partition*> pos_coincident;
-	vector<CP_Partition*> neg_coincident;
+	CP_Partition partition;
+	vector<CP_Partition> pos_coincident;
+	vector<CP_Partition> neg_coincident;
 
 	// visualization/output purpose.
 	vector<CP_Partition*> polygon;
@@ -432,7 +436,7 @@ public:
 
 	Sideness side; // 0 : Nothing , 1 : Region In, 2 : Region Out 
 
-	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(NULL), side(Sideness::UNDEFINED){}
+	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(), side(Sideness::UNDEFINED){}
 	CP_BSPNode(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
@@ -488,7 +492,7 @@ extern bool gb_p_in_region(CP_BSPNode* T, const CP_Partition& partition, CP_Poin
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 
 // [BSP Build Related]
-extern CP_BSPNode* gb_buildBSPTree(vector<CP_Partition*> &vp, CP_BSPNode* parent, char childInfo);
+extern CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition> &vp, CP_BSPNode* parent, char childInfo);
 #define CHILDINFO_NO 0
 #define CHILDINFO_LEFT 1
 #define CHILDINFO_RIGHT 2

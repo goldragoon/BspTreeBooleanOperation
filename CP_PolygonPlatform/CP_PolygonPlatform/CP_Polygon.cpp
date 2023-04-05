@@ -1056,9 +1056,6 @@ CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 }
 
 CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, char childInfo) {
-	vector<CP_Partition> F_right;
-	vector<CP_Partition> F_left;
-	//vector<CP_Partition*> F_coincident; need it?
 
 	const CP_Partition &H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
 
@@ -1067,21 +1064,27 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	tree->partition = H; // hyper plane으로 node를 쪼갬.
 	tree->parent = parent;
 
-	// parent의 child node pointer를 update하기..
+	// parent의 child node pointer를 update하기.. (temporary assignment for gb_p_in_region)
 	if (childInfo == CHILDINFO_LEFT)      parent->leftChild = tree;
 	else if(childInfo == CHILDINFO_RIGHT) parent->rightChild = tree;
 	// else (childInfo == CHILDINFO_NO) 인 경우는 root node일 때밖에 없음.
 
+	// [partitionLine initialization] START [Q : does it really required????]
+	// 
 	// partitionLine is used to record the part of the line where the partition is located inside the area
 	CP_Partition partitionLine(tree->partition);
 
 	// temporary variables for gb_p_in_region
 	CP_Point2 pBegin, pEnd;
-	double pmin, pmax, pcross;
+	double pmin, pmax;// , pcross;
 	CP_Point2 point;
 
-	// 아래 호출에서 pcross는 쓰레기값.
-	if(!gb_p_in_region(tree, partitionLine, pBegin, pEnd, point, pmin, pmax, pcross)){
+	// 이미 여기서 BSPTreeNode의 left, right child 정보가 필요함.
+	if(!gb_p_in_region(
+		tree, tree->partition, 
+		pBegin, pEnd, 
+		//point, 
+		pmin, pmax)){//, pcross)){
 		pBegin = tree->partition.end;
 		pEnd = tree->partition.begin;
 	}
@@ -1110,17 +1113,13 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 			pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 		}
 	}
-	partitionLine = CP_Partition(pBegin, pEnd);
-
-	tree->pos_coincident.push_back(partitionLine);
-	//partitionLine initialization ends
-
-	if(vp.size() > 0) // Q : 이 조건이 H assign 하지 전으로 들어가야 하지 않나?
-		tree->pos_coincident.push_back(H); // 현재 노드의 hyperplane (이게 partitionLine push_back 하기 전에 들어가면 왜 문제가 되나?)
+	tree->pos_coincident.push_back(CP_Partition(pBegin, pEnd));
+	//[partitionLine initialization] END [Q : does it really required????]
 
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
+	vector<CP_Partition> F_right, F_left;
 	for(const CP_Partition &p : vp){
-		char pos = getPartitionPos(p, H);
+		char pos = getPartitionPos(p, H); // ClassifyPolygonToPlane/ ClassifyPolygonToLine
 		switch(pos){
 		case POS_LEFT:
 			F_left.push_back(p);
@@ -1136,7 +1135,7 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 			break;
 		case POS_CROSS:
 			CP_Partition left, right;
-			gb_getCrossPartition(p, H, left, right);
+			gb_getCrossPartition(p, H, left, right); // ImplicitPolygon::Split.
 			F_left.push_back(left);
 			F_right.push_back(right);
 			break;
@@ -1218,7 +1217,7 @@ char getPartitionPos(
 		return POS_CROSS;
 	}
 	else if(end_pos * begin_pos > 0){
-		if (end_pos < 0)return POS_RIGHT;
+		if (end_pos < 0) return POS_RIGHT;
 		else return POS_LEFT;
 	}
 	else{ 
@@ -1257,10 +1256,15 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->assign_coincidents(A);
 
 		CP_Point2 pBegin, pEnd;
-		double pmin, pmax, pcross;
-		CP_Point2 cross_point;
+		double pmin, pmax;// , pcross;
+		//CP_Point2 cross_point;
 		// 아래 호출에서 pcross는 쓰레기값.
-		if(!gb_p_in_region(B, A->partition, pBegin, pEnd, cross_point, pmin, pmax, pcross)){
+		if(!gb_p_in_region(
+			B, A->partition, 
+			pBegin, pEnd, 
+			//cross_point, 
+			pmin, pmax
+		)){//}, pcross)){
 			pBegin = tree->partition.end;
 			pEnd = tree->partition.begin;
 		}
@@ -1375,7 +1379,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 				return node;
 				
 				/*
-				gb_complement(T1); // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
+				T1->complement(); // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
 				return T1;
 				*/
 			}
@@ -1719,12 +1723,14 @@ char gb_t_p_Position3(
 	}
 }
 
-// partition 이 T의 내부 영역에 존재하는지 검사한다.
+// partition 이 T의 내부 영역에 존재하는지 검사한다(???)
 bool gb_p_in_region(
 	CP_BSPNode* T, const CP_Partition& partition, 
 	CP_Point2 &begin, CP_Point2& end, 
-	const CP_Point2 &cross, 
-	double &pmin, double &pmax, double &pcross){
+	//const CP_Point2 &cross, 
+	double &pmin, double &pmax
+	//,double &pcross
+){
 	begin = partition.begin;
 	end = partition.end;
 
@@ -1754,14 +1760,12 @@ bool gb_p_in_region(
 		CP_Partition t_bp; // (tree)_(binary)(partition)
 		if(child == node->leftChild){ 
 			// 만약 현재 노드가 parent 기준 양의 영역에 있는 경우..
-			t_bp.begin = node->partition.begin;
-			t_bp.end = node->partition.end;
+			t_bp = CP_Partition(node->partition.begin, node->partition.end);
 		}
 		else{
 			// 만약 현재 노드가 parent 기준 음의 영역에 있는 경우..
-			// Q : 왜 바꿔주지? -> vector의 방향을 바꾸어서 내/외부 검사?
-			t_bp.begin = node->partition.end;
-			t_bp.end = node->partition.begin;
+			// Q : 왜 바꿔줘야 하지? -> vector의 방향을 바꾸어서 내/외부 검사
+			t_bp = CP_Partition(node->partition.end, node->partition.begin);
 		}
 
 		CP_Vec2 t_vec, p_vec;
@@ -1769,7 +1773,7 @@ bool gb_p_in_region(
 		CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);		
 
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
-		double cross_product_tp = t_vec.cross_product(p_vec);
+		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1)
 		if(compare_float(cross_product_tp, 0)){
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..
@@ -1787,6 +1791,7 @@ bool gb_p_in_region(
 		// 만약 두 개의 벡터가 평행하지 않은 경우...
 		if(cross_product_tp > TOLERENCE)
 		{
+			// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMin = !x_or_y ?
 				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
@@ -1799,6 +1804,7 @@ bool gb_p_in_region(
 				}
 		}
 		else{
+			// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMax = !x_or_y ?
 				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
@@ -1811,11 +1817,12 @@ bool gb_p_in_region(
 				}
 		}
 	}
-
+	/*
 	if(x_or_y == 0)
 		pcross = (cross.m_x - partition.begin.m_x) * mean_xy[x_or_y];
 	else if(x_or_y == 1)
 		pcross = (cross.m_y - partition.begin.m_y) * mean_xy[x_or_y];
+	*/
 	pmin = min;
 	pmax = max;
 	return true;	

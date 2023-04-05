@@ -1070,25 +1070,23 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	// else (childInfo == CHILDINFO_NO) 인 경우는 root node일 때밖에 없음.
 
 	// [partitionLine initialization] START [Q : does it really required????]
-	// 
-	// partitionLine is used to record the part of the line where the partition is located inside the area
-	CP_Partition partitionLine(tree->partition);
-
+	
 	// temporary variables for gb_p_in_region
 	CP_Point2 pBegin, pEnd;
-	double pmin, pmax;// , pcross;
-	CP_Point2 point;
+	double pmin, pmax;
 
-	// 이미 여기서 BSPTreeNode의 left, right child 정보가 필요함.
-	if(!gb_p_in_region(
-		tree, tree->partition, 
+	// gb_p_in_region 안쪽에서 BSPTreeNode(tree)의 left, right child 정보가 필요함.
+	if(!gb_p_in_region( 
+		tree, tree->partition,
 		pBegin, pEnd, 
-		//point, 
-		pmin, pmax)){//, pcross)){
+		pmin, pmax)){
+		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음., 
 		pBegin = tree->partition.end;
 		pEnd = tree->partition.begin;
 	}
 	else{
+		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음., 
+	
 		CP_Vec2 diff = tree->partition.end - tree->partition.begin;
 		double &dx = diff.m_x, &dy = diff.m_y;
 
@@ -1112,8 +1110,11 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 			pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 			pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 		}
+		//pBegin = tree->partition.begin;
+		//pEnd = tree->partition.end;
 	}
-	tree->pos_coincident.push_back(CP_Partition(pBegin, pEnd));
+	tree->pos_coincident.push_back(CP_Partition(pBegin, pEnd)); // 해당하는 리프에서 잘려진 것을.. 저장?
+	
 	//[partitionLine initialization] END [Q : does it really required????]
 
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
@@ -1256,15 +1257,13 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->assign_coincidents(A);
 
 		CP_Point2 pBegin, pEnd;
-		double pmin, pmax;// , pcross;
-		//CP_Point2 cross_point;
-		// 아래 호출에서 pcross는 쓰레기값.
+		double pmin, pmax;
+
 		if(!gb_p_in_region(
 			B, A->partition, 
 			pBegin, pEnd, 
-			//cross_point, 
-			pmin, pmax
-		)){//}, pcross)){
+			pmin, pmax))
+		{
 			pBegin = tree->partition.end;
 			pEnd = tree->partition.begin;
 		}
@@ -1725,9 +1724,7 @@ char gb_t_p_Position3(
 bool gb_p_in_region(
 	CP_BSPNode* T, const CP_Partition& partition, 
 	CP_Point2 &begin, CP_Point2& end, 
-	//const CP_Point2 &cross, 
 	double &pmin, double &pmax
-	//,double &pcross
 ){
 	begin = partition.begin;
 	end = partition.end;
@@ -1736,10 +1733,13 @@ bool gb_p_in_region(
 	double vx = partition.end.m_x - partition.begin.m_x;
 	double vy = partition.end.m_y - partition.begin.m_y;
 	
-	// 사분면 중 어디로 향하는지 나타냄?
+	// 왜 이걸 할까? 
+	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
+	// - 더 긴 쪽으로 하기 위함..
 	double mean_xy[2];
 	mean_xy[0] = vx > 0 ? 1: -1;
 	mean_xy[1] = vy > 0 ? 1: -1;
+	
 
 	// dx, dy 중어느 것이 더 큰지 검사.
 	bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
@@ -1787,7 +1787,7 @@ bool gb_p_in_region(
 			}
 		}
 		// 만약 두 개의 벡터가 평행하지 않은 경우...
-		if(cross_product_tp > TOLERENCE)
+		else if(cross_product_tp > TOLERENCE)
 		{
 			// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMin = !x_or_y ?
@@ -1801,7 +1801,7 @@ bool gb_p_in_region(
 					begin = point;
 				}
 		}
-		else{
+		else{ // (cross_product_tp < -TOLERENCE)
 			// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMax = !x_or_y ?
 				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
@@ -1815,14 +1815,8 @@ bool gb_p_in_region(
 				}
 		}
 	}
-	/*
-	if(x_or_y == 0)
-		pcross = (cross.m_x - partition.begin.m_x) * mean_xy[x_or_y];
-	else if(x_or_y == 1)
-		pcross = (cross.m_y - partition.begin.m_y) * mean_xy[x_or_y];
-	*/
-	pmin = min;
-	pmax = max;
+
+	pmin = min; pmax = max;
 	return true;	
 }
 

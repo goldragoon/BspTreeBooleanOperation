@@ -487,11 +487,9 @@ public:
 
 // [BSP Build Merge Both]
 // - partition이 T의 내부에 있는지 검사한다.
-extern bool gb_p_in_region(CP_BSPNode* T, const CP_Partition& partition, 
-	CP_Point2& begin, CP_Point2& end, 
-	//const CP_Point2& cross, 
-	double& pmin, double& pmax
-	//,double& pcross
+extern bool gb_p_in_region(
+	const CP_BSPNode* const T, const CP_Partition& partition, // input parameters
+	CP_Partition& partition_spl // chunk of input 'partition' that is splited by the region of 'T'.
 );
 //extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 

@@ -1733,8 +1733,8 @@ char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition* const parti
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
 	CP_Point2 point_intersection = t_bp->intersection(partition, t_vec, p_vec, t_line, p_line);
-	double ta = -t_line.a, tb = -t_line.b, tc = -t_line.c;
-	double pa = -p_line.a, pb = -p_line.b, pc = -p_line.c;
+	double ta = -t_line.a, tb = t_line.b, tc = -t_line.c;
+	double pa = -p_line.a, pb = p_line.b, pc = -p_line.c;
 
 	if(t_line.isParallel(p_line)){
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.

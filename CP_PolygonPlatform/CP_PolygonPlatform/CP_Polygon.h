@@ -122,6 +122,10 @@ public:
 	bool isParallel(const CP_Line2 &_line) const {
 		return compare_float(a * _line.b - b * _line.a, 0);
 	}
+
+	CP_Vec3 as_vec() const {
+		return CP_Vec3(a, b, c);
+	}
 	//bool isCoincide(const CP_Line2& _line) const {}
 };
 
@@ -287,7 +291,6 @@ public:
 
 		// additional return for performance optimization
 		_t_vec = t_vec; _p_vec = p_vec;
-		t_line.b *= -1; p_line.b *= -1;
 		_t_line = t_line; _p_line = p_line;
 
 		return point_intersection;

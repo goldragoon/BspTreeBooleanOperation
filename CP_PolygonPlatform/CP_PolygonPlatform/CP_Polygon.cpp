@@ -1059,17 +1059,16 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 
 	const CP_Partition &H = vp[0]; // H referes the H(yperplane) of current node. Just choose first one, not considering optimality......
 
-	// 새로운 노드 생성.
+	// 새로운 노드 생성 및 parent와 양방향 포인터 연결
 	CP_BSPNode *tree = new CP_BSPNode();
 	tree->partition = H; // hyper plane으로 node를 쪼갬.
 	tree->parent = parent;
-
-	// parent의 child node pointer를 update하기.. (temporary assignment for gb_p_in_region)
 	if (childInfo == CHILDINFO_LEFT)      parent->leftChild = tree;
 	else if(childInfo == CHILDINFO_RIGHT) parent->rightChild = tree;
-	// else (childInfo == CHILDINFO_NO) 인 경우는 root node일 때밖에 없음.
+	else if (childInfo == CHILDINFO_NO) { printf("root node!"); }
+	else { printf("something is weird!\n"); }
 
-	// Note : gb_p_in_region 안쪽에서 BSPTreeNode(tree)의 left, right child 정보가 필요함.
+	// Note : gb_p_in_region 안쪽에서 'parent'의 left, right child 포인터를 레퍼런스 하고있음.
 	CP_Partition partition_splited;
 	if(gb_p_in_region( 
 		tree, tree->partition,
@@ -1080,6 +1079,8 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
 		// pBegin = tree->partition.end; pEnd = tree->partition.begin;
 	}
+	// 이걸 안해주면 서로 다른 BSP를 머지할 때 문제가 생김..
+	// 그냥도 안됨..
 	tree->pos_coincident.push_back(partition_splited); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
 
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.

@@ -1076,29 +1076,23 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	double pmin, pmax;
 
 	// gb_p_in_region 안쪽에서 BSPTreeNode(tree)의 left, right child 정보가 필요함.
-	if(!gb_p_in_region( 
+	if(gb_p_in_region( 
 		tree, tree->partition,
 		pBegin, pEnd, 
-		pmin, pmax)){
-		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음., 
-		pBegin = tree->partition.end;
-		pEnd = tree->partition.begin;
-	}
-	else{
-		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음., 
-	
+		pmin, pmax))
+	{
+		// [직선의 방정식의 steepest-axis 찾기] Start - gb_p_in_region 안쪽 참고.
+		// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
+		// - 더 긴 쪽으로 하기 위함..
 		CP_Vec2 diff = tree->partition.end - tree->partition.begin;
-		double &dx = diff.m_x, &dy = diff.m_y;
-
+		const double& dx = diff.m_x, & dy = diff.m_y;
 		double mean_xy[2];
-		mean_xy[0] = dx > 0 ? 1: -1;
-		mean_xy[1] = dy > 0 ? 1: -1;
+		mean_xy[0] = dx > 0 ? 1 : -1;
+		mean_xy[1] = dy > 0 ? 1 : -1;
+		bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
+		// [직선의 방정식의 steepest-axis 찾기] End
 
-		int x_or_y = 0; // manitude comparison?
-		if(abs(dx) < abs(dy))
-			x_or_y = 1;
-
-		if(x_or_y == 0){ // ||dx|| > ||dy||
+		if(!x_or_y){ // ||dx|| > ||dy||
 			pBegin.m_x = pmin * mean_xy[0] + tree->partition.begin.m_x;
 			pEnd.m_x = pmax * mean_xy[0] + tree->partition.begin.m_x;
 			pBegin.m_y = (pBegin.m_x - tree->partition.begin.m_x) * (dy / dx) + tree->partition.begin.m_y;
@@ -1110,10 +1104,17 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 			pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 			pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 		}
-		//pBegin = tree->partition.begin;
-		//pEnd = tree->partition.end;
+	} else {
+		// 여기에 들어오는 경우가 없나?
+		printf("[gb_buildBSPTree - gb_p_in_region] Partition is not in region!\n");
+		/*
+		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
+		pBegin = tree->partition.end;
+		pEnd = tree->partition.begin;
+		*/
 	}
-	tree->pos_coincident.push_back(CP_Partition(pBegin, pEnd)); // 해당하는 리프에서 잘려진 것을.. 저장?
+	
+	tree->pos_coincident.push_back(CP_Partition(pBegin, pEnd)); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
 	
 	//[partitionLine initialization] END [Q : does it really required????]
 
@@ -1259,36 +1260,45 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		CP_Point2 pBegin, pEnd;
 		double pmin, pmax;
 
-		if(!gb_p_in_region(
-			B, A->partition, 
+		if(gb_p_in_region(
+			B, tree->partition,
 			pBegin, pEnd, 
 			pmin, pmax))
 		{
-			pBegin = tree->partition.end;
-			pEnd = tree->partition.begin;
-		}
-		else{
-			double vx = tree->partition.end.m_x - tree->partition.begin.m_x;
-			double vy = tree->partition.end.m_y - tree->partition.begin.m_y;
-	
-			double mean_xy[2];
-			mean_xy[0] = vx > 0 ? 1: -1;
-			mean_xy[1] = vy > 0 ? 1: -1;
 
-			bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
+			// [직선의 방정식의 steepest-axis 찾기] Start
+			// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
+			// - 더 긴 쪽으로 하기 위함..
+			CP_Vec2 diff = tree->partition.end - tree->partition.begin;
+			const double& dx = diff.m_x, & dy = diff.m_y;
+			double mean_xy[2];
+			mean_xy[0] = dx > 0 ? 1 : -1;
+			mean_xy[1] = dy > 0 ? 1 : -1;
+			bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
+			// [직선의 방정식의 steepest-axis 찾기] End
+
 			if(x_or_y == 0){
 				pBegin.m_x = pmin * mean_xy[0] + tree->partition.begin.m_x;
 				pEnd.m_x = pmax * mean_xy[0] + tree->partition.begin.m_x;
-				pBegin.m_y = (pBegin.m_x - tree->partition.begin.m_x) * (vy / vx) + tree->partition.begin.m_y;
-				pEnd.m_y = (pEnd.m_x - tree->partition.begin.m_x) * (vy / vx) + tree->partition.begin.m_y;
+				pBegin.m_y = (pBegin.m_x - tree->partition.begin.m_x) * (dy / dx) + tree->partition.begin.m_y;
+				pEnd.m_y = (pEnd.m_x - tree->partition.begin.m_x) * (dy / dx) + tree->partition.begin.m_y;
 			}
 			else{
 				pBegin.m_y = pmin * mean_xy[1] + tree->partition.begin.m_y;
 				pEnd.m_y = pmax * mean_xy[1] + tree->partition.begin.m_y;
-				pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (vx / vy) + tree->partition.begin.m_x;
-				pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (vx / vy) + tree->partition.begin.m_x;
+				pBegin.m_x = (pBegin.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
+				pEnd.m_x = (pEnd.m_y - tree->partition.begin.m_y) * (dx / dy) + tree->partition.begin.m_x;
 			}
+		} else {
+			// 여기에 들어오는 경우가 없나?
+			printf("[gb_mergeBSPTree - gb_p_in_region] Partition is not in region!\n");
+			/*
+			// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
+			pBegin = tree->partition.end;
+			pEnd = tree->partition.begin;
+			*/
 		}
+		
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
 
 		if (left) tree->parent->leftChild = tree;
@@ -1724,25 +1734,22 @@ char gb_t_p_Position3(
 bool gb_p_in_region(
 	CP_BSPNode* T, const CP_Partition& partition, 
 	CP_Point2 &begin, CP_Point2& end, 
-	double &pmin, double &pmax
-){
+	double &pmin, double &pmax)
+{
+	// Assign partition as default
 	begin = partition.begin;
 	end = partition.end;
 
-	// diff
-	double vx = partition.end.m_x - partition.begin.m_x;
-	double vy = partition.end.m_y - partition.begin.m_y;
-	
-	// 왜 이걸 할까? 
+	// [직선의 방정식의 steepest-axis 찾기] Start
 	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
 	// - 더 긴 쪽으로 하기 위함..
+	CP_Vec2 diff = partition.end - partition.begin;
+	const double& dx = diff.m_x, &dy = diff.m_y;
 	double mean_xy[2];
-	mean_xy[0] = vx > 0 ? 1: -1;
-	mean_xy[1] = vy > 0 ? 1: -1;
-	
-
-	// dx, dy 중어느 것이 더 큰지 검사.
-	bool x_or_y = std::abs(vx) < std::abs(vy) ? true : false;
+	mean_xy[0] = dx > 0 ? 1: -1;
+	mean_xy[1] = dy > 0 ? 1: -1;
+	bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
+	// [직선의 방정식의 steepest-axis 찾기] End
 
 	double min = DBL_MAX / 10e200 * -1;
 	double max = DBL_MAX / 10e200;

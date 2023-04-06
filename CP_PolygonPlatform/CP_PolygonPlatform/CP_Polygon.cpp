@@ -1420,8 +1420,6 @@ void gb_partitionBspt(
 	* \details	두 직선이 평행/일치할 경우 cross_point에는 쓰레기 값이 들어있게 됨. (ON_POS, ON_NEG, POS_POS, NEG_NEG).
 	*/ 
 	CP_Point2 cross_point; 
-	const CP_Partition &leftPartition = partition;
-	const CP_Partition &rightPartition = partition;
 
 	// the binary partitioner of T splited by P (if intersects) is stored in partitionL(inside) and partitionR(outside).
 	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not chaning'
@@ -1511,8 +1509,8 @@ void gb_partitionBspt(
 				break;
 			}
 		}
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_NEG:
 		B_inLeft = new CP_BSPNode();
@@ -1557,8 +1555,8 @@ void gb_partitionBspt(
 			}
 		}
 		
-		gb_partitionBspt(T->leftChild, leftPartition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
-		gb_partitionBspt(T->rightChild, rightPartition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	}
 	if(!B_inLeft->isCell()){

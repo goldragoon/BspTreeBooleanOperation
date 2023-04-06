@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 
-
 // for only debugging.
 #include <iostream>
 
@@ -15,6 +14,8 @@ using namespace std;
 #define PI                            3.14159265358979323846
 #define HALF_PI                1.57079632679489661923
 #define TOLERENCE 1e-4 // global tolerance
+
+#define NOMINMAX 1
 
 bool compare_float(double x, double y, double epsilon = 1e-4);
 
@@ -64,6 +65,8 @@ public:
 		return (*this);
 	}
 
+
+
 	void normalize() {
 		double m = magnitude();
 		m_x /= m;
@@ -98,35 +101,11 @@ public:
 
 	CP_Vec3 cross_product(const CP_Vec3& cp) const {
 		CP_Vec3 ret;
-		// this, cp 벡터의 세번째 element가 1일때의 공식. (s.t. homogeneous 2d point)
-		ret.m_x = m_y * cp.m_z - m_z * cp.m_y; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
-		ret.m_y = m_z * cp.m_x - m_x * cp.m_z; // 특수한 경우의 공식 (this[2] == 1 && cp[2] == 1)
+		ret.m_x = m_y * cp.m_z - m_z * cp.m_y;
+		ret.m_y = m_z * cp.m_x - m_x * cp.m_z;
 		ret.m_z = m_x * cp.m_y - cp.m_x * m_y;
 		return ret;
 	}
-};
-
-class CP_Line2 {
-public:
-	// 2D line coefficients (a)x + (b)y + (c) = 0
-	double a, b, c;
-	CP_Line2():a(0.0), b(0.0), c(0.0) {}
-	CP_Line2(const CP_Vec2& _s, const CP_Vec2& _e) {
-		// construct line equation by converting _s, _e as homogeneous coordinate.
-		CP_Vec3 S(_s, 1), E(_e, 1);
-		CP_Vec3 coeffs = S.cross_product(E);
-		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
-	}
-	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
-
-	bool isParallel(const CP_Line2 &_line) const {
-		return compare_float(a * _line.b - b * _line.a, 0);
-	}
-
-	CP_Vec3 as_vec() const {
-		return CP_Vec3(a, b, c);
-	}
-	//bool isCoincide(const CP_Line2& _line) const {}
 };
 
 class CP_Point2 {
@@ -166,6 +145,49 @@ public:
 	//static bool equal(const CP_Point2& _rhs, double _tol = 1e-6) {}
 };
 typedef vector<CP_Point2> VT_PointArray;
+
+class CP_Line2 {
+public:
+	// 2D line coefficients (a)x + (b)y + (c) = 0
+	double a, b, c;
+	CP_Line2() :a(0.0), b(0.0), c(0.0) {}
+	CP_Line2(const CP_Vec2& _s, const CP_Vec2& _e) {
+		// construct line equation by converting _s, _e as homogeneous coordinate.
+		CP_Vec3 S(_s, 1), E(_e, 1);
+		CP_Vec3 coeffs = S.cross_product(E);
+		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
+		double max_coeff = 2;//(std::max)({ a, b, c }); normalization 때문에 너무 계수가 너무 작아지면 망할 수 있음.
+		a /= max_coeff; b /= max_coeff; c /= max_coeff;
+	}
+
+	CP_Line2(const CP_Point2& _s, const CP_Point2& _e) {
+		// construct line equation by converting _s, _e as homogeneous coordinate.
+		CP_Vec3 S(_s.as_vec(), 1), E(_e.as_vec(), 1);
+		CP_Vec3 coeffs = S.cross_product(E);
+		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
+		//double max_coeff = (std::max)({ std::abs(a), std::abs(b), std::abs(c) });
+		//a /= max_coeff; b /= max_coeff; c /= max_coeff;
+	}
+
+	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
+
+	bool isParallel(const CP_Line2& _line) const {
+		return compare_float(a * _line.b - b * _line.a, 0);
+	}
+
+	CP_Vec3 as_vec() const {
+		return CP_Vec3(a, b, c);
+	}
+	
+	long double eval(const CP_Point2& _pt) {
+		long double term1 = a * _pt.m_x;
+		long double term2 = b * _pt.m_y;
+		long double term3 = c;
+		return (long double)(term1 + term2 + term3);
+	}
+
+	//bool isCoincide(const CP_Line2& _line) const {}
+};
 
 class CP_Polygon;
 
@@ -263,6 +285,11 @@ public:
 	CP_Partition(const CP_Partition &p) { begin = p.begin; end = p.end; }
 	~CP_Partition() {}
 
+	double slope() {
+		CP_Line2 t_line(this->begin.as_vec(), this->end.as_vec());
+		return -(t_line.a / t_line.b);
+	}
+
 	/*
 	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
 	*/
@@ -353,24 +380,37 @@ public:
 
 	// 목적이 불분명.
 	/*
-	* P_T_BOTH_POS, P_T_BOTH_NEG를 반환하고/검사하는 용도로만 사용됨.
+	* gb_t_p_Position3에서 P_T_BOTH_POS, P_T_BOTH_NEG를 반환하고/검사하는 용도로만 사용됨.
 	*/
 	PointSideness coincidentPos(const CP_Point2& point) const {
 		CP_Vec2 begin2point = point - begin; // vector
 		CP_Vec2 end2point = point - end;     // vector
 
-		//partition 시작 정점이랑 똑같은지 검사..?
-		//if(!partition->is_point_on_points(point))// && !partition->end.is_point_on(point))
+		// point가 partition line 위에 있지 않다면...? 근데 왜 전부 or case로 검사해야되지...
+		CP_Line2 _p(begin, end);
+		double eval = _p.eval(point);
+		
 		if (
 			(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE)
 			|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
 			|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
 			|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
 		{
-			// point가 partition 점 위에 있지 않다면...? 근데 왜 전부 or case로 검사하지..
+			if (eval > TOLERENCE) {
+				//printf("coincidentPos eval is bigger than 0\n");
+			}
+
+			if (eval < -TOLERENCE) {
+				//printf("coincidentPos eval is smaller than 0\n");
+			}
 			return PointSideness::LINE_IN;
 		}
 		else {
+
+			if (compare_float(eval, 0)) {
+				//printf("WHY? : coincidentPos eval is 0\n");
+			}
+
 			double dx1, dy1, dx2, dy2;
 			dx1 = std::abs(begin2point.m_x);
 			dy1 = std::abs(begin2point.m_y);
@@ -387,9 +427,7 @@ public:
 		}
 	}
 
-	
 	CP_Partition& operator= (const CP_Partition& p) {
-
 		if (this == &p)
 			return *this;
 
@@ -397,7 +435,6 @@ public:
 		this->end = p.end;
 		return *this;
 	}
-	
 };
 
 enum class CP_BSPOp {

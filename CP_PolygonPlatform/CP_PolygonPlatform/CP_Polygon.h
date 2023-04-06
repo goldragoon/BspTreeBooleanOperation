@@ -278,17 +278,15 @@ public:
 		// 2. (_partition) object
 		CP_Vec2 p_vec = _partition->end - _partition->begin;
 		CP_Line2 p_line(_partition->begin.as_vec(), _partition->end.as_vec());
-		
-		t_line.b *= -1; p_line.b *= -1;
 
 		// projective/homogeneous equation으로 교점 (3차원 버전에서는 교선으로 바꿀 것)
 		double denominator = (t_line.a * p_line.b - t_line.b * p_line.a);
 		point_intersection.m_x = (t_line.b * p_line.c - t_line.c * p_line.b) / denominator;
-		point_intersection.m_y = -(t_line.c * p_line.a - t_line.a * p_line.c) / denominator;
+		point_intersection.m_y = (t_line.c * p_line.a - t_line.a * p_line.c) / denominator;
 
 		// additional return for performance optimization
 		_t_vec = t_vec; _p_vec = p_vec;
-		
+		t_line.b *= -1; p_line.b *= -1;
 		_t_line = t_line; _p_line = p_line;
 
 		return point_intersection;

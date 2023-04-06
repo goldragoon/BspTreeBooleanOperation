@@ -123,10 +123,9 @@ public:
 		return compare_float(a * _line.b - b * _line.a, 0);
 	}
 
-	CP_Vec3 as_vec() const{
+	CP_Vec3 as_vec() const {
 		return CP_Vec3(a, b, c);
 	}
-
 	//bool isCoincide(const CP_Line2& _line) const {}
 };
 

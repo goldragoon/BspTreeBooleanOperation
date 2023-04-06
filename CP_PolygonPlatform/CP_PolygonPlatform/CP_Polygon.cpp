@@ -1592,20 +1592,21 @@ char gb_t_p_Position3(
 
 	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
-		if((compare_float(cp_t_p.m_x, 0) && compare_float(cp_t_p.m_y, 0))) // intersection point의 x와 y 좌표가 모두 0
-		{   
-			// (t_line and p_line) are intersect (coincide)
-			// [Warning from Gyu Jin Choi] : (problematic) never enters (maybe very rare?, a==0, b==0, c==0...)
-			
+		if((compare_float(cp_t_p.m_x, 0) && compare_float(cp_t_p.m_y, 0)))
+		{
+			// [Warning from Gyu Jin Choi] : (problematic) never enters
+			// intersect (coincide)
 			if(ta * pa > 0 || tb * pb < 0) return P_T_ON_POS;
 			else return P_T_ON_NEG;
 		}
-		else{ //(t_line and p_line) are not intersect (parallel)
-			/*
-			double isleft = ta * (partition->end.m_x - t_bp->end.m_x) - tb * (partition->end.m_y - t_bp->end.m_y);
-			if(isleft > 0) {
-			*/
-			if(t_bp.is_ccw_rot(partition.end - t_bp.end)) { // is_ccw_rot ~= P is left of T(t_bp) ?
+		else {
+			//not intersect (real parallel)
+
+			// 이미 P 와 T의 직선의 방정식이 parallel 하므로, p의 점이 t의 진행방향 왼쪽 공간에 있는지만 검사하면 충분함.
+			CP_Point2 p_line_pt(0, -p_line.c / p_line.b);
+			bool isleft_test = t_bp.is_left_side(p_line_pt);
+
+			if (isleft_test > 0) {
 				//P is to the left of T
 				
 				/*
@@ -1619,7 +1620,7 @@ char gb_t_p_Position3(
 				if(ta * pa > 0 || tb * pb > 0) return P_T_POS_NEG;
 				else return P_T_POS_POS; // Note : CP_Partition::intersection 안쪽에서 cross product에 들어가는 line segment의 begin, end 순서에 따라 법선 방향이 뒤집힘.
 			}
-			else{
+			else {
 				//P is to the right of T
 
 				/*
@@ -1632,6 +1633,7 @@ char gb_t_p_Position3(
 				if(ta * pa > 0 || tb * pb > 0) return P_T_NEG_POS;
 				else return P_T_NEG_NEG;
 			}
+			
 		}
 	}
 	else {

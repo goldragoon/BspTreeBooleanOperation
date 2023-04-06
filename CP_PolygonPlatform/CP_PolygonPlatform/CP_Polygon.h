@@ -115,7 +115,7 @@ public:
 		// construct line equation by converting _s, _e as homogeneous coordinate.
 		CP_Vec3 S(_s, 1), E(_e, 1);
 		CP_Vec3 coeffs = S.cross_product(E);
-		a = coeffs.m_x; b = -coeffs.m_y; c = coeffs.m_z;
+		a = coeffs.m_x; b = coeffs.m_y; c = coeffs.m_z;
 	}
 	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
 
@@ -279,13 +279,16 @@ public:
 		CP_Vec2 p_vec = _partition->end - _partition->begin;
 		CP_Line2 p_line(_partition->begin.as_vec(), _partition->end.as_vec());
 		
+		t_line.b *= -1; p_line.b *= -1;
+
 		// projective/homogeneous equation으로 교점 (3차원 버전에서는 교선으로 바꿀 것)
-		double denominator = t_line.a * p_line.b - t_line.b * p_line.a;
+		double denominator = (t_line.a * p_line.b - t_line.b * p_line.a);
 		point_intersection.m_x = (t_line.b * p_line.c - t_line.c * p_line.b) / denominator;
 		point_intersection.m_y = -(t_line.c * p_line.a - t_line.a * p_line.c) / denominator;
 
 		// additional return for performance optimization
 		_t_vec = t_vec; _p_vec = p_vec;
+		
 		_t_line = t_line; _p_line = p_line;
 
 		return point_intersection;

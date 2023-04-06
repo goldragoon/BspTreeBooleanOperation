@@ -1601,7 +1601,7 @@ char gb_t_p_Position3(
 
 			// 이미 P 와 T의 직선의 방정식이 parallel 하므로, p의 점이 t의 진행방향 왼쪽 공간에 있는지만 검사하면 충분함.
 			CP_Point2 p_line_pt(0, -p_line.c / p_line.b);
-			bool isleft_test = t_bp->is_left_side(p_line_pt);
+			bool isleft_test = t_bp.is_left_side(p_line_pt);
 
 			if (isleft_test > 0) {
 				//P is to the left of T

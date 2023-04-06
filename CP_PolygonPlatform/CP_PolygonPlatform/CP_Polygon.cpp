@@ -986,7 +986,7 @@ bool gb_checkLineSegmentCross(CP_Point2* p11, CP_Point2* p12, CP_Point2* p21, CP
 
 // generate partition as 2d line segment(shoulnd't be 2d plane?)
 void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition>& vp){
-	printf("\t\tgb_getLoopPartition\n"); // debug
+	//printf("\t\tgb_getLoopPartition\n"); // debug
 	CP_Polygon *polygon = ln.m_polygon;
 	int size = ln.m_pointIDArray.size();
 	int direction = -1;
@@ -995,14 +995,14 @@ void gb_getLoopPartition(CP_Loop& ln, vector<CP_Partition>& vp){
 
 	for(int i = 0; i < size; i++){
 		int j = (i + direction + size) % size;
-		printf("\t\t\t- (i,j) = (%d, %d)\n", i, j); // debug
+		//printf("\t\t\t- (i,j) = (%d, %d)\n", i, j); // debug
 		CP_Partition p(polygon->m_pointArray[ln.m_pointIDArray[i]], polygon->m_pointArray[ln.m_pointIDArray[j]]);
 		vp.push_back(p);
 	}
 }
 
 CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
-	printf("gb_buildPolygonBSPTree\n");
+	//printf("gb_buildPolygonBSPTree\n");
 	int nr = pn.m_regionArray.size();
 	if(nr == 0)
 		return NULL;
@@ -1023,7 +1023,7 @@ CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
 }
 
 CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
-	printf("gb_buildRegionBSPTree\n");
+	//printf("gb_buildRegionBSPTree\n");
 	int nl = rn.m_loopArray.size();
 	vector<CP_BSPNode *> bsptrees;
 	CP_BSPNode* result;
@@ -1043,7 +1043,7 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 }
 
 CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
-	printf("\tgb_buildLoopBSPTree\n");
+	//printf("\tgb_buildLoopBSPTree\n");
 
 	// polygon의 에지 개수만큼..
 	vector<CP_Partition> partitionArray;

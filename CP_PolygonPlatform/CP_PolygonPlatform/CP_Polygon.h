@@ -67,10 +67,11 @@ public:
 
 
 
-	void normalize() {
+	CP_Vec2 normalize() {
 		double m = magnitude();
 		m_x /= m;
 		m_y /= m;
+		return (*this);
 	}
 
 	double magnitude() {
@@ -290,6 +291,16 @@ public:
 		return -(t_line.a / t_line.b);
 	}
 
+	/*
+	* \brief 파티션 벡터의 begin, end를 방향성을 유지하면서 무한하게 연장한다.
+	*/
+	CP_Partition infinite_expansion() {
+		double expansion_magnitude = DBL_MAX / 10e200;
+		CP_Vec2 _v = (end - begin);
+		CP_Vec2 expansion_vector = _v.normalize() * expansion_magnitude;
+		return CP_Partition(begin - expansion_vector, end + expansion_vector);
+	}
+	
 	/*
 	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
 	*/

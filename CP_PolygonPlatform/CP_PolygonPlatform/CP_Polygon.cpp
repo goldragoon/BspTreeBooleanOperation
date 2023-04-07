@@ -1291,16 +1291,9 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Vec2 pDiff = tree->partition.end - tree->partition.begin;
-		pDiff.normalize();
-
-		CP_Vec2 sub(pDiff * (DBL_MAX / 10e200));
-		// 무한하게 연장된 line...
-		CP_Point2 pBegin(tree->partition.begin - sub); 
-		CP_Point2 pEnd(tree->partition.begin + sub);
-
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, CP_Partition(pBegin, pEnd));
+		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, tree->partition.infinite_expansion());
+
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
 		tree->leftChild = B_inLeft;

@@ -10,8 +10,20 @@
 
 using namespace std;
 
-bool compare_float(double x, double y, double epsilon) {
+bool equal_float(double x, double y, double epsilon) {
 	if (fabs(x - y) < epsilon)
+		return true; //they are same
+	return false; //they are not same
+}
+
+bool bigger_float(double x, double y, double epsilon) {
+	if ((x - y) > -epsilon)
+		return true; //they are same
+	return false; //they are not same
+}
+
+bool smaller_float(double x, double y, double epsilon) {
+	if ((x - y) < epsilon)
 		return true; //they are same
 	return false; //they are not same
 }
@@ -1193,8 +1205,8 @@ char getPartitionPos(
 	CP_Vec2 end_vector = vp_end - H.end;
 	end_pos = H_vector.cross_product(end_vector); // check end point is coincides or...
 
-	if(compare_float(end_pos, 0)) end_pos = 0;
-	if(compare_float(begin_pos, 0)) begin_pos = 0;
+	if(equal_float(end_pos, 0)) end_pos = 0;
+	if(equal_float(begin_pos, 0)) begin_pos = 0;
 
 	// 여기서는 두 개의 line segment의 관계에 대해서만 생각! 무한한 직선으로 생각하지 않음.
 	if(end_pos * begin_pos < 0){
@@ -1239,14 +1251,18 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Partition partition_splited;
+		CP_Partition partition_splited; // merge 할 때도 build 할 때와 비슷하게 
+		bool in_region = false;
 		if(!gb_p_in_region(
 			B, tree->partition,
 			partition_splited))
-		{}
+		{
+			in_region = true;
+		}
 		else {
+			in_region = false;
 			// 여기에 들어오는 경우(outer_only4_teeth_and_hook)?
-			printf("[gb_buildBSPTree - gb_p_in_region] Partition is not in region!\n");
+			//printf("[gb_buildBSPTree - gb_p_in_region] Partition is not in region!\n");
 			// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
 			// pBegin = tree->partition.end; pEnd = tree->partition.begin;
 		}
@@ -1265,8 +1281,10 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
 		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
 
-		printf("gb_mergeBSPTree slope comp (partition, partition_splited) : (%lf, %lf)\n",
-			tree->partition.slope(), partition_splited.slope()); // same
+		/*
+		// just for debugging
+		printf("[in-region : %d] gb_mergeBSPTree slope comp (partition, partition_splited) : (%lf, %lf)\n",
+			in_region, tree->partition.slope(), partition_splited.slope()); // same
 
 		printf("\t- tree->partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
 			tree->partition.begin.m_x, tree->partition.begin.m_y,
@@ -1275,13 +1293,14 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		printf("\t- partition_splited: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
 			partition_splited.begin.m_x, partition_splited.begin.m_y,
 			partition_splited.end.m_x, partition_splited.end.m_y);
-
+		*/
 	}
 
 	return tree;
 }
 
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
+	printf("gb_mergeBSPTree - root node");
 	CP_BSPNode* tree = NULL;
 	if(A->isCell() || B->isCell()) { // isLeaf
 		tree = gb_mergeTreeWithCell(A, B, op);
@@ -1373,7 +1392,9 @@ void gb_partitionBspt(
 	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
 
 	// partition 'P'를 reqursive 하게 잘라나가는 중간 과정의 결과가 저장되는 곳.
-	const CP_Partition& splited_partition // 맨 처음에는 partition을 infinite하게 연장한 게 들어옴.
+	// A. 루트 노드에서 호출될 때는 partition line을 infinite하게 연장한 게 입력됨.
+	// B. 
+	const CP_Partition& splited_partition 
 ){ 
 	// A. if T is 'cell(or leaf node)' 
 	if(T->isCell()){
@@ -1390,7 +1411,7 @@ void gb_partitionBspt(
 	CP_Point2 cross_point; 
 
 	// the binary partitioner of T splited by P (if intersects) is stored in partitionL(inside) and partitionR(outside).
-	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not chaning'
+	// if binary partitioners of T and P are 'not intersecting', then partitionL and partitionR is 'not changing'
 	CP_Partition spl_partitionL, spl_partitionR;
 	spl_partitionL = spl_partitionR = CP_Partition(splited_partition);
 
@@ -1436,6 +1457,7 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
+		// T와 P가 서로 'BOTH_POS' 라면, 
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
@@ -1558,7 +1580,7 @@ char gb_t_p_Position3(
 
 	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
-		if((compare_float(cp_t_p.m_x, 0) && compare_float(cp_t_p.m_y, 0)))
+		if((equal_float(cp_t_p.m_x, 0) && equal_float(cp_t_p.m_y, 0)))
 		{
 			// [Warning from Gyu Jin Choi] : (problematic) never enters
 			// intersect (coincide)
@@ -1603,7 +1625,7 @@ char gb_t_p_Position3(
 		}
 	}
 	else {
-		// t_line is intersected with p_line(line intersection)
+		// t_line is intersected with p_line (infinite line is not parallel!)
 
 		cross_point = point_intersection; // output variable...
 
@@ -1621,9 +1643,12 @@ char gb_t_p_Position3(
 				partitionR.end = point_intersection;
 				return P_T_BOTH_POS;
 			}
-			else if (compare_float(_cp, 0)) {
-				printf("[gb_t_p_Position3 ] in here, t and p shouldn't be parallel\n");
+			/*
+			* // Could never be happen => already filtered by 't_line.isParallel(p_line)'
+			else if (equal_float(_cp, 0)) {
+				printf("[gb_t_p_Position3] in here, t and p shouldn't be parallel\n");
 			}
+			*/
 			else { // (_cp < -TOLERENCE)
 				partitionR.begin = point_intersection;
 				partitionL.end = point_intersection;
@@ -1734,7 +1759,7 @@ bool gb_p_in_region(
 
 		CP_Partition t_bp = node->partition; // ('t'ree)_('b'inary)('p'artitioner) 
 		// A. 현재 노드가 parent 기준 양(내부)의 영역에 있는 경우에는 아무것도 하지 않음.
-			// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
+		// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
 		if (child == node->rightChild)
 			t_bp.flip(); // swap 하는게 오직 parallel 한 경우에만..
 
@@ -1744,7 +1769,7 @@ bool gb_p_in_region(
 
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
 		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
-		if(compare_float(cross_product_tp, 0)){
+		if(equal_float(cross_product_tp, 0)){
 
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..

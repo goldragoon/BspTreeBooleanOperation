@@ -17,7 +17,14 @@ using namespace std;
 
 #define NOMINMAX 1
 
-bool compare_float(double x, double y, double epsilon = 1e-4);
+// check x == y considering epsilon
+bool equal_float(double x, double y, double epsilon = 1e-4);
+
+// check x > y considering epsilon
+bool bigger_float(double x, double y, double epsilon = 1e-4);
+
+// check x > y considering epsilon
+bool smaller_float(double x, double y, double epsilon = 1e-4);
 
 class CP_Vec2 {
 public:
@@ -173,7 +180,7 @@ public:
 	CP_Line2(const CP_Vec3& _vec3) : a(_vec3.m_x), b(_vec3.m_y), c(_vec3.m_z) {}
 
 	bool isParallel(const CP_Line2& _line) const {
-		return compare_float(a * _line.b - b * _line.a, 0);
+		return equal_float(a * _line.b - b * _line.a, 0);
 	}
 
 	CP_Vec3 as_vec() const {
@@ -385,18 +392,18 @@ public:
 	bool is_point_on_lineseg(const CP_Point2 &_pt) const {
 		double d;
 		closestPoint(_pt, d);
-		return compare_float(d, 0);
+		return equal_float(d, 0);
 	}
 
 	/*
 	* \brief check that point equivalent is partition line segment points(end, begin).
 	*/
 	bool is_point_on_points(const CP_Point2& _pt) const {
-		return compare_float(_pt.dist(this->begin), 0) && compare_float(_pt.dist(this->end), 0);
+		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
 	}
 
 	bool is_point_on_line(const CP_Point2& _pt) const {
-		return compare_float(_pt.dist(this->begin), 0) && compare_float(_pt.dist(this->end), 0);
+		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
 	}
 
 	CP_Point2 closestPoint(const CP_Point2& point, double& d) const
@@ -406,13 +413,18 @@ public:
 		return begin + dir * d;
 	}
 
-	// 목적이 불분명.
 	/*
-	* gb_t_p_Position3에서 P_T_BOTH_POS, P_T_BOTH_NEG를 반환하고/검사하는 용도로만 사용됨.
+	* 정확히 하는일이 뭔가 이상? 근데 잘 동작?
+	* 용도 : 
+	* 1. gb_t_p_Position3에서 P_T_BOTH_POS, P_T_BOTH_NEG를 반환하도록 함.
+	* 2. gb_partitionBspt 에서 반환값이 P_T_BOTH_POS, P_T_BOTH_NEG인 경우 뭔가 함.
 	*/
 	PointSideness coincidentPos(const CP_Point2& point) const {
-		CP_Vec2 begin2point = point - begin; // vector
-		CP_Vec2 end2point = point - end;     // vector
+		CP_Vec2 begin2point = point - begin;
+		CP_Vec2 end2point = point - end;
+
+		// begin2point <-> this 간의 coincident?
+		// end2point <-> this 간의 coincident?
 
 		// point가 partition line 위에 있지 않다면...? 근데 왜 전부 or case로 검사해야되지...
 		CP_Line2 _p(begin, end);
@@ -424,20 +436,8 @@ public:
 			|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
 			|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
 		{
-			if (eval > TOLERENCE) {
-				//printf("coincidentPos eval is bigger than 0\n");
-			}
-
-			if (eval < -TOLERENCE) {
-				//printf("coincidentPos eval is smaller than 0\n");
-			}
-			return PointSideness::LINE_IN;
-		}
-		else {
-
-			if (compare_float(eval, 0)) {
-				//printf("WHY? : coincidentPos eval is 0\n");
-			}
+			if (equal_float(eval, 0))
+				printf("[PointSideNess::LINE_POS, LINE_NEG]: coincidentPos eval is 0\n");
 
 			double dx1, dy1, dx2, dy2;
 			dx1 = std::abs(begin2point.m_x);
@@ -446,12 +446,16 @@ public:
 			dx2 = std::abs(end2point.m_x);
 			dy2 = std::abs(end2point.m_y);
 
-			if (dx1 + dy1 < dx2 + dy2) {
+			if (dx1 + dy1 < dx2 + dy2)
 				return PointSideness::LINE_NEG;
-			}
-			else {
+			else
 				return PointSideness::LINE_POS;
-			}
+		}
+		else {
+			if (equal_float(eval, 0))
+				printf("[PointSideNess::LINE_IN]: coincidentPos eval is 0\n");
+
+			return PointSideness::LINE_IN;
 		}
 	}
 

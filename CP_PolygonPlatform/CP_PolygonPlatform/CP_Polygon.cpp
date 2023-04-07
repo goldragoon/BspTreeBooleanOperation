@@ -1102,6 +1102,7 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	//tree->pos_coincident.push_back(tree->partition); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
 	tree->pos_coincident.push_back(partition_splited); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
 	// debug!!!!!!!!!!!!
+	/*
 	printf("[in-region : %d] buildBSPTree slope comp (partition, partition_splited) : (%lf, %lf)\n",
 		in_region, tree->partition.slope(), partition_splited.slope()); // same
 
@@ -1112,7 +1113,7 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	printf("\t- partition_splited: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
 		partition_splited.begin.m_x, partition_splited.begin.m_y,
 		partition_splited.end.m_x, partition_splited.end.m_y);
-	
+	*/
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
 	vector<CP_Partition> F_right, F_left;
 	for(const CP_Partition &p : vp){
@@ -1746,8 +1747,9 @@ bool gb_p_in_region(
 	const bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
 	// [직선의 방정식의 steepest-axis 찾기] End
 
-	double min = DBL_MAX / 10e250 * -1;
-	double max = DBL_MAX / 10e250;
+	// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
+	double min = DBL_MAX / 10e300 * -1; 
+	double max = DBL_MAX / 10e300;
 
 	const CP_BSPNode *node = T;
 	const CP_BSPNode *child = NULL;
@@ -2139,8 +2141,8 @@ bool gb_p_in_cellPolygon(
 	if(vx * vx < vy * vy)
 		x_or_y = 1;
 	
-
-	double min = DBL_MAX * -1;
+	// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
+	double min = DBL_MAX * -1; 
 	double max = DBL_MAX;
 
 	const CP_BSPNode *node = T;

@@ -302,7 +302,7 @@ public:
 	* \brief 파티션 벡터의 begin, end를 방향성을 유지하면서 무한하게 연장한다.
 	*/
 	CP_Partition infinite_expansion() {
-		double expansion_magnitude = DBL_MAX / 10e200;
+		double expansion_magnitude = DBL_MAX / 10e300; // [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
 		CP_Vec2 _v = (end - begin);
 		CP_Vec2 expansion_vector = _v.normalize() * expansion_magnitude;
 		return CP_Partition(begin - expansion_vector, end + expansion_vector);
@@ -323,7 +323,6 @@ public:
 	void flip() {
 		std::swap(begin, end);
 	}
-
 
 	/*
 	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
@@ -389,12 +388,14 @@ public:
 	/*
 	* \brief check that point(_pt) is on is partition line segment(end ~ begin).
 	*/
+	/*
+	* Temporary deprecation !!!!!!!!!!!!!!
 	bool is_point_on_lineseg(const CP_Point2 &_pt) const {
 		double d;
 		closestPoint(_pt, d);
 		return equal_float(d, 0);
 	}
-
+	*/
 	/*
 	* \brief check that point equivalent is partition line segment points(end, begin).
 	*/
@@ -405,40 +406,54 @@ public:
 	bool is_point_on_line(const CP_Point2& _pt) const {
 		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
 	}
-
-	CP_Point2 closestPoint(const CP_Point2& point, double& d) const
+	
+	double dist(const CP_Point2& point) const
 	{
 		CP_Vec2 dir = end - begin;
-		d = std::clamp(((point - begin) * dir) / dir.magnitude_squared(), 0.0, 1.0);
-		return begin + dir * d;
+		double dir_mag_sq = dir.magnitude_squared();
+		double dist2 = std::clamp(
+			(
+				(point.m_x - begin.m_x) * (end.m_x - begin.m_x) + 
+				(point.m_y - begin.m_y) * (end.m_y - begin.m_y)
+			) / dir_mag_sq, 0.0, 1.0);
+		// not working
+		//double dist = std::clamp(((point - begin) * (end - begin)) / dir_mag_sq, 0.0, 1.0);
+		return (point - CP_Point2(begin + dir * dist2)).magnitude();
 	}
 
 	/*
-	* 정확히 하는일이 뭔가 이상? 근데 잘 동작?
-	* 용도 : 
+	* \brief   point가 partition line segment 위에 있는지? (사실상 point와 line이 coincident 한지 검사하는 부분)
+	* \params  point 반드시 이 partition과 다른 partition간의 intersection 계산 결과로 얻어진 교점을 넣어야 함. (무한한 2D line 교점 검사 겨로가)
+	* \details 용도 : 
 	* 1. gb_t_p_Position3에서 P_T_BOTH_POS, P_T_BOTH_NEG를 반환하도록 함.
 	* 2. gb_partitionBspt 에서 반환값이 P_T_BOTH_POS, P_T_BOTH_NEG인 경우 뭔가 함.
 	*/
 	PointSideness coincidentPos(const CP_Point2& point) const {
-		CP_Vec2 begin2point = point - begin;
-		CP_Vec2 end2point = point - end;
 
-		// begin2point <-> this 간의 coincident?
-		// end2point <-> this 간의 coincident?
-
-		// point가 partition line 위에 있지 않다면...? 근데 왜 전부 or case로 검사해야되지...
-		CP_Line2 _p(begin, end);
-		double eval = _p.eval(point);
-		
+		double dist_p2p = dist(point); // distance btw. 'point' and partition(2D line segment).
 		if (
-			(smaller_float(point.m_x, begin.m_x) || bigger_float(point.m_x, end.m_x)) &&
-			(bigger_float(point.m_x, begin.m_x) || smaller_float(point.m_x, end.m_x)) &&
-			(smaller_float(point.m_y, begin.m_y) || bigger_float(point.m_y, end.m_y)) &&
-			(bigger_float(point.m_y, begin.m_y) || smaller_float(point.m_y, end.m_y)))
-		{
-			if (equal_float(eval, 0))
-				printf("[PointSideNess::LINE_POS, LINE_NEG]: coincidentPos eval is 0\n");
+			!equal_float(dist_p2p, 0) // same as below.
+			/*
+			* // leave it for legacy.
+			(smaller_float(point.m_x, begin.m_x) || bigger_float(point.m_x, end.m_x)) && // [A-1] (0/0) (0/1) (1/0) 만 가능. 동시에 1 되는 것은 불가능.
+			(bigger_float(point.m_x, begin.m_x) || smaller_float(point.m_x, end.m_x)) && // [A-2] (1/1) (1/0) (0/1)
+			(smaller_float(point.m_y, begin.m_y) || bigger_float(point.m_y, end.m_y)) && // [A-3] (0/0) (0/1) (1/0) 만 가능. 동시에 1 되는 것은 불가능.
+			(bigger_float(point.m_y, begin.m_y) || smaller_float(point.m_y, end.m_y))    // [A-4] (1/1) (1/0) (0/1)
+			*/
+		){
+			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에 없음.
+			/*
+			* // leave it for debugging legacy condition of above.
+			if (equal_float(dist_p2p, 0)) {
+				// should never enter in here!!!!!!
+				printf("[PointSideness::LINE_NEG, LINE_POS] distance is weird!!!!! : %lf \n", dist_p2p);
+			}
+			*/
 
+			CP_Vec2 begin2point = point - begin;
+			CP_Vec2 end2point = point - end;
+
+			// 이미 외부에 있기는 한데... 
 			double dx1, dy1, dx2, dy2;
 			dx1 = std::abs(begin2point.m_x);
 			dy1 = std::abs(begin2point.m_y);
@@ -452,9 +467,20 @@ public:
 				return PointSideness::LINE_POS;
 		}
 		else {
-			if (equal_float(eval, 0))
-				printf("[PointSideNess::LINE_IN]: coincidentPos eval is 0\n");
-
+			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에 있음.
+			/*
+			if (!equal_float(dist_p2p, 0)) {
+				// should never enter in here!!!!!!!!!!!!!
+				printf("[PointSideness::LINE_IN] distance is weird!!!!! : %lf \n", dist_p2p);
+				printf("\t- bad partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+					begin.m_x, begin.m_y, end.m_x, end.m_y);
+			}
+			else {
+				printf("[PointSideness::LINE_IN] distance is OK : %lf \n", dist_p2p);
+				printf("\t- good partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+					begin.m_x, begin.m_y, end.m_x, end.m_y);
+			}
+			*/
 			return PointSideness::LINE_IN;
 		}
 	}

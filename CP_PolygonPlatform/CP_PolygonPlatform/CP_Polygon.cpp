@@ -1063,6 +1063,7 @@ CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
 
 	CP_BSPNode *tree = NULL;
 	// root라서 CHILDINFO_NO를 넘김.
+	printf("[buildBSPTree - root] \n");
 	tree = gb_buildBSPTree(partitionArray, NULL, CHILDINFO_NO);
 	return tree;
 }
@@ -1126,7 +1127,9 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 			tree->pos_coincident.push_back(p);
 			break;
 		case POS_NEG_ON:
+#ifdef ENABLE_BSP_NEG_COINCIDENT
 			tree->neg_coincident.push_back(p);
+#endif
 			break;
 		case POS_RIGHT:
 			F_right.push_back(p);
@@ -1301,7 +1304,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 }
 
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
-	printf("gb_mergeBSPTree - root node");
+	printf("[gb_mergeBSPTree - root node]\n");
 	CP_BSPNode* tree = NULL;
 	if(A->isCell() || B->isCell()) { // isLeaf
 		tree = gb_mergeTreeWithCell(A, B, op);
@@ -1427,7 +1430,9 @@ void gb_partitionBspt(
 	case P_T_ON_NEG:
 		B_inLeft = T->rightChild;
 		B_inRight = T->leftChild;
+#if ENABLE_BSP_NEG_COINCIDENT == 1:
 		parent->neg_coincident.push_back(T->partition);
+#endif
 		return;
 	case P_T_POS_NEG:
 		B_inRight = new CP_BSPNode();
@@ -1458,6 +1463,7 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
+		// T와 P가 region 안에서 서로 intersection 하는 경우.
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
@@ -1483,7 +1489,10 @@ void gb_partitionBspt(
 				break;
 			}
 		}
-		for (const auto& t_nc : T->pos_coincident) {
+#if ENABLE_BSP_NEG_COINCIDENT == 1:
+		// enhanced for loop 으로 고치기 이전 방식은 
+		// - acb922ba19585747fedf5ca63bf341f3164e7fb9 이전 커밋 (혹은 4월 7일 15:00 이전 커밋 참고)
+		for (const auto& t_nc : T->neg_coincident) {
 			switch(t_nc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
@@ -1501,52 +1510,60 @@ void gb_partitionBspt(
 				break;
 			}
 		}
+#endif
 		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
 		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
+
 	case P_T_BOTH_NEG:
+		// T와 P가 region 안에서 서로 intersection 하는 경우.
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
 		B_inRight->partition = T->partition;
 
-		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(T->pos_coincident[i].coincidentPos(cross_point)){
+		// Note : flipped partition insertion compared to the P_T_BOTH_POS case.
+
+		for (const auto& t_pc : T->pos_coincident) {
+			switch(t_pc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition left(cross_point, T->pos_coincident[i].end);
-				CP_Partition right(T->pos_coincident[i].begin, cross_point);
+				CP_Partition left(cross_point, t_pc.end);
+				CP_Partition right(t_pc.begin, cross_point);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
 			}
 			case CP_Partition::PointSideness::LINE_POS:
-				B_inRight->pos_coincident.push_back(T->pos_coincident[i]);
+				B_inRight->pos_coincident.push_back(t_pc);
 				break;
 			case CP_Partition::PointSideness::LINE_NEG:
-				B_inLeft->pos_coincident.push_back(T->pos_coincident[i]);
+				B_inLeft->pos_coincident.push_back(t_pc);
 				break;
 			}
 		}
-		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(T->neg_coincident[i].coincidentPos(cross_point)){
+#if ENABLE_BSP_NEG_COINCIDENT == 1:
+		// enhanced for loop 으로 고치기 이전 방식은 
+        // - acb922ba19585747fedf5ca63bf341f3164e7fb9 이전 커밋 (혹은 4월 7일 15:00 이전 커밋 참고)
+		for (const auto& t_nc : T->neg_coincident) {
+			switch(t_nc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition left(cross_point, T->neg_coincident[i].end);
-				CP_Partition right(T->neg_coincident[i].begin, cross_point);
+				CP_Partition left(cross_point, t_nc.end);
+				CP_Partition right(t_nc.begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
 			}
 			case CP_Partition::PointSideness::LINE_POS:
-				B_inLeft->neg_coincident.push_back(T->neg_coincident[i]);
+				B_inLeft->neg_coincident.push_back(t_nc);
 				break;
 			case CP_Partition::PointSideness::LINE_NEG:
-				B_inRight->neg_coincident.push_back(T->neg_coincident[i]);
+				B_inRight->neg_coincident.push_back(t_nc);
 				break;
 			}
 		}
-		
+#endif
 		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
 		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
@@ -1910,6 +1927,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 			}
 		}
 
+#if ENABLE_BSP_NEG_COINCIDENT
 		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){
 			CP_Partition* p = new CP_Partition(node->neg_coincident[i]);
 
@@ -1945,6 +1963,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 				}
 			}
 		}
+#endif
 	}
 	return true;
 }

@@ -1,31 +1,28 @@
 ﻿#pragma once
 
+// std related
 #include <cmath>
 #include <vector>
 #include <algorithm>
-
-// for only debugging.
-#include <iostream>
-
+#include <iostream>// for only debugging.
 using namespace std;
 
-// Math
+// uncomment the line below if you want to maintain negative coincident of BSP tree.
+//#define ENABLE_BSP_NEG_COINCIDENT 1 
+
+// Pure Math
 #define DOUBLE_PI           6.28318530717958647692
-#define PI                            3.14159265358979323846
-#define HALF_PI                1.57079632679489661923
-#define TOLERENCE 1e-4 // global tolerance
-
-#define NOMINMAX 1
-
+#define PI                  3.14159265358979323846
+#define HALF_PI             1.57079632679489661923
+#define TOLERENCE           1e-4 // global default tolerance
 // check x == y considering epsilon
 bool equal_float(double x, double y, double epsilon = 1e-4);
-
 // check x > y considering epsilon
 bool bigger_float(double x, double y, double epsilon = 1e-4);
-
 // check x > y considering epsilon
 bool smaller_float(double x, double y, double epsilon = 1e-4);
 
+// Geometric Math
 class CP_Vec2 {
 public:
 	double m_x, m_y;
@@ -461,8 +458,11 @@ public:
 			dx2 = std::abs(end2point.m_x);
 			dy2 = std::abs(end2point.m_y);
 
-			if (dx1 + dy1 < dx2 + dy2)
-				return PointSideness::LINE_NEG;
+			if (dx1 + dy1 < dx2 + dy2) {
+				bool side = is_left_side(point);
+				printf("[coincidentPos -  PointSideness::LINE_NEG] side : %d\n", side);
+				return PointSideness::LINE_NEG; // 음의 방향에 있는 경우..? 
+			}
 			else
 				return PointSideness::LINE_POS;
 		}
@@ -511,7 +511,9 @@ public:
 	// 현재 노드의 binary partition과, 나뉘어진 하위 파티션들..
 	CP_Partition partition;
 	vector<CP_Partition> pos_coincident;
+#ifdef ENABLE_BSP_NEG_COINCIDENT
 	vector<CP_Partition> neg_coincident;
+#endif
 
 	// visualization/output purpose.
 	vector<CP_Partition*> polygon;
@@ -539,9 +541,10 @@ public:
 		side = node->side;
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
-
+#if ENABLE_BSP_NEG_COINCIDENT
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
+#endif
 	}
 	void copy(const CP_BSPNode* const node){
 		parent = node->parent;
@@ -552,16 +555,19 @@ public:
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
 
+#if ENABLE_BSP_NEG_COINCIDENT
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
+#endif
 	}
 
 	void assign_coincidents(const CP_BSPNode* const node) {
 		for (auto& pc : node->pos_coincident)
 			pos_coincident.push_back(pc);
-
+#ifdef ENABLE_BSP_NEG_COINCIDENT
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
+#endif
 	}
 
 	bool isCell() const {

@@ -11,19 +11,19 @@
 using namespace std;
 
 bool equal_float(double x, double y, double epsilon) {
-	if (fabs(x - y) < epsilon)
+	if (fabs(x - y) <= epsilon)
 		return true; //they are same
 	return false; //they are not same
 }
 
 bool bigger_float(double x, double y, double epsilon) {
-	if ((x - y) > -epsilon)
+	if ((x - y) >= -epsilon)
 		return true; //they are same
 	return false; //they are not same
 }
 
 bool smaller_float(double x, double y, double epsilon) {
-	if ((x - y) < epsilon)
+	if ((x - y) <= epsilon)
 		return true; //they are same
 	return false; //they are not same
 }

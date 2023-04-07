@@ -1839,16 +1839,16 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 }
 
 bool gb_generateCellPolygon(CP_BSPNode *cell){
+	//generate polygon
+
 	CP_BSPNode *node = cell;
 	CP_BSPNode *child = cell;
-	while(node->parent != NULL){//generate polygon
+	while(node->parent != NULL){
 		child = node;
 		node = node->parent;
-		CP_Partition *p = new CP_Partition();
 
-		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){//凜槨0角션쩌돨殮窟，痰黨털뙤T,P貫零珂션쩌T돨partition瞳혐堵코돨꼬롸
-			p->begin = node->pos_coincident[i].begin;
-			p->end = node->pos_coincident[i].end;
+		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){
+			CP_Partition* p = new CP_Partition(node->pos_coincident[i]);
 
 			bool no_useful = false;
 			for(unsigned int i = 0; i < cell->polygon.size(); i++){
@@ -1883,8 +1883,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		}
 
 		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){
-			p->begin = node->neg_coincident[i].begin;
-			p->end = node->neg_coincident[i].end;
+			CP_Partition* p = new CP_Partition(node->neg_coincident[i]);
 
 			bool no_useful = false;
 			for(unsigned int i = 0; i < cell->polygon.size(); i++){
@@ -1897,11 +1896,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 
 			if(!no_useful){
 				//Determine whether it contributes to the polygon of the node
-				CP_Partition *node_face = new CP_Partition();
-
-				node_face->begin = p->begin;
-				node_face->end = p->end;
-
+				CP_Partition *node_face = new CP_Partition(*p);
 				if(child == node->rightChild){
 			
 					if(cell->side == CP_BSPNode::Sideness::INSIDE){
@@ -1941,6 +1936,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 
 		CP_Partition partition_spl;
 		if(gb_p_in_cellPolygon(cell, polygon_face, partition_spl)){
+
 			if(child == node->rightChild)
 				polygon_face->flip();
 

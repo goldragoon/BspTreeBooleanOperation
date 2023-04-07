@@ -1736,7 +1736,7 @@ bool gb_p_in_region(
 		// A. 현재 노드가 parent 기준 양(내부)의 영역에 있는 경우에는 아무것도 하지 않음.
 			// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
 		if (child == node->rightChild)
-			t_bp = CP_Partition(node->partition.end, node->partition.begin); // swap 하는게 오직 parallel 한 경우에만..
+			t_bp.flip(); // swap 하는게 오직 parallel 한 경우에만..
 
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
@@ -1745,8 +1745,6 @@ bool gb_p_in_region(
 		// check if two vectors (t, p) are 'parallel'(cross product is zero)
 		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
 		if(compare_float(cross_product_tp, 0)){
-
-			
 
 			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
 			// 두 개의 시작점을 잇는 벡터..
@@ -1945,7 +1943,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 		CP_Partition partition_spl;
 		if(gb_p_in_cellPolygon(cell, polygon_face, partition_spl)){
 			if(child == node->rightChild)
-				gb_changePartitionDir(polygon_face);
+				polygon_face->flip();
 
 			cell->polygon.push_back(polygon_face);
 		}

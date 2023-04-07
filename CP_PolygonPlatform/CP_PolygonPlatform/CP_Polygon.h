@@ -302,6 +302,23 @@ public:
 	}
 	
 	/*
+	* \brief 방향이 반대인 파티션을 리턴한다.
+	*/
+	CP_Partition flipped_partition() const {
+		CP_Partition ret = (*this);
+		std::swap(ret.begin, ret.end);
+		return ret;
+	}
+
+	/*
+	* \brief 파티션 벡터의 방향을 반대로 바꿔준다 (내/외부 바꾸는 것으로도 생각할 수 있음)
+	*/
+	void flip() {
+		std::swap(begin, end);
+	}
+
+
+	/*
 	* \brief 벡터(Partition = end - begin)를 무한한 직선으로 생각하여, 두 개의 직선 간의 intersection point를 구한다.
 	*/
 	CP_Point2 intersection(const CP_Partition& _partition, 

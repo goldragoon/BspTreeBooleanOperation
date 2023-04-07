@@ -1458,45 +1458,46 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
-		// T와 P가 서로 'BOTH_POS' 라면, 
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->partition = T->partition;
 		B_inRight = new CP_BSPNode();
 		B_inRight->partition = T->partition;
 		
-		for(unsigned int i = 0; i < T->pos_coincident.size(); i++){
-			switch(T->pos_coincident[i].coincidentPos(cross_point)){
+		// Note : flipped partition insertion compared to the P_T_BOTH_NEG case.
+
+		for(const auto &t_pc : T->pos_coincident){
+			switch(t_pc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN: 
 			{
-				CP_Partition left(T->pos_coincident[i].begin, cross_point);
-				CP_Partition right(cross_point, T->pos_coincident[i].end);
+				CP_Partition left(t_pc.begin, cross_point);
+				CP_Partition right(cross_point, t_pc.end);
 				B_inLeft->pos_coincident.push_back(left);
 				B_inRight->pos_coincident.push_back(right);
 				break;
 			}
 			case CP_Partition::PointSideness::LINE_POS:
-				B_inLeft->pos_coincident.push_back(T->pos_coincident[i]);
+				B_inLeft->pos_coincident.push_back(t_pc);
 				break;
 			case CP_Partition::PointSideness::LINE_NEG:
-				B_inRight->pos_coincident.push_back(T->pos_coincident[i]);
+				B_inRight->pos_coincident.push_back(t_pc);
 				break;
 			}
 		}
-		for(unsigned int i = 0; i < T->neg_coincident.size(); i++){
-			switch(T->neg_coincident[i].coincidentPos(cross_point)){
+		for (const auto& t_nc : T->pos_coincident) {
+			switch(t_nc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
-				CP_Partition left(cross_point, T->neg_coincident[i].end);
-				CP_Partition right(T->neg_coincident[i].begin, cross_point);
+				CP_Partition left(cross_point, t_nc.end);
+				CP_Partition right(t_nc.begin, cross_point);
 				B_inLeft->neg_coincident.push_back(left);
 				B_inRight->neg_coincident.push_back(right);
 				break;
 			}
 			case CP_Partition::PointSideness::LINE_POS:
-				B_inRight->neg_coincident.push_back(T->neg_coincident[i]);
+				B_inRight->neg_coincident.push_back(t_nc);
 				break;
 			case CP_Partition::PointSideness::LINE_NEG:
-				B_inLeft->neg_coincident.push_back(T->neg_coincident[i]);
+				B_inLeft->neg_coincident.push_back(t_nc);
 				break;
 			}
 		}

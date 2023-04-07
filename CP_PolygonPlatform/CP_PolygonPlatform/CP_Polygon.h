@@ -431,10 +431,10 @@ public:
 		double eval = _p.eval(point);
 		
 		if (
-			(begin2point.m_x > TOLERENCE && end2point.m_x < -TOLERENCE)
-			|| (begin2point.m_x < -TOLERENCE && end2point.m_x > TOLERENCE)
-			|| (begin2point.m_y > TOLERENCE && end2point.m_y < -TOLERENCE)
-			|| (begin2point.m_y < -TOLERENCE && end2point.m_y > TOLERENCE))
+			((begin2point.m_x <= TOLERENCE) || (end2point.m_x >= -TOLERENCE)) &&
+			((begin2point.m_x >= -TOLERENCE) || (end2point.m_x <= TOLERENCE)) &&
+			((begin2point.m_y <= TOLERENCE) || (end2point.m_y >= -TOLERENCE)) &&
+			((begin2point.m_y >= -TOLERENCE) || (end2point.m_y <= TOLERENCE)))
 		{
 			if (equal_float(eval, 0))
 				printf("[PointSideNess::LINE_POS, LINE_NEG]: coincidentPos eval is 0\n");

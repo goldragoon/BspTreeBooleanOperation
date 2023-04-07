@@ -589,7 +589,6 @@ extern char gb_t_p_Position3(const CP_BSPNode* const A, const CP_Partition &part
 extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
-extern bool gb_changePartitionDir(CP_Partition *p);
 extern bool gb_p_in_cellPolygon(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_Partition& partition_spl

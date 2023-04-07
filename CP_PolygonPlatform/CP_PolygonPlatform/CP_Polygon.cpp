@@ -1935,7 +1935,6 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 		//generate polygon
 		child = node;
 		node = node->parent;
-		CP_Partition *p = new CP_Partition(node->partition);
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
 		CP_Partition *polygon_face = new CP_Partition(node->partition);
@@ -1960,19 +1959,6 @@ bool gb_generateCellPolygons(CP_BSPNode *node){
 	}
 	gb_generateCellPolygons(node->leftChild);
 	gb_generateCellPolygons(node->rightChild);
-	return true;
-}
-
-bool gb_changePartitionDir(CP_Partition *p){
-	double x, y;
-	x = p->begin.m_x;
-	y = p->begin.m_y;
-
-	p->begin.m_x = p->end.m_x;
-	p->begin.m_y = p->end.m_y;
-
-	p->end.m_x = x;
-	p->end.m_y = y;
 	return true;
 }
 

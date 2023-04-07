@@ -590,7 +590,8 @@ extern void debugBsptree(CP_BSPNode* T);
 extern void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream& fout);// call by debugBsptree
 
 // [MFC Memory Management.]
-extern void releaseMemory();
+// TODO
+//extern void releaseMemory() {};
 
 // Classification of bp(binary partitioner) to other bp.
 #define POS_LEFT 0

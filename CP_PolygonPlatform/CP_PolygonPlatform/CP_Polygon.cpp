@@ -1840,26 +1840,6 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 	delete[] str;
 }
 
-void releaseMemory(){
-	// erroneous
-	/*
-	for(unsigned int i = 0; i < CP_Point2List.size(); i++){
-		delete CP_Point2List[i];
-	}
-	CP_Point2List.clear();
-
-	for(unsigned int i = 0; i < CP_PartitionList.size(); i++){
-		delete CP_PartitionList[i];
-	}
-	CP_PartitionList.clear();
-
-	for(unsigned int i = 0; i < CP_BSPNodeList.size(); i++){
-		delete CP_BSPNodeList[i];
-	}
-	CP_BSPNodeList.clear();
-	*/
-}
-
 bool gb_generateCellPolygon(CP_BSPNode *cell){
 	CP_BSPNode *node = cell;
 	CP_BSPNode *child = cell;

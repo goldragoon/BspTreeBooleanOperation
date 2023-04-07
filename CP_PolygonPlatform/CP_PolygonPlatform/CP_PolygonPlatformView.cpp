@@ -254,14 +254,11 @@ void CCP_PolygonPlatformView::OnDraw(CDC* pDC)
     }
 
 	if(pDoc->m_showBsptree){
-		//if(pDoc->m_bspTree == NULL) {}
-		//else{
+		//if(!pDoc->m_bspTree) 
 		gb_drawBspTree(pDC, pDoc->m_bspTree,
             pDoc->m_scale, pDoc->m_translation, r.right, r.bottom,
         0, 200, 255, 4);
-		//}
 	}
-	releaseMemory();
 	
     //display process time
     CRect rect;
@@ -1766,8 +1763,6 @@ void CCP_PolygonPlatformView::OnCheck()
         else
             MessageBox("General polygon B is illegal");
     }
-
-	releaseMemory();
 }
 
 void CCP_PolygonPlatformView::OnUpdateViewResult(CCmdUI *pCmdUI)

@@ -573,7 +573,10 @@ extern bool gb_generateCellPolygon(CP_BSPNode *cell);
 extern bool gb_generateCellPolygonPre(CP_BSPNode *cell);
 extern bool gb_generateCellPolygons(CP_BSPNode *root);
 extern bool gb_changePartitionDir(CP_Partition *p);
-extern bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end);
+extern bool gb_p_in_cellPolygon(
+	const CP_BSPNode* const T, const CP_Partition* const partition, 
+	CP_Partition& partition_spl
+);
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);

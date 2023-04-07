@@ -1948,29 +1948,25 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 	return true;
 }
 
-bool gb_generateCellPolygonPre(CP_BSPNode *cell){
+bool gb_generateCellPolygonPre(CP_BSPNode *cell)
+{
 	CP_BSPNode *node = cell;
 	CP_BSPNode *child = cell;
+
 	while(node->parent != NULL){
 		//generate polygon
 		child = node;
 		node = node->parent;
-		CP_Partition *p = new CP_Partition();
-
-		p->begin = node->partition.begin;
-		p->end = node->partition.end;
+		CP_Partition *p = new CP_Partition(node->partition);
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
-		CP_Partition *polygon_face = new CP_Partition();
+		CP_Partition *polygon_face = new CP_Partition(node->partition);
 
-		polygon_face->begin = node->partition.begin;
-		polygon_face->end = node->partition.end;
-		CP_Point2 begin;
-		CP_Point2 end;
-		if(gb_p_in_cellPolygon(cell, polygon_face, begin, end)){
-			if(child == node->rightChild){
+		CP_Partition partition_spl;
+		if(gb_p_in_cellPolygon(cell, polygon_face, partition_spl)){
+			if(child == node->rightChild)
 				gb_changePartitionDir(polygon_face);
-			}
+
 			cell->polygon.push_back(polygon_face);
 		}
 
@@ -2138,9 +2134,11 @@ bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *resul
 	}
 }
 
-bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begin, CP_Point2 &end){
-	begin = partition->begin;
-	end = partition->end;
+bool gb_p_in_cellPolygon(
+	const CP_BSPNode* const T, const CP_Partition* const partition, 
+	CP_Partition& partition_spl
+){
+	partition_spl = *partition;
 
 	double vx = partition->end.m_x - partition->begin.m_x;
 	double vy = partition->end.m_y - partition->begin.m_y;
@@ -2160,7 +2158,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 	double min = DBL_MAX * -1;
 	double max = DBL_MAX;
 
-	CP_BSPNode *node = T;
+	const CP_BSPNode *node = T;
 	double pa, pb, pc, ta, tb, tc;
 	CP_Point2 point;
 	for(unsigned int i = 0; i < node->polygon.size(); i++){
@@ -2195,7 +2193,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 				else
 					if(currentMin > min){
 						min = currentMin;
-						begin = point;
+						partition_spl.begin = point;
 					}
 			}
 			else if(x_or_y == 1){
@@ -2205,7 +2203,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 				else
 					if(currentMin > min){
 						min = currentMin;
-						begin = point;
+						partition_spl.begin = point;
 					}
 			}
 		}
@@ -2217,7 +2215,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 				else
 					if(currentMax < max){
 						max = currentMax;
-						end = point;
+						partition_spl.end = point;
 					}
 			}
 			else if(x_or_y == 1){
@@ -2227,7 +2225,7 @@ bool gb_p_in_cellPolygon(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &begi
 				else
 					if(currentMax < max){
 						max = currentMax;
-						end = point;
+						partition_spl.end = point;
 					}
 			}
 		}

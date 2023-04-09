@@ -280,9 +280,11 @@ class CP_Partition{
 public:
 	CP_Point2 begin, end;
 
-	// 어떤 point의 CP_Partition에 대한 상대적 위치를 나타냄.
+	// 이 partition과 다른 partition과의 교점 p에 대하여, 
 	enum class PointSideness {
-		LINE_IN, LINE_POS, LINE_NEG,
+		LINE_IN,	// 교점이 이 partition p위에 있는 경우
+		LINE_POS,	// 교점이 end 방향 바깥에 있는 경우  
+		LINE_NEG,	// 교점이 begin 방향 바깥에 있는 경우
 	};
 
 	CP_Partition() {}
@@ -290,7 +292,7 @@ public:
 	CP_Partition(const CP_Partition &p) { begin = p.begin; end = p.end; }
 	~CP_Partition() {}
 
-	double slope() {
+	double slope() const{
 		CP_Line2 t_line(this->begin.as_vec(), this->end.as_vec());
 		return -(t_line.a / t_line.b);
 	}
@@ -373,37 +375,13 @@ public:
 	}
 
 	/*
-	* \brief 파티션(direction = end - begin)를 무한한 길이를 가지는 벡터로 생각하고
-	* 다른 벡터 _p가 this 파티션을 기준으로 CCW(left)로 회전하면 true 아니면 false를 반환한다.
-	*/
-	bool is_ccw_rot(const CP_Vec2 &_v) const {
-		CP_Vec2 partition_vec = end - begin;
-		if (partition_vec.cross_product(_v) > 0) return true; // left (inside)
-		else return false; // on or right (outside)
-	}
-
-	/*
 	* \brief check that point(_pt) is on is partition line segment(end ~ begin).
 	*/
-	/*
-	* Temporary deprecation !!!!!!!!!!!!!!
-	bool is_point_on_lineseg(const CP_Point2 &_pt) const {
-		double d;
-		closestPoint(_pt, d);
-		return equal_float(d, 0);
-	}
-	*/
-	/*
-	* \brief check that point equivalent is partition line segment points(end, begin).
-	*/
-	bool is_point_on_points(const CP_Point2& _pt) const {
-		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
+	bool is_point_on_lineseg(const CP_Point2& _pt) const {
+		double dist_p2p = dist(_pt);
+		return equal_float(dist_p2p, 0);
 	}
 
-	bool is_point_on_line(const CP_Point2& _pt) const {
-		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
-	}
-	
 	double dist(const CP_Point2& point) const
 	{
 		CP_Vec2 dir = end - begin;
@@ -426,10 +404,8 @@ public:
 	* 2. gb_partitionBspt 에서 반환값이 P_T_BOTH_POS, P_T_BOTH_NEG인 경우 뭔가 함.
 	*/
 	PointSideness coincidentPos(const CP_Point2& point) const {
-
-		double dist_p2p = dist(point); // distance btw. 'point' and partition(2D line segment).
 		if (
-			!equal_float(dist_p2p, 0) // same as below.
+			!is_point_on_lineseg(point) // same as below.
 			/*
 			* // leave it for legacy.
 			(smaller_float(point.m_x, begin.m_x) || bigger_float(point.m_x, end.m_x)) && // [A-1] (0/0) (0/1) (1/0) 만 가능. 동시에 1 되는 것은 불가능.
@@ -438,7 +414,9 @@ public:
 			(bigger_float(point.m_y, begin.m_y) || smaller_float(point.m_y, end.m_y))    // [A-4] (1/1) (1/0) (0/1)
 			*/
 		){
-			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에 없음.
+			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에는 없지만,
+			// partition 으로 정의되는 (방향성 있는) 무한한 직선위에 존재하긴 함.
+
 			/*
 			* // leave it for debugging legacy condition of above.
 			if (equal_float(dist_p2p, 0)) {
@@ -458,29 +436,27 @@ public:
 			dx2 = std::abs(end2point.m_x);
 			dy2 = std::abs(end2point.m_y);
 
+			// Note : begin -> end가 진행방향임.
 			if (dx1 + dy1 < dx2 + dy2) {
-				bool side = is_left_side(point);
-				printf("[coincidentPos -  PointSideness::LINE_NEG] side : %d\n", side);
-				return PointSideness::LINE_NEG; // 음의 방향에 있는 경우..? 
+				printf("[coincidentPos -  PointSideness::LINE_NEG] \n");
+				printf("\t- partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+					begin.m_x, begin.m_y,
+					end.m_x, end.m_y);
+				printf("\t- point : (%.4lf, %.4lf) \n",
+					point.m_x, point.m_y);
+				return PointSideness::LINE_NEG; // point가 begin 보다 뒤에 있는 경우
 			}
 			else
-				return PointSideness::LINE_POS;
+				printf("[coincidentPos -  PointSideness::LINE_POS] \n");
+				printf("\t- partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+				begin.m_x, begin.m_y,
+				end.m_x, end.m_y);
+				printf("\t- point : (%.4lf, %.4lf) \n",
+				point.m_x, point.m_y);
+				return PointSideness::LINE_POS; // point 가 end 보다 앞에 있는 경우
 		}
 		else {
 			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에 있음.
-			/*
-			if (!equal_float(dist_p2p, 0)) {
-				// should never enter in here!!!!!!!!!!!!!
-				printf("[PointSideness::LINE_IN] distance is weird!!!!! : %lf \n", dist_p2p);
-				printf("\t- bad partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
-					begin.m_x, begin.m_y, end.m_x, end.m_y);
-			}
-			else {
-				printf("[PointSideness::LINE_IN] distance is OK : %lf \n", dist_p2p);
-				printf("\t- good partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
-					begin.m_x, begin.m_y, end.m_x, end.m_y);
-			}
-			*/
 			return PointSideness::LINE_IN;
 		}
 	}
@@ -493,6 +469,37 @@ public:
 		this->end = p.end;
 		return *this;
 	}
+
+	/*
+	* \brief 파티션(direction = end - begin)를 무한한 길이를 가지는 벡터로 생각하고
+	* 다른 벡터 _p가 this 파티션을 기준으로 CCW(left)로 회전하면 true 아니면 false를 반환한다.
+	*/
+	/*
+	* // deprecated!
+	bool is_ccw_rot(const CP_Vec2 &_v) const {
+		CP_Vec2 partition_vec = end - begin;
+		if (partition_vec.cross_product(_v) > 0) return true; // left (inside)
+		else return false; // on or right (outside)
+	}
+	*/
+
+	/*
+	* // deprecated!
+	bool is_point_on_line(const CP_Point2& _pt) const {
+		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
+	}
+	*/
+
+	/*
+	* \brief check that point equivalent is partition line segment points(end, begin).
+	*/
+	/*
+	* // deprecated!
+	bool is_point_on_points(const CP_Point2& _pt) const {
+		return equal_float(_pt.dist(this->begin), 0) && equal_float(_pt.dist(this->end), 0);
+	}
+	*/
+
 };
 
 enum class CP_BSPOp {
@@ -583,16 +590,120 @@ public:
 		_complement(node->leftChild);
 		_complement(node->rightChild);
 	}
+
+	// [BSP Build Merge Both]
+	// \brief 입력 'partition'과 BSP의 위치관계를 검사한다.
+	// \param partition 위치 관계를 조사할 partition.
+	// \param chunk of input 'partition' that is splited by the region of 'T'.
+	bool is_partition_in_region (const CP_Partition& partition, CP_Partition& partition_spl ) const {
+		// Assign partition as default (when return is false)
+		partition_spl = partition;
+
+		// [직선의 방정식의 steepest-axis 찾기] Start
+		// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
+		// - 더 긴 쪽으로 하기 위함..
+		const CP_Vec2 diff = partition.end - partition.begin;
+		const double& dx = diff.m_x, & dy = diff.m_y;
+		const double mean_xy[2] = {
+			dx > 0 ? 1 : -1,
+			dy > 0 ? 1 : -1
+		};
+		const bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
+		// [직선의 방정식의 steepest-axis 찾기] End
+
+		// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
+		double min = DBL_MAX / 10e300 * -1;
+		double max = DBL_MAX / 10e300;
+
+		const CP_BSPNode* node = this;
+		const CP_BSPNode* child = NULL;
+
+		while (node->parent != NULL) {
+			// root로 거슬러 올라가면서 partition과 교차하는지 검사
+			child = node;
+			node = node->parent;
+
+			CP_Partition t_bp = node->partition; // ('t'ree)_('b'inary)('p'artitioner) 
+			// A. 현재 노드가 parent 기준 양(내부)의 영역에 있는 경우에는 아무것도 하지 않음.
+			// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
+			if (child == node->rightChild)
+				t_bp.flip(); // swap 하는게 오직 parallel 한 경우에만..
+
+			CP_Vec2 t_vec, p_vec;
+			CP_Line2 t_line, p_line;
+			CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);
+
+			// check if two vectors (t, p) are 'parallel'(cross product is zero)
+			double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
+			if (equal_float(cross_product_tp, 0)) {
+
+				//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
+				// 두 개의 시작점을 잇는 벡터..
+				CP_Vec2 v = partition.begin - t_bp.begin;
+				if (t_vec.cross_product(v) >= 0) {
+					// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
+					// 어쨋든 안쪽에 있긴 하므로 부모 노드를 검사.
+					continue;
+				}
+				else {
+					// partition이 T 바깥에 있는 것이 확실하므로 더이상 진행할 필요가 없음.
+					return false;
+				}
+			}
+			// 만약 두 개의 벡터가 평행하지 않은 경우...
+			else if (cross_product_tp > TOLERENCE)
+			{
+				// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
+				double currentMin = !x_or_y ?
+					(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+					(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
+
+				if (currentMin >= max) return false;
+				else
+					if (currentMin > min) {
+						min = currentMin;
+						partition_spl.begin = point;
+					}
+			}
+			else { // (cross_product_tp < -TOLERENCE)
+				// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
+				double currentMax = !x_or_y ?
+					(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+					(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
+
+				if (currentMax <= min) return false;
+				else
+					if (currentMax < max) {
+						max = currentMax;
+						partition_spl.end = point;
+					}
+			}
+		}
+
+		/////////// 입력 partition의 region 안에서의 시작-끝 결정. (when return is true)
+		if (!x_or_y) {
+			partition_spl.begin.m_x = min * mean_xy[0] + partition.begin.m_x;
+			partition_spl.end.m_x = max * mean_xy[0] + partition.begin.m_x;
+			partition_spl.begin.m_y = (partition_spl.begin.m_x - partition.begin.m_x) * (dy / dx) + partition.begin.m_y;
+			partition_spl.end.m_y = (partition_spl.end.m_x - partition.begin.m_x) * (dy / dx) + partition.begin.m_y;
+		}
+		else {
+			partition_spl.begin.m_y = min * mean_xy[1] + partition.begin.m_y;
+			partition_spl.end.m_y = max * mean_xy[1] + partition.begin.m_y;
+			partition_spl.begin.m_x = (partition_spl.begin.m_y - partition.begin.m_y) * (dx / dy) + partition.begin.m_x;
+			partition_spl.end.m_x = (partition_spl.end.m_y - partition.begin.m_y) * (dx / dy) + partition.begin.m_x;
+		}
+
+		assert(isfinite(partition_spl.begin.m_x) && !isnan(partition_spl.begin.m_x));
+		assert(isfinite(partition_spl.begin.m_y) && !isnan(partition_spl.begin.m_y));
+		assert(isfinite(partition_spl.end.m_x) && !isnan(partition_spl.end.m_x));
+		assert(isfinite(partition_spl.end.m_y) && !isnan(partition_spl.end.m_y));
+
+		return true;
+	}
+
 	~CP_BSPNode(){}
 };
-
-// [BSP Build Merge Both]
-// - partition이 T의 내부에 있는지 검사한다.
-extern bool gb_p_in_region(
-	const CP_BSPNode* const T, const CP_Partition& partition, // input parameters
-	CP_Partition& partition_spl // chunk of input 'partition' that is splited by the region of 'T'.
-);
-//extern bool gb_t_in_region(CP_BSPNode* T, CP_Partition* partition, CP_Point2 &pos, CP_Point2 *cross, double &pmin, double &pmax, double &pcross);
 
 // [BSP Build Related]
 extern CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition> &vp, CP_BSPNode* parent, char childInfo);

@@ -1084,9 +1084,7 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	// Note : gb_p_in_region 안쪽에서 'parent'의 left, right child 포인터를 레퍼런스 하고있음.
 	CP_Partition partition_splited;
 	bool in_region = false;
-	if(gb_p_in_region( 
-		tree, tree->partition,
-		partition_splited))
+	if(tree->is_partition_in_region(tree->partition, partition_splited))
 	{
 		in_region = true;
 	} else {
@@ -1240,9 +1238,7 @@ char getPartitionPos(
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left){
 
 	CP_BSPNode* tree = NULL;
-	CP_BSPNode* B_inRight = NULL;
-	CP_BSPNode* B_inLeft = NULL;
-
+	
 	if(A->isCell() || B->isCell()) {
 		tree = gb_mergeTreeWithCell(A, B, op);
 		tree->parent = parent;
@@ -1255,22 +1251,11 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->partition = A->partition;
 		tree->assign_coincidents(A);
 
-		CP_Partition partition_splited; // merge 할 때도 build 할 때와 비슷하게 
-		bool in_region = false;
-		if(!gb_p_in_region(
-			B, tree->partition,
-			partition_splited))
-		{
-			in_region = true;
-		}
-		else {
-			in_region = false;
-			// 여기에 들어오는 경우(outer_only4_teeth_and_hook)?
-			//printf("[gb_buildBSPTree - gb_p_in_region] Partition is not in region!\n");
-			// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
-			// pBegin = tree->partition.end; pEnd = tree->partition.begin;
-		}
-		
+		CP_Partition partition_splited;
+		B->is_partition_in_region(tree->partition, partition_splited);
+
+		CP_BSPNode* B_inRight = NULL;
+		CP_BSPNode* B_inLeft = NULL;
 		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, partition_splited);
 
 		if (left) tree->parent->leftChild = tree;
@@ -1523,8 +1508,9 @@ void gb_partitionBspt(
 		B_inRight->partition = T->partition;
 
 		// Note : flipped partition insertion compared to the P_T_BOTH_POS case.
-
+		//printf("T.slope : %lf\n", T->partition.slope());
 		for (const auto& t_pc : T->pos_coincident) {
+			//printf("- T.pos_coincident.slope : %lf\n", t_pc.slope()); // same as T-partition.slop!
 			switch(t_pc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN:
 			{
@@ -1534,7 +1520,8 @@ void gb_partitionBspt(
 				B_inRight->pos_coincident.push_back(right);
 				break;
 			}
-			case CP_Partition::PointSideness::LINE_POS:
+			case CP_Partition::PointSideness::LINE_POS: 
+
 				B_inRight->pos_coincident.push_back(t_pc);
 				break;
 			case CP_Partition::PointSideness::LINE_NEG:
@@ -1743,117 +1730,6 @@ char gb_t_p_Position3(
 			}
 		}
 	}
-}
-
-bool gb_p_in_region(
-	const CP_BSPNode* const T, const CP_Partition& partition, 
-	CP_Partition& partition_spl
-)
-{
-	// Assign partition as default (when return is false)
-	partition_spl = partition;
-
-	// [직선의 방정식의 steepest-axis 찾기] Start
-	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
-	// - 더 긴 쪽으로 하기 위함..
-	const CP_Vec2 diff = partition.end - partition.begin;
-	const double& dx = diff.m_x, &dy = diff.m_y;
-	const double mean_xy[2] = {
-		dx > 0 ? 1 : -1,
-		dy > 0 ? 1 : -1
-	};
-	const bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
-	// [직선의 방정식의 steepest-axis 찾기] End
-
-	// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
-	double min = DBL_MAX / 10e300 * -1; 
-	double max = DBL_MAX / 10e300;
-
-	const CP_BSPNode *node = T;
-	const CP_BSPNode *child = NULL;
-
-	while(node->parent != NULL){
-		// root로 거슬러 올라가면서 partition과 교차하는지 검사
-		child = node;
-		node = node->parent;
-
-		CP_Partition t_bp = node->partition; // ('t'ree)_('b'inary)('p'artitioner) 
-		// A. 현재 노드가 parent 기준 양(내부)의 영역에 있는 경우에는 아무것도 하지 않음.
-		// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
-		if (child == node->rightChild)
-			t_bp.flip(); // swap 하는게 오직 parallel 한 경우에만..
-
-		CP_Vec2 t_vec, p_vec;
-		CP_Line2 t_line, p_line;
-		CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);		
-
-		// check if two vectors (t, p) are 'parallel'(cross product is zero)
-		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
-		if(equal_float(cross_product_tp, 0)){
-
-			//Now it is assumed that coincidence or parallel can be on the left side of T node-partition
-			// 두 개의 시작점을 잇는 벡터..
-			CP_Vec2 v = partition.begin - t_bp.begin;
-			if(t_vec.cross_product(v) >= 0) {
-				// 'v' is counterclockwise to the 'tb' or coincidence (inside or on)
-				// 어쨋든 안쪽에 있긴 하므로 부모 노드를 검사.
-				continue;
-			}
-			else{ 
-				// partition이 T 바깥에 있는 것이 확실하므로 더이상 진행할 필요가 없음.
-				return false;
-			}
-		}
-		// 만약 두 개의 벡터가 평행하지 않은 경우...
-		else if(cross_product_tp > TOLERENCE)
-		{
-			// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
-			double currentMin = !x_or_y ?
-				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
-
-			if (currentMin >= max) return false;
-			else
-				if (currentMin > min) {
-					min = currentMin;
-					partition_spl.begin = point;
-				}
-		}
-		else{ // (cross_product_tp < -TOLERENCE)
-			// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
-			double currentMax = !x_or_y ?
-				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
-
-			if (currentMax <= min) return false;
-			else
-				if (currentMax < max) {
-					max = currentMax;
-					partition_spl.end = point;
-				}
-		}
-	}
-
-	/////////// 입력 partition의 region 안에서의 시작-끝 결정. (when return is true)
-	if (!x_or_y) {
-		partition_spl.begin.m_x = min * mean_xy[0] + partition.begin.m_x;
-		partition_spl.end.m_x = max * mean_xy[0] + partition.begin.m_x;
-		partition_spl.begin.m_y = (partition_spl.begin.m_x - partition.begin.m_x) * (dy / dx) + partition.begin.m_y;
-		partition_spl.end.m_y = (partition_spl.end.m_x - partition.begin.m_x) * (dy / dx) + partition.begin.m_y;
-	}
-	else {
-		partition_spl.begin.m_y = min * mean_xy[1] + partition.begin.m_y;
-		partition_spl.end.m_y = max * mean_xy[1] + partition.begin.m_y;
-		partition_spl.begin.m_x = (partition_spl.begin.m_y - partition.begin.m_y) * (dx / dy) + partition.begin.m_x;
-		partition_spl.end.m_x = (partition_spl.end.m_y - partition.begin.m_y) * (dx / dy) + partition.begin.m_x;
-	}
-
-	assert(isfinite(partition_spl.begin.m_x) && !isnan(partition_spl.begin.m_x));
-	assert(isfinite(partition_spl.begin.m_y) && !isnan(partition_spl.begin.m_y));
-	assert(isfinite(partition_spl.end.m_x) && !isnan(partition_spl.end.m_x));
-	assert(isfinite(partition_spl.end.m_y) && !isnan(partition_spl.end.m_y));
-
-	return true;	
 }
 
 void debugBsptree(CP_BSPNode* T){

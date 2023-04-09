@@ -546,12 +546,7 @@ public:
 		rightChild = node->rightChild;
 		partition = node->partition;
 		side = node->side;
-		for (auto& pc : node->pos_coincident)
-			pos_coincident.push_back(pc);
-#if ENABLE_BSP_NEG_COINCIDENT
-		for (auto& nc : node->neg_coincident)
-			neg_coincident.push_back(nc);
-#endif
+		assign_coincidents(node);
 	}
 	void copy(const CP_BSPNode* const node){
 		parent = node->parent;
@@ -559,18 +554,15 @@ public:
 		rightChild = node->rightChild;
 		partition = node->partition;
 		side = node->side;
-		for (auto& pc : node->pos_coincident)
-			pos_coincident.push_back(pc);
-
-#if ENABLE_BSP_NEG_COINCIDENT
-		for (auto& nc : node->neg_coincident)
-			neg_coincident.push_back(nc);
-#endif
+		assign_coincidents(node);
 	}
 
 	void assign_coincidents(const CP_BSPNode* const node) {
-		for (auto& pc : node->pos_coincident)
-			pos_coincident.push_back(pc);
+		pos_coincident.insert(
+			std::end(pos_coincident), 
+			std::begin(node->pos_coincident), 
+			std::end(node->pos_coincident)
+		);
 #ifdef ENABLE_BSP_NEG_COINCIDENT
 		for (auto& nc : node->neg_coincident)
 			neg_coincident.push_back(nc);
@@ -610,6 +602,7 @@ public:
 		};
 		const bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
 		// [직선의 방정식의 steepest-axis 찾기] End
+
 
 		// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
 		double min = DBL_MAX / 10e300 * -1;

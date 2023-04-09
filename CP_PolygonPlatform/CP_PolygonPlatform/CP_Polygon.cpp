@@ -1456,6 +1456,7 @@ void gb_partitionBspt(
 		
 		// Note : flipped partition insertion compared to the P_T_BOTH_NEG case.
 
+		// T의 coincident를 partition에 대하여 다시 classification 하는 부분
 		for(const auto &t_pc : T->pos_coincident){
 			switch(t_pc.coincidentPos(cross_point)){
 			case CP_Partition::PointSideness::LINE_IN: 
@@ -1509,6 +1510,8 @@ void gb_partitionBspt(
 
 		// Note : flipped partition insertion compared to the P_T_BOTH_POS case.
 		//printf("T.slope : %lf\n", T->partition.slope());
+
+		// T의 coincident를 partition에 대하여 다시 classification 하는 부분
 		for (const auto& t_pc : T->pos_coincident) {
 			//printf("- T.pos_coincident.slope : %lf\n", t_pc.slope()); // same as T-partition.slop!
 			switch(t_pc.coincidentPos(cross_point)){
@@ -1582,10 +1585,9 @@ char gb_t_p_Position3(
 	const double &ta = t_line.a, &tb = t_line.b, &tc = t_line.c;
 	const double &pa = p_line.a, &pb = p_line.b, &pc = p_line.c;
 
-	CP_Vec3 cp_t_p = t_line.as_vec().cross_product(p_line.as_vec());
-
 	if(t_line.isParallel(p_line)){ // point intersection 계산할 때 denominator가 0인지 검사..
 		// (주의) 두 직선이 평행할 때는 여기서는 교점 파라미터(cross_point)에 값이 할당되지 않음.
+		CP_Vec3 cp_t_p = t_line.as_vec().cross_product(p_line.as_vec());
 		if((equal_float(cp_t_p.m_x, 0) && equal_float(cp_t_p.m_y, 0)))
 		{
 			// [Warning from Gyu Jin Choi] : (problematic) never enters
@@ -1630,19 +1632,20 @@ char gb_t_p_Position3(
 			
 		}
 	}
-	else {
+	else {// (tree's hyper plane T and partition P are crossInPartition)
 		// t_line is intersected with p_line (infinite line is not parallel!)
 
-		cross_point = point_intersection; // output variable...
+		// assign output variable.
+		cross_point = point_intersection; 
 
 		///////////// Check cross_point is on the line segment (partition) ////////////
-		// Note : 지금 시점에서는 (partition == partitionL == partitoinR)
+		// Note : 지금 시점에서는 (partitionL == partitionR)
+
 		// point_intersection가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
 		// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
 		// - partitionL, partitoinR을 알맞게 잘라서 할당해줌.
-
-		// if crossInPartition
 		if (partitionL.coincidentPos(point_intersection) == CP_Partition::PointSideness::LINE_IN) { 
+
 			double _cp = t_vec.cross_product(p_vec);
 			if (_cp > TOLERENCE) {
 				partitionL.begin = point_intersection;
@@ -1650,7 +1653,7 @@ char gb_t_p_Position3(
 				return P_T_BOTH_POS;
 			}
 			/*
-			* // Could never be happen => already filtered by 't_line.isParallel(p_line)'
+			* // [ALERT] Could never be happen => already filtered by 't_line.isParallel(p_line)'
 			else if (equal_float(_cp, 0)) {
 				printf("[gb_t_p_Position3] in here, t and p shouldn't be parallel\n");
 			}
@@ -1678,8 +1681,8 @@ char gb_t_p_Position3(
 			}
 
 			double dirP = a - b;
-			if (dirP > 0) dirP = 1;
-			else dirP = -1;
+			if (dirP > 0) dirP = 1; // LINE_POS (partitionL <-> point_intersection)
+			else dirP = -1;			// LINE_NEG
 
 			// Calculate the t direction
 			if (std::abs(ta) > std::abs(tb)) {
@@ -1703,8 +1706,8 @@ char gb_t_p_Position3(
 			}
 
 			double dirAP = a - b;
-			if (dirAP > 0) dirAP = 1;
-			else dirAP = -1;
+			if (dirAP > 0) dirAP = 1; // LINE_POS
+			else dirAP = -1;		  // LINE_NEG
 
 			CP_Partition _p(partition.end, partition.begin); // temporary object for assignment.
 			if (partition.is_left_side(A->pos_coincident[0].begin)) {

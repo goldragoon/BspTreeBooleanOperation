@@ -1263,13 +1263,10 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 
 		CP_BSPNode* B_inRight = NULL, * B_inLeft = NULL;
 		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, partition_splited);
-
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
-
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
-
 		tree->leftChild = B_inLeft;
 		tree->rightChild = B_inRight;
 
@@ -1300,27 +1297,21 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 
 CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	printf("[gb_mergeBSPTree - root node]\n");
-	CP_BSPNode* tree = NULL;
-	if(A->isCell() || B->isCell()) { // isLeaf
-		tree = gb_mergeTreeWithCell(A, B, op);
-	}
-	else{
-		tree = new CP_BSPNode();
-		tree->partition_original = A->partition_original;
-		tree->partition_abstract= A->partition_abstract;
-		//tree->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+	CP_BSPNode* tree = new CP_BSPNode();
+	tree->partition_original = A->partition_original;
+	tree->partition_abstract= A->partition_abstract;
+	//tree->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 
-		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, tree->partition_original.infinite_expansion());
+	CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
+	gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, tree->partition_original.infinite_expansion());
+	B_inLeft->parent = tree;
+	B_inRight->parent = tree;
 
-		B_inLeft->parent = tree;
-		B_inRight->parent = tree;
-		tree->leftChild = B_inLeft;
-		tree->rightChild = B_inRight;
+	tree->leftChild = B_inLeft;
+	tree->rightChild = B_inRight;
 
-		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
-		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
-	}
+	gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
+	gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
 	return tree;
 }
 

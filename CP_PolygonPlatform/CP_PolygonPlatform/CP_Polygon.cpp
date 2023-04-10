@@ -1035,7 +1035,6 @@ CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
 }
 
 CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
-	//printf("gb_buildRegionBSPTree\n");
 	int nl = rn.m_loopArray.size();
 	vector<CP_BSPNode *> bsptrees;
 	CP_BSPNode* result;
@@ -1049,22 +1048,20 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 		result = bsptrees[0];
 		for(int iL = 1; iL < nl; iL++)
 			result = gb_mergeBSPTree(result, bsptrees[iL], CP_BSPOp::SUBTRACTION);
-
 	}
 	return result;
 }
 
 CP_BSPNode* gb_buildLoopBSPTree(CP_Loop& ln){
-	//printf("\tgb_buildLoopBSPTree\n");
-
 	// polygon의 에지 개수만큼..
 	vector<CP_Partition> partitionArray;
 	gb_getLoopPartition(ln, partitionArray);
 
 	CP_BSPNode *tree = NULL;
 	// root라서 CHILDINFO_NO를 넘김.
-	printf("[buildBSPTree - root] \n");
+	printf("Start [-------------------------------------------buildBSPTree -----------------------------------------------] \n");
 	tree = gb_buildBSPTree(partitionArray, NULL, CHILDINFO_NO);
+	printf("End [-------------------------------------------buildBSPTree -----------------------------------------------] \n");
 	return tree;
 }
 

@@ -1788,6 +1788,7 @@ void CCP_PolygonPlatformView::OnViewResult()
 
 void CCP_PolygonPlatformView::OnPolygonUnion()
 {
+    printf("OnPolygonUnion\n");
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -1799,7 +1800,8 @@ void CCP_PolygonPlatformView::OnPolygonUnion()
 	CP_BSPNode *b_tree = gb_buildPolygonBSPTree(pDoc->m_b);
 
 	median1 = clock();
-
+    
+    printf("\t OnPolygonUnion - merging A and B BSPs\n");
 	if(a_tree == NULL && b_tree == NULL){
 		return;
 	}
@@ -1832,6 +1834,7 @@ void CCP_PolygonPlatformView::OnPolygonUnion()
 
 void CCP_PolygonPlatformView::OnPolygonIntersection()
 {
+    printf("OnPolygonIntersection\n");
 	CCP_PolygonPlatformDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)

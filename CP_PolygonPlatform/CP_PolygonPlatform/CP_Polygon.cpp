@@ -1303,7 +1303,11 @@ CP_BSPNode* gb_mergeBSPTree_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	//new_root_node->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 
 	CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-	gb_partitionBspt(B, new_root_node->partition_original, B_inLeft, B_inRight, new_root_node, new_root_node->partition_original.infinite_expansion());
+	gb_partitionBspt(
+		B, new_root_node->partition_original,  // input variables.
+		B_inLeft, B_inRight, new_root_node, // output variables.
+		new_root_node->partition_original.infinite_expansion() // input variable.
+	);
 	B_inLeft->parent = new_root_node;
 	B_inRight->parent = new_root_node;
 	new_root_node->leftChild = B_inLeft;

@@ -1762,7 +1762,7 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 }
 
 bool gb_generateCellPolygon(CP_BSPNode *cell){
-	//generate polygon
+	// generate polygons from cell
 
 	CP_BSPNode *node = cell;
 	CP_BSPNode *child = cell;
@@ -1770,40 +1770,39 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		child = node;
 		node = node->parent;
 
-		for(unsigned int i = 1; i < node->pos_coincident.size(); i++){
-			CP_Partition* p = new CP_Partition(node->pos_coincident[i]);
+		CP_Partition* p = new CP_Partition(node->partition);
 
-			bool no_useful = false;
-			for(unsigned int i = 0; i < cell->polygon.size(); i++){
-				CP_Partition *face = cell->polygon[i];
-				if(!gb_cutPolygonFace(p, face)){
-					no_useful = true;
-					break;
-				}
+		bool no_useful = false;
+		for(unsigned int i = 0; i < cell->polygon.size(); i++){
+			CP_Partition *face = cell->polygon[i];
+			if(!gb_cutPolygonFace(p, face)){
+				no_useful = true;
+				break;
 			}
+		}
 
-			if(!no_useful){
-				//Determine whether it contributes to the polygon of the node
-				CP_Partition* node_face = new CP_Partition(*p);
-				if(child == node->rightChild){
-					if(cell->side == CP_BSPNode::Sideness::INSIDE){
-						node->rightIn.push_back(node_face);
-					}
-					else{
-						node->rightOut.push_back(node_face);
-					}
-
+		if(!no_useful){
+			//Determine whether it contributes to the polygon of the node
+			CP_Partition* node_face = new CP_Partition(*p);
+			if(child == node->rightChild){
+				if(cell->side == CP_BSPNode::Sideness::INSIDE){
+					node->rightIn.push_back(node_face);
 				}
 				else{
-					if(cell->side == CP_BSPNode::Sideness::INSIDE){
-						node->leftIn.push_back(node_face);
-					}
-					else{
-						node->leftOut.push_back(node_face);
-					}
+					node->rightOut.push_back(node_face);
+				}
+
+			}
+			else{
+				if(cell->side == CP_BSPNode::Sideness::INSIDE){
+					node->leftIn.push_back(node_face);
+				}
+				else{
+					node->leftOut.push_back(node_face);
 				}
 			}
 		}
+
 
 #if ENABLE_BSP_NEG_COINCIDENT
 		for(unsigned int i = 0; i < node->neg_coincident.size(); i++){

@@ -1115,18 +1115,17 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	*/
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
 	vector<CP_Partition> F_right, F_left;
-	for(const CP_Partition &p : vp){
+	for (int pidx = 1; pidx < vp.size(); pidx++) {
+		const CP_Partition& p = vp[pidx];
 		char pos = getPartitionPos(p, H); // ClassifyPolygonToPlane / ClassifyPolygonToLine
 		switch(pos){
 		case POS_LEFT: // POLYGON_BEHIND_PLANE(inside)
 			F_left.push_back(p);
 			break;
 		case POS_POS_ON: // coincident
-			printf("[gb_buildBSPTree] POS_POS_ON\n");
-			tree->pos_coincident.push_back(p);
+			//tree->pos_coincident.push_back(p); // Note : it is ok not push coincidents..
 			break;
 		case POS_NEG_ON: // coincident
-			printf("[gb_buildBSPTree] POS_NEG_ON\n");
 #ifdef ENABLE_BSP_NEG_COINCIDENT
 			tree->neg_coincident.push_back(p);
 #endif
@@ -1150,7 +1149,6 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 		tree->leftChild->side = CP_BSPNode::Sideness::INSIDE;
 	}
 	else { // internal (sideness is undefined)
-		
 		tree->leftChild = gb_buildBSPTree(F_left, tree, CHILDINFO_LEFT);
 	}
 	tree->leftChild->parent = tree;

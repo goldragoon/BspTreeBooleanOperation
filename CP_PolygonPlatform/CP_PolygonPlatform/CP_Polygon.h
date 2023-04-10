@@ -515,19 +515,23 @@ public:
 	CP_BSPNode *leftChild;
 	CP_BSPNode *rightChild;
 	
-	// 현재 노드의 binary partition과, 나뉘어진 하위 파티션들..
+	// 현재 노드의 binary partition과
 	CP_Partition partition;
+
+	// partition 과 coincident한 파티션들.. 
+	// \details (plane normal, 혹은 slope(2D) 는 동일하지만, 
 	vector<CP_Partition> pos_coincident;
 #ifdef ENABLE_BSP_NEG_COINCIDENT
 	vector<CP_Partition> neg_coincident;
 #endif
 
-	// visualization/output purpose.
+	// [Start] visualization/output purpose.
 	vector<CP_Partition*> polygon;
 	vector<CP_Partition*> leftIn;
 	vector<CP_Partition*> leftOut;
 	vector<CP_Partition*> rightIn;
 	vector<CP_Partition*> rightOut;
+	// [End] visualization/output purpose.
 
 	/*
 	* \brief BSP Node의 BSPTree 기준 위치를 나타냄.
@@ -584,7 +588,7 @@ public:
 	}
 
 	// [BSP Build Merge Both]
-	// \brief 입력 'partition'과 BSP의 위치관계를 검사한다.
+	// \brief 입력 'partition'과 BSP Node 의 위치관계를 검사한다.
 	// \param partition 위치 관계를 조사할 partition.
 	// \param chunk of input 'partition' that is splited by the region of 'T'.
 	bool is_partition_in_region (const CP_Partition& partition, CP_Partition& partition_spl ) const {
@@ -710,6 +714,7 @@ extern char getPartitionPos(const CP_Partition& partition, const CP_Partition& H
 extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
 extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
 extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
+
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition& partition, 
 	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 

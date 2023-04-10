@@ -1142,33 +1142,30 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	}
 
 	// H로 Tree를 Cut한 결과에 따라 하위 노드를 만들어 준다.
-	if(F_left.size() == 0){
-		// leaf
+	// 1. 내부 (inside tree)
+	if(F_left.size() == 0){ // leaf
 		tree->leftChild = new CP_BSPNode();
 		tree->leftChild->side = CP_BSPNode::Sideness::INSIDE;
-		tree->leftChild->parent = tree;
 	}
-	else {
-		// internal (sideness is undefined)
+	else { // internal (sideness is undefined)
+		
 		tree->leftChild = gb_buildBSPTree(F_left, tree, CHILDINFO_LEFT);
-		tree->leftChild->parent = tree;
 	}
+	tree->leftChild->parent = tree;
 
-	if(F_right.size() == 0){
-		// leaf
+	// 1. 외부 (inside tree)
+	if(F_right.size() == 0) { // leaf
 		tree->rightChild = new CP_BSPNode();
 		tree->rightChild->side = CP_BSPNode::Sideness::OUTSIDE;
-		tree->rightChild->parent = tree;
 	}
-	else {
-		// internal (sideness is undefined)
+	else { // internal (sideness is undefined)		
 		tree->rightChild = gb_buildBSPTree(F_right, tree, CHILDINFO_RIGHT);
-		tree->rightChild->parent = tree;
 	}
+	tree->rightChild->parent = tree;
 	return tree;
 }
 
-// 이미 확실히 T와 P가 cross되는 것이 보장된 상태임을 가정한다.
+// 이미 확실히 T와 P가 cross되는 것이 보장된 상태임을 가정한다.(다시 말해서 t X p != 0)
 // (outplace) T를 P로 자르고, left, right(내외부)로 파티션을 새로 생성한다.
 void gb_getCrossPartition(const CP_Partition& T, const CP_Partition& P, CP_Partition& left, CP_Partition& right) 
 {

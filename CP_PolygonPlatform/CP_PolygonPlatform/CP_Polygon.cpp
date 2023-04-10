@@ -1118,21 +1118,23 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 	for(const CP_Partition &p : vp){
 		char pos = getPartitionPos(p, H); // ClassifyPolygonToPlane / ClassifyPolygonToLine
 		switch(pos){
-		case POS_LEFT:
+		case POS_LEFT: // POLYGON_BEHIND_PLANE(inside)
 			F_left.push_back(p);
 			break;
-		case POS_POS_ON:
+		case POS_POS_ON: // coincident
+			printf("[gb_buildBSPTree] POS_POS_ON\n");
 			tree->pos_coincident.push_back(p);
 			break;
-		case POS_NEG_ON:
+		case POS_NEG_ON: // coincident
+			printf("[gb_buildBSPTree] POS_NEG_ON\n");
 #ifdef ENABLE_BSP_NEG_COINCIDENT
 			tree->neg_coincident.push_back(p);
 #endif
 			break;
-		case POS_RIGHT:
+		case POS_RIGHT: //POLYGON_IN_FRONT_OF_PLANE(outside)
 			F_right.push_back(p);
 			break;
-		case POS_CROSS:
+		case POS_CROSS: // POLYGON_STRADDLING_PLANE
 			CP_Partition left, right;
 			gb_getCrossPartition(p, H, left, right); // ImplicitPolygon::Split.
 			F_left.push_back(left);

@@ -515,12 +515,14 @@ public:
 	CP_BSPNode *leftChild;
 	CP_BSPNode *rightChild;
 	
-	// 현재 노드의 binary partition과
-	CP_Partition partition;
+	// BSP 빌드하면서 만들어진 파티션. (partition_original과 반드시 같은 slope, 방향임.)
+	// - 루트 노드에서는 무한한 n-D plane, 그 하위 노드에서는 상위 노드의 bounding 되어 잘려진 n-D segment임.(2D 에서는 line segment)
+	CP_Partition partition_abstract; 
+	CP_Partition partition_original; // 원래 입력 폴리곤에 있던 파티션/에지 그대로..
 
 	// partition 과 coincident한 파티션들.. 
 	// \details (plane normal, 혹은 slope(2D) 는 동일하지만, 
-	vector<CP_Partition> pos_coincident;
+	//vector<CP_Partition> pos_coincident;
 #ifdef ENABLE_BSP_NEG_COINCIDENT
 	vector<CP_Partition> neg_coincident;
 #endif
@@ -543,24 +545,30 @@ public:
 
 	Sideness side; // 0 : Nothing , 1 : Region In, 2 : Region Out 
 
-	CP_BSPNode() : parent(NULL), leftChild(NULL), rightChild(NULL), partition(), side(Sideness::UNDEFINED){}
+	CP_BSPNode() : 
+		parent(NULL), leftChild(NULL), rightChild(NULL), 
+		partition_original(), partition_abstract(), side(Sideness::UNDEFINED){}
 	CP_BSPNode(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
-		partition = node->partition;
+		partition_original = node->partition_original;
+		partition_abstract = node->partition_abstract;
 		side = node->side;
-		assign_coincidents(node);
+		//assign_coincidents(node); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 	}
 	void copy(const CP_BSPNode* const node){
 		parent = node->parent;
 		leftChild = node->leftChild;
 		rightChild = node->rightChild;
-		partition = node->partition;
+		partition_original = node->partition_original;
+		partition_abstract = node->partition_abstract;
 		side = node->side;
-		assign_coincidents(node);
+		//assign_coincidents(node); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 	}
 
+	/*
+	* // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 	void assign_coincidents(const CP_BSPNode* const node) {
 		pos_coincident.insert(
 			std::end(pos_coincident), 
@@ -572,7 +580,7 @@ public:
 			neg_coincident.push_back(nc);
 #endif
 	}
-
+	*/
 	bool isCell() const {
 		return (leftChild == NULL) && (rightChild == NULL);
 	}
@@ -591,7 +599,7 @@ public:
 	// \brief 입력 'partition'과 BSP Node 의 위치관계를 검사한다.
 	// \param partition 위치 관계를 조사할 partition.
 	// \param chunk of input 'partition' that is splited by the region of 'T'.
-	bool is_partition_in_region (const CP_Partition& partition, CP_Partition& partition_spl ) const {
+	bool is_partition_in_region (const CP_Partition& partition, CP_Partition& partition_spl) const {
 		// Assign partition as default (when return is false)
 		partition_spl = partition;
 
@@ -620,7 +628,7 @@ public:
 			child = node;
 			node = node->parent;
 
-			CP_Partition t_bp = node->partition; // ('t'ree)_('b'inary)('p'artitioner) 
+			CP_Partition t_bp = node->partition_original; // ('t'ree)_('b'inary)('p'artitioner) 
 			// A. 현재 노드가 parent 기준 양(내부)의 영역에 있는 경우에는 아무것도 하지 않음.
 			// B. 만약 현재 노드가 parent 기준 음(외부)의 영역에 있는 경우.. : normal flip of hyper plane. (Q : why?)
 			if (child == node->rightChild)

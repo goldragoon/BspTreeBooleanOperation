@@ -1071,45 +1071,39 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 
 	// 새로운 노드 생성 및 parent와 양방향 포인터 연결
 	CP_BSPNode *tree = new CP_BSPNode();
-	tree->partition = H; // hyper plane으로 node를 쪼갬.
+	tree->partition_original = H; // hyper plane으로 node를 쪼갬.
 	tree->parent = parent;
 	if (childInfo == CHILDINFO_LEFT)      parent->leftChild = tree;
 	else if(childInfo == CHILDINFO_RIGHT) parent->rightChild = tree;
 	//else if (childInfo == CHILDINFO_NO) { printf("root node!"); }
-	//else { printf("something is weird!\n"); }
-
-	// Note : gb_p_in_region 안쪽에서 'parent'의 left, right child 포인터를 레퍼런스 하고있음.
-	CP_Partition partition_splited;
-	bool in_region = false;
-	if(tree->is_partition_in_region(tree->partition, partition_splited))
-	{
-		in_region = true;
-	} else {
-		in_region = false;
-		// 여기에 들어오는 경우(outer_only4_teeth_and_hook)?
-		//printf("[gb_buildBSPTree - gb_p_in_region] Partition is not in region!\n");
-		// - 만약 tree->partition이 tree의 region 바깥에 있으면 그냥 순서만 바꾸어 넣음..
-		// pBegin = tree->partition.end; pEnd = tree->partition.begin;
+	
+	// Note : is_partition_in_region 안쪽에서 'parent'의 left, right child 포인터를 레퍼런스 하고있음
+	// debug!!!!!!!!!!!!
+	if (parent == NULL) { // ROOT Node
+		CP_Partition partition_expanded = tree->partition_original.infinite_expansion();
+		//tree->pos_coincident.push_back(partition_expanded);
+		tree->partition_abstract = partition_expanded;
 	}
+	else {
+		CP_Partition partition_splited;
+		tree->is_partition_in_region(tree->partition_original, partition_splited);
+		//tree->pos_coincident.push_back(partition_splited); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
+		//tree->partition = partition_splited; // problematic.
+		tree->partition_abstract = partition_splited;
 
-	// 이걸 안해주면 서로 다른 BSP를 머지할 때 문제가 생김..
-	// 그냥도 안됨..
+		printf("[gb_buildBSPTree] slope comp (partition, partition_splited) : (%lf, %lf)\n",
+			tree->partition_original.slope(), partition_splited.slope()); // same
+
+		printf("\t- tree->partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+			tree->partition_original.begin.m_x, tree->partition_original.begin.m_y,
+			tree->partition_original.end.m_x, tree->partition_original.end.m_y);
+
+		printf("\t- partition_splited: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
+			partition_splited.begin.m_x, partition_splited.begin.m_y,
+			partition_splited.end.m_x, partition_splited.end.m_y);
+	}
 	// debug!!!!!!!!!!!!
-	//tree->pos_coincident.push_back(tree->partition); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
-	tree->pos_coincident.push_back(partition_splited); // 해당하는 리프에서 잘려진 것을.. 다시 저장?
-	// debug!!!!!!!!!!!!
-	/*
-	printf("[in-region : %d] buildBSPTree slope comp (partition, partition_splited) : (%lf, %lf)\n",
-		in_region, tree->partition.slope(), partition_splited.slope()); // same
 
-	printf("\t- tree->partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
-		tree->partition.begin.m_x, tree->partition.begin.m_y,
-		tree->partition.end.m_x, tree->partition.end.m_y);
-
-	printf("\t- partition_splited: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
-		partition_splited.begin.m_x, partition_splited.begin.m_y,
-		partition_splited.end.m_x, partition_splited.end.m_y);
-	*/
 	// 현재 sub tree(노드)에 남아있는 모든 파티션(vp)들을 H에 대해서 classification 하고, H로 잘라준다.
 	vector<CP_Partition> F_right, F_left;
 	for (int pidx = 1; pidx < vp.size(); pidx++) {
@@ -1159,6 +1153,24 @@ CP_BSPNode* gb_buildBSPTree(const vector<CP_Partition>& vp, CP_BSPNode* parent, 
 		tree->rightChild = gb_buildBSPTree(F_right, tree, CHILDINFO_RIGHT);
 	}
 	tree->rightChild->parent = tree;
+	/*
+	printf("[-------------TreeNode Build Log----------------] Start\n");
+	printf("\t- tree[%p, %d, %d] pos_coincident.size() : %d\n", tree, tree->isCell(), tree->parent == NULL, 
+		tree->pos_coincident.size());
+
+	printf("\t- tree->partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
+		tree->partition.begin.m_x, tree->partition.begin.m_y,
+		tree->partition.end.m_x, tree->partition.end.m_y);
+	for (int pidx = 0; pidx < tree->pos_coincident.size(); pidx++) {
+		const auto& pc = tree->pos_coincident[pidx];
+		printf("\t- pos_coincident[%d]: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
+			pidx,
+			pc.begin.m_x, pc.begin.m_y,
+			pc.end.m_x, pc.end.m_y);
+
+	}
+	printf("[-------------TreeNode Build Log----------------] End\n");
+	*/
 	return tree;
 }
 
@@ -1242,15 +1254,15 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 	else{
 		tree = new CP_BSPNode();
 		tree->parent = parent;
-		tree->partition = A->partition;
-		tree->assign_coincidents(A);
+		tree->partition_original = A->partition_original;
+		tree->partition_abstract = A->partition_abstract;
+		//tree->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 
 		CP_Partition partition_splited;
-		B->is_partition_in_region(tree->partition, partition_splited);
+		B->is_partition_in_region(tree->partition_original, partition_splited);
 
-		CP_BSPNode* B_inRight = NULL;
-		CP_BSPNode* B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, partition_splited);
+		CP_BSPNode* B_inRight = NULL, * B_inLeft = NULL;
+		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, partition_splited);
 
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
@@ -1265,17 +1277,21 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
 
 		/*
-		// just for debugging
-		printf("[in-region : %d] gb_mergeBSPTree slope comp (partition, partition_splited) : (%lf, %lf)\n",
-			in_region, tree->partition.slope(), partition_splited.slope()); // same
+		printf("[-------------TreeNode Merge Log----------------] Start\n");
+		printf("\t- tree[%p] pos_coincident.size() : %d\n", tree, tree->pos_coincident.size());
 
 		printf("\t- tree->partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
 			tree->partition.begin.m_x, tree->partition.begin.m_y,
 			tree->partition.end.m_x, tree->partition.end.m_y);
-			
-		printf("\t- partition_splited: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
-			partition_splited.begin.m_x, partition_splited.begin.m_y,
-			partition_splited.end.m_x, partition_splited.end.m_y);
+		for (int pidx = 0; pidx < tree->pos_coincident.size(); pidx++) {
+			const auto& pc = tree->pos_coincident[pidx];
+			printf("\t- pos_coincident[%d]: (%.4lf, %.4lf) -> (%.4lf, %.4lf) \n",
+				pidx,
+				pc.begin.m_x, pc.begin.m_y,
+				pc.end.m_x, pc.end.m_y);
+
+		}
+		printf("[-------------TreeNode Merge Log----------------] End\n");
 		*/
 	}
 
@@ -1290,11 +1306,12 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	}
 	else{
 		tree = new CP_BSPNode();
-		tree->partition = A->partition;
-		tree->assign_coincidents(A);
+		tree->partition_original = A->partition_original;
+		tree->partition_abstract= A->partition_abstract;
+		//tree->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 
 		CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition, B_inLeft, B_inRight, tree, tree->partition.infinite_expansion());
+		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, tree->partition_original.infinite_expansion());
 
 		B_inLeft->parent = tree;
 		B_inRight->parent = tree;
@@ -1404,7 +1421,7 @@ void gb_partitionBspt(
 	case P_T_ON_POS:
 		B_inLeft = T->leftChild;
 		B_inRight = T->rightChild;
-		parent->pos_coincident.push_back(T->partition);
+		//parent->pos_coincident.push_back(T->partition); // 하지 않아도 상관 없음.
 		return;
 	case P_T_ON_NEG:
 		B_inLeft = T->rightChild;
@@ -1414,66 +1431,80 @@ void gb_partitionBspt(
 #endif
 		return;
 	case P_T_POS_NEG:
+		// T가 P의 Negative(Outside) 영역에 완전히 포함되는 경우..
 		B_inRight = new CP_BSPNode();
 		B_inRight->rightChild = T->rightChild;
-		B_inRight->partition = T->partition;
-		B_inRight->assign_coincidents(T);
+		B_inRight->partition_original = T->partition_original;
+		B_inRight->partition_abstract = T->partition_abstract;
+		//B_inRight->assign_coincidents(T);
 		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, spl_partitionL);
 		break;
 	case P_T_POS_POS:
-		B_inLeft = new CP_BSPNode();
+		// T가 P의 Positive(Inside) 영역에 완전히 포함되는 경우..
+		B_inLeft = new CP_BSPNode(); // inside니깐 left child에 연결..
 		B_inLeft->rightChild = T->rightChild;
-		B_inLeft->partition = T->partition;
-		B_inLeft->assign_coincidents(T);
+		B_inLeft->partition_original = T->partition_original;
+		B_inLeft->partition_abstract = T->partition_abstract;
+		//B_inLeft->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, spl_partitionL);
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
 		B_inLeft->leftChild = T->leftChild;
-		B_inLeft->partition = T->partition;
-		B_inLeft->assign_coincidents(T);
+		B_inLeft->partition_original = T->partition_original;
+		B_inLeft->partition_abstract = T->partition_abstract;
+		//B_inLeft->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, spl_partitionR);
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
 		B_inRight->leftChild = T->leftChild;
-		B_inRight->partition = T->partition;
-		B_inRight->assign_coincidents(T);
+		B_inRight->partition_original = T->partition_original;
+		B_inRight->partition_abstract = T->partition_abstract;
+		//B_inRight->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
+	{
 		// T와 P가 region 안에서 서로 intersection 하는 경우.
 		B_inLeft = new CP_BSPNode();
-		B_inLeft->partition = T->partition;
+		B_inLeft->partition_original = T->partition_original;
+		//B_inLeft->partition_abstract = T->partition_abstract; // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 		B_inRight = new CP_BSPNode();
-		B_inRight->partition = T->partition;
-		
+		B_inRight->partition_original = T->partition_original;
+		//B_inRight->partition_abstract = T->partition_abstract; // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+
 		// Note : flipped partition insertion compared to the P_T_BOTH_NEG case.
 
 		// T의 coincident를 partition에 대하여 다시 classification 하는 부분
-		for(const auto &t_pc : T->pos_coincident){
-			switch(t_pc.coincidentPos(cross_point)){
-			case CP_Partition::PointSideness::LINE_IN: 
-			{
-				CP_Partition left(t_pc.begin, cross_point);
-				CP_Partition right(cross_point, t_pc.end);
-				B_inLeft->pos_coincident.push_back(left);
-				B_inRight->pos_coincident.push_back(right);
-				break;
-			}
-			case CP_Partition::PointSideness::LINE_POS:
-				B_inLeft->pos_coincident.push_back(t_pc);
-				break;
-			case CP_Partition::PointSideness::LINE_NEG:
-				B_inRight->pos_coincident.push_back(t_pc);
-				break;
-			}
+		const auto& t_pc = T->partition_abstract;
+		//for (const auto& t_pc : T->pos_coincident) { // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+		switch (t_pc.coincidentPos(cross_point)) {
+		case CP_Partition::PointSideness::LINE_IN:
+		{
+			CP_Partition left(t_pc.begin, cross_point);
+			CP_Partition right(cross_point, t_pc.end);
+			//B_inLeft->pos_coincident.push_back(left); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+			B_inLeft->partition_abstract = left;
+			//B_inRight->pos_coincident.push_back(right); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+			B_inRight->partition_abstract = right;
+			break;
 		}
+		case CP_Partition::PointSideness::LINE_POS:
+			//B_inLeft->pos_coincident.push_back(t_pc); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+			B_inLeft->partition_abstract = t_pc;
+			break;
+		case CP_Partition::PointSideness::LINE_NEG:
+			//B_inRight->pos_coincident.push_back(t_pc); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+			B_inRight->partition_abstract = t_pc;
+			break;
+		}
+
 #if ENABLE_BSP_NEG_COINCIDENT == 1:
 		// enhanced for loop 으로 고치기 이전 방식은 
 		// - acb922ba19585747fedf5ca63bf341f3164e7fb9 이전 커밋 (혹은 4월 7일 15:00 이전 커밋 참고)
 		for (const auto& t_nc : T->neg_coincident) {
-			switch(t_nc.coincidentPos(cross_point)){
+			switch (t_nc.coincidentPos(cross_point)) {
 			case CP_Partition::PointSideness::LINE_IN:
 			{
 				CP_Partition left(cross_point, t_nc.end);
@@ -1494,43 +1525,41 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
 		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
-
+	}
 	case P_T_BOTH_NEG:
+	{
 		// T와 P가 region 안에서 서로 intersection 하는 경우.
 		B_inLeft = new CP_BSPNode();
-		B_inLeft->partition = T->partition;
+		B_inLeft->partition_original = T->partition_original;
 		B_inRight = new CP_BSPNode();
-		B_inRight->partition = T->partition;
-
-		// Note : flipped partition insertion compared to the P_T_BOTH_POS case.
-		//printf("T.slope : %lf\n", T->partition.slope());
+		B_inRight->partition_original = T->partition_original;
 
 		// T의 coincident를 partition에 대하여 다시 classification 하는 부분
-		for (const auto& t_pc : T->pos_coincident) {
-			//printf("- T.pos_coincident.slope : %lf\n", t_pc.slope()); // same as T-partition.slop!
-			switch(t_pc.coincidentPos(cross_point)){
-			case CP_Partition::PointSideness::LINE_IN:
-			{
-				CP_Partition left(cross_point, t_pc.end);
-				CP_Partition right(t_pc.begin, cross_point);
-				B_inLeft->pos_coincident.push_back(left);
-				B_inRight->pos_coincident.push_back(right);
-				break;
-			}
-			case CP_Partition::PointSideness::LINE_POS: 
-
-				B_inRight->pos_coincident.push_back(t_pc);
-				break;
-			case CP_Partition::PointSideness::LINE_NEG:
-				B_inLeft->pos_coincident.push_back(t_pc);
-				break;
-			}
+		// Note : flipped partition insertion compared to the P_T_BOTH_POS case.
+		const auto& t_pc = T->partition_abstract;
+		//for (const auto& t_pc : T->pos_coincident) { // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+		switch (t_pc.coincidentPos(cross_point)) {
+		case CP_Partition::PointSideness::LINE_IN:
+		{
+			CP_Partition left(cross_point, t_pc.end);
+			CP_Partition right(t_pc.begin, cross_point);
+			B_inLeft->partition_abstract = left;
+			B_inRight->partition_abstract = right;
+			break;
 		}
+		case CP_Partition::PointSideness::LINE_POS:
+			B_inRight->partition_abstract = t_pc;
+			break;
+		case CP_Partition::PointSideness::LINE_NEG:
+			B_inLeft->partition_abstract = t_pc;
+			break;
+		}
+		//}
 #if ENABLE_BSP_NEG_COINCIDENT == 1:
 		// enhanced for loop 으로 고치기 이전 방식은 
-        // - acb922ba19585747fedf5ca63bf341f3164e7fb9 이전 커밋 (혹은 4월 7일 15:00 이전 커밋 참고)
+		// - acb922ba19585747fedf5ca63bf341f3164e7fb9 이전 커밋 (혹은 4월 7일 15:00 이전 커밋 참고)
 		for (const auto& t_nc : T->neg_coincident) {
-			switch(t_nc.coincidentPos(cross_point)){
+			switch (t_nc.coincidentPos(cross_point)) {
 			case CP_Partition::PointSideness::LINE_IN:
 			{
 				CP_Partition left(cross_point, t_nc.end);
@@ -1551,6 +1580,7 @@ void gb_partitionBspt(
 		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
 		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
 		break;
+	}
 	}
 	if(!B_inLeft->isCell()){
 		B_inLeft->leftChild->parent = B_inLeft;
@@ -1571,7 +1601,7 @@ char gb_t_p_Position3(
 	// 't' prefix states the 'tree'
 	// 'p' prefix states the 'partition'
 
-	const CP_Partition& t_bp = A->partition;
+	const CP_Partition& t_bp = A->partition_original;
 
 	CP_Vec2 t_vec, p_vec;
 	CP_Line2 t_line, p_line;
@@ -1681,22 +1711,14 @@ char gb_t_p_Position3(
 			// Calculate the t direction
 			if (std::abs(ta) > std::abs(tb)) {
 				//y방향
-				//A node의 현재 binary partition(A->pos_coincident[0]) H랑 비교하는건가?
-				/*
-				a = std::abs(A->partition.begin.m_y - point_intersection.m_y);
-				b = std::abs(A->partition.end.m_y - point_intersection.m_y);
-				*/
-				a = std::abs(A->pos_coincident[0].begin.m_y - point_intersection.m_y);
-				b = std::abs(A->pos_coincident[0].end.m_y - point_intersection.m_y);
+				// A node의 현재 binary partition(원본 메쉬에서 온 것 말고, BSP 빌드 과정에서 생성된, infinite 하게 연장될 수 있는 것.)
+				a = std::abs(A->partition_abstract.begin.m_y - point_intersection.m_y);
+				b = std::abs(A->partition_abstract.end.m_y - point_intersection.m_y);
 			}
 			else {
 				//x방향
-				/*
-				a = std::abs(A->partition.begin.m_x - point_intersection.m_x);
-				b = std::abs(A->partition.end.m_x - point_intersection.m_x);
-				*/
-				a = std::abs(A->pos_coincident[0].begin.m_x - point_intersection.m_x);
-				b = std::abs(A->pos_coincident[0].end.m_x - point_intersection.m_x);
+				a = std::abs(A->partition_abstract.begin.m_x - point_intersection.m_x);
+				b = std::abs(A->partition_abstract.end.m_x - point_intersection.m_x);
 			}
 
 			double dirAP = a - b;
@@ -1704,8 +1726,7 @@ char gb_t_p_Position3(
 			else dirAP = -1;		  // LINE_NEG
 
 			CP_Partition _p(partition.end, partition.begin); // temporary object for assignment.
-			if (partition.is_left_side(A->pos_coincident[0].begin)) {
-			//if (partition.is_left_side(A->partition.begin)) {
+			if (partition.is_left_side(A->partition_abstract.begin)) {
 				if (dirAP * dirP < 0) {
 					partitionR = _p;
 					return P_T_POS_POS;
@@ -1743,9 +1764,10 @@ void _debugFoutBsptree(CP_BSPNode* T, int floor, ofstream &fout){
 		str[i] = ' ';
 	str[floor] = 0;
 	if(T->side == CP_BSPNode::Sideness::UNDEFINED){
+		/*
 		fout<<str<<"("<<T->partition.begin.m_x<<","<<T->partition.begin.m_y<<")---->("<<T->partition.end.m_x<<","<<T->partition.end.m_y<<")"<<endl;
 		_debugFoutBsptree(T->leftChild, floor + 3, fout);
-		_debugFoutBsptree(T->rightChild, floor + 3, fout);
+		_debugFoutBsptree(T->rightChild, floor + 3, fout);*/
 	}
 	else{	
 		if(T->side == CP_BSPNode::Sideness::INSIDE)
@@ -1765,7 +1787,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		child = node;
 		node = node->parent;
 
-		CP_Partition* p = new CP_Partition(node->partition);
+		CP_Partition* p = new CP_Partition(node->partition_original); // build에 사용된 원본..
 
 		bool no_useful = false;
 		for(unsigned int i = 0; i < cell->polygon.size(); i++){
@@ -1775,7 +1797,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 				break;
 			}
 		}
-
+		
 		if(!no_useful){
 			//Determine whether it contributes to the polygon of the node
 			CP_Partition* node_face = new CP_Partition(*p);
@@ -1851,7 +1873,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 		node = node->parent;
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
-		CP_Partition *polygon_face = new CP_Partition(node->partition);
+		CP_Partition *polygon_face = new CP_Partition(node->partition_original);
 
 		CP_Partition partition_spl;
 		if(gb_p_in_cellPolygon(cell, polygon_face, partition_spl)){

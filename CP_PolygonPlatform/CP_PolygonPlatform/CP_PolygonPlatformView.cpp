@@ -1810,7 +1810,7 @@ void CCP_PolygonPlatformView::OnPolygonUnion()
 		pDoc->m_bspTree = a_tree;
 	}
     else {
-        pDoc->m_bspTree = gb_mergeBSPTree(a_tree, b_tree, CP_BSPOp::UNION);
+        pDoc->m_bspTree = gb_mergeBSPTree_root(a_tree, b_tree, CP_BSPOp::UNION);
     }
 
 	median2 = clock();
@@ -1852,7 +1852,7 @@ void CCP_PolygonPlatformView::OnPolygonIntersection()
 		pDoc->m_bspTree = a_tree;
 	}
 	else 
-		pDoc->m_bspTree = gb_mergeBSPTree(a_tree, b_tree, CP_BSPOp::INTERSECTION);
+		pDoc->m_bspTree = gb_mergeBSPTree_root(a_tree, b_tree, CP_BSPOp::INTERSECTION);
 
 	median2 = clock();
 	gb_generateCellPolygons(pDoc->m_bspTree);
@@ -1890,7 +1890,7 @@ void CCP_PolygonPlatformView::OnPolygonAB()
 		pDoc->m_bspTree = a_tree;
 	}
 	else 
-		pDoc->m_bspTree = gb_mergeBSPTree(a_tree, b_tree, CP_BSPOp::SUBTRACTION);
+		pDoc->m_bspTree = gb_mergeBSPTree_root(a_tree, b_tree, CP_BSPOp::SUBTRACTION);
 
 	median2 = clock();
 	gb_generateCellPolygons(pDoc->m_bspTree);
@@ -1927,7 +1927,7 @@ void CCP_PolygonPlatformView::OnPolygonBA()
 		pDoc->m_bspTree = a_tree;
 	}
 	else 
-		pDoc->m_bspTree = gb_mergeBSPTree(b_tree, a_tree, CP_BSPOp::SUBTRACTION);
+		pDoc->m_bspTree = gb_mergeBSPTree_root(b_tree, a_tree, CP_BSPOp::SUBTRACTION);
 	
 	
 	median2 = clock();

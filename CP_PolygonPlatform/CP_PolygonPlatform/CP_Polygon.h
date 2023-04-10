@@ -723,8 +723,8 @@ extern void gb_getCrossPartition(const CP_Partition& T, const CP_Partition& P, C
 extern char getPartitionPos(const CP_Partition& partition, const CP_Partition& H);
 
 // [BSP Merge Related]
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
-extern CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
+extern CP_BSPNode* gb_mergeBSPTree_non_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left);
+extern CP_BSPNode* gb_mergeBSPTree_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op);
 extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op);
 
 extern void gb_partitionBspt(

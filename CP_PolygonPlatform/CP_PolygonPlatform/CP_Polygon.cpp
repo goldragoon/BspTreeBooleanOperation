@@ -882,7 +882,7 @@ bool gb_treeHasInCell(CP_BSPNode* tree){
 }
 
 bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
-	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, CP_BSPOp::INTERSECTION);
+	CP_BSPNode *result = gb_mergeBSPTree_root(tree1, tree2, CP_BSPOp::INTERSECTION);
 	if(gb_treeHasInCell(result))
 		return true;
 	else
@@ -890,7 +890,7 @@ bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
 }
 
 bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2){
-	CP_BSPNode *result = gb_mergeBSPTree(tree1, tree2, CP_BSPOp::SUBTRACTION);
+	CP_BSPNode *result = gb_mergeBSPTree_root(tree1, tree2, CP_BSPOp::SUBTRACTION);
 	if(gb_treeHasInCell(result))
 		return false;
 	else
@@ -1028,7 +1028,7 @@ CP_BSPNode* gb_buildPolygonBSPTree(CP_Polygon& pn){
 	else{
 		result = bsptrees[0];
 		for(int iR = 1; iR < nr; iR++){
-			result = gb_mergeBSPTree(result, bsptrees[iR], CP_BSPOp::UNION);
+			result = gb_mergeBSPTree_root(result, bsptrees[iR], CP_BSPOp::UNION);
 		}
 	}
 	return result;
@@ -1047,7 +1047,7 @@ CP_BSPNode* gb_buildRegionBSPTree(CP_Region& rn){
 
 		result = bsptrees[0];
 		for(int iL = 1; iL < nl; iL++)
-			result = gb_mergeBSPTree(result, bsptrees[iL], CP_BSPOp::SUBTRACTION);
+			result = gb_mergeBSPTree_root(result, bsptrees[iL], CP_BSPOp::SUBTRACTION);
 	}
 	return result;
 }
@@ -1241,7 +1241,7 @@ char getPartitionPos(
 	}
 }
 
-CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left){
+CP_BSPNode* gb_mergeBSPTree_non_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP_BSPOp op, bool left){
 
 	CP_BSPNode* tree = NULL;
 	
@@ -1270,8 +1270,8 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 		tree->leftChild = B_inLeft;
 		tree->rightChild = B_inRight;
 
-		gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
-		gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
+		gb_mergeBSPTree_non_root(A->leftChild, B_inLeft, tree, op, true);
+		gb_mergeBSPTree_non_root(A->rightChild, B_inRight, tree, op, false);		
 
 		/*
 		printf("[-------------TreeNode Merge Log----------------] Start\n");
@@ -1295,7 +1295,7 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* parent, CP
 	return tree;
 }
 
-CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
+CP_BSPNode* gb_mergeBSPTree_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	printf("[gb_mergeBSPTree - root node]\n");
 	CP_BSPNode* tree = new CP_BSPNode();
 	tree->partition_original = A->partition_original;
@@ -1310,8 +1310,8 @@ CP_BSPNode* gb_mergeBSPTree(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	tree->leftChild = B_inLeft;
 	tree->rightChild = B_inRight;
 
-	gb_mergeBSPTree(A->leftChild, B_inLeft, tree, op, true);
-	gb_mergeBSPTree(A->rightChild, B_inRight, tree, op, false);		
+	gb_mergeBSPTree_non_root(A->leftChild, B_inLeft, tree, op, true);
+	gb_mergeBSPTree_non_root(A->rightChild, B_inRight, tree, op, false);		
 	return tree;
 }
 

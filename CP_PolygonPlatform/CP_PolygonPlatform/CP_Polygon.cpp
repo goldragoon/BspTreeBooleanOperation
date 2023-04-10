@@ -1297,22 +1297,22 @@ CP_BSPNode* gb_mergeBSPTree_non_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* p
 
 CP_BSPNode* gb_mergeBSPTree_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	printf("[gb_mergeBSPTree - root node]\n");
-	CP_BSPNode* tree = new CP_BSPNode();
-	tree->partition_original = A->partition_original;
-	tree->partition_abstract= A->partition_abstract;
-	//tree->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
+	CP_BSPNode* new_root_node = new CP_BSPNode();
+	new_root_node->partition_original = A->partition_original;
+	new_root_node->partition_abstract= A->partition_abstract;
+	//new_root_node->assign_coincidents(A);  // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
 
 	CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
-	gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, tree->partition_original.infinite_expansion());
-	B_inLeft->parent = tree;
-	B_inRight->parent = tree;
+	gb_partitionBspt(B, new_root_node->partition_original, B_inLeft, B_inRight, new_root_node, new_root_node->partition_original.infinite_expansion());
+	B_inLeft->parent = new_root_node;
+	B_inRight->parent = new_root_node;
+	new_root_node->leftChild = B_inLeft;
+	new_root_node->rightChild = B_inRight;
 
-	tree->leftChild = B_inLeft;
-	tree->rightChild = B_inRight;
-
-	gb_mergeBSPTree_non_root(A->leftChild, B_inLeft, tree, op, true);
-	gb_mergeBSPTree_non_root(A->rightChild, B_inRight, tree, op, false);		
-	return tree;
+	// debug purpose... disable.
+	gb_mergeBSPTree_non_root(A->leftChild, B_inLeft, new_root_node, op, true);
+	gb_mergeBSPTree_non_root(A->rightChild, B_inRight, new_root_node, op, false);		
+	return new_root_node;
 }
 
 CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){

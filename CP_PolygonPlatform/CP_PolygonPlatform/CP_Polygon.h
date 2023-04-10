@@ -655,7 +655,9 @@ public:
 					(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 					(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
-				if (currentMin >= max) return false;
+				if (currentMin >= max) {
+					return false;
+				}
 				else
 					if (currentMin > min) {
 						min = currentMin;
@@ -668,7 +670,9 @@ public:
 					(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
 					(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
-				if (currentMax <= min) return false;
+				if (currentMax <= min) {
+					return false;
+				}
 				else
 					if (currentMax < max) {
 						max = currentMax;

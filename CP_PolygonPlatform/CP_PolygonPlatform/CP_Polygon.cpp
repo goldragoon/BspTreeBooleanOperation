@@ -2030,57 +2030,49 @@ bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *resul
 	}
 }
 
+//is_partition_in_region dl
 bool gb_p_in_cellPolygon(
 	const CP_BSPNode* const T, const CP_Partition* const partition, 
 	CP_Partition& partition_spl
 ){
 	partition_spl = *partition;
 
-	double vx = partition->end.m_x - partition->begin.m_x;
-	double vy = partition->end.m_y - partition->begin.m_y;
+	// [직선의 방정식의 steepest-axis 찾기] Start
+	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
+	// - 더 긴 쪽으로 하기 위함..
+	const CP_Vec2 diff = partition->end - partition->begin;
+	const double& dx = diff.m_x, & dy = diff.m_y;
+	const double mean_xy[2] = {
+		dx > 0 ? 1 : -1,
+		dy > 0 ? 1 : -1
+	};
+	const bool x_or_y = std::abs(dx) < std::abs(dy) ? true : false; // dx, dy 중어느 것이 더 큰지 검사.
+	// [직선의 방정식의 steepest-axis 찾기] End
 
-	double l = sqrt(vx * vx + vy * vy);
-	
-	double mean_xy[2];
-	mean_xy[0] = vx > 0 ? 1: -1;
-	mean_xy[1] = vy > 0 ? 1: -1;
-
-	int x_or_y = 0;
-
-	if(vx * vx < vy * vy)
-		x_or_y = 1;
-	
 	// [!!!!!!!!!!!주의!!!!!!!!!] extension 이 너무 크면 계산 오류가 있음.
 	double min = DBL_MAX * -1; 
 	double max = DBL_MAX;
 
-	const CP_BSPNode *node = T;
-	double pa, pb, pc, ta, tb, tc;
-	CP_Point2 point;
-	for(unsigned int i = 0; i < node->polygon.size(); i++){
-		CP_Partition* t_bp = node->polygon[i];
-		ta =t_bp->end.m_y - t_bp->begin.m_y;
-		tb =t_bp->begin.m_x - t_bp->end.m_x;
-		tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
+	for(unsigned int i = 0; i < T->polygon.size(); i++){
+		CP_Partition* t_bp = T->polygon[i];
 
-		pa =partition->end.m_y - partition->begin.m_y;
-		pb =partition->begin.m_x - partition->end.m_x;
-		pc = - pa * partition->begin.m_x - pb * partition->begin.m_y;
+		CP_Vec2 t_vec, p_vec;
+		CP_Line2 t_line, p_line;
+		CP_Point2 point = t_bp->intersection(*partition, t_vec, p_vec, t_line, p_line);
+		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
 
-		if((-tb) * pa - (-pb) * ta >= -TOLERENCE && (-tb) * pa - (-pb) * ta <= TOLERENCE){
-			double v1 = partition->begin.m_x - t_bp->begin.m_x;
-			double v2 = partition->begin.m_y - t_bp->begin.m_y;
-			if((-tb) * v2 - ta * v1 >= 0){
+		if (equal_float(cross_product_tp, 0)) {
+
+			CP_Vec2 v = partition->begin - t_bp->begin;
+			if (t_vec.cross_product(v) >= 0) {
 				continue;
 			}
 			else{
 				return false;
 			}
 		}
-		point.m_x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-		point.m_y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
 
-		if((-tb) * pa - (-pb) * ta > TOLERENCE)
+		if (cross_product_tp > TOLERENCE)
 		{
 			if(x_or_y == 0){
 				double currentMin = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];

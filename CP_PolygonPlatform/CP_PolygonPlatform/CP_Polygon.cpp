@@ -1896,52 +1896,37 @@ bool gb_generateCellPolygons(CP_BSPNode *node){
 
 // p를 f로 잘라버린다.(inplace)
 bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
-	double vx1, vx2, vx3, vy1, vy2, vy3;
-	vx1 = face->end.m_x - face->begin.m_x;
-	vy1 = face->end.m_y - face->begin.m_y;
 
-	vx2 = p->begin.m_x - face->end.m_x;
-	vy2 = p->begin.m_y - face->end.m_y;
+	CP_Vec2 face_vec = face->end - face->begin;
+	CP_Vec2 begin_vec = p->begin - face->end;
+	CP_Vec2 end_vec = p->end - face->end;
+	double begin = face_vec.cross_product(begin_vec);
+	double end = face_vec.cross_product(end_vec);
 
-	vx3 = p->end.m_x - face->end.m_x;
-	vy3 = p->end.m_y - face->end.m_y;
-
-	double begin = vx1 * vy2 - vy1 * vx2;
-	double end = vx1 * vy3 - vy1 * vx3;
-
-	if(begin * begin <= TOLERENCE * TOLERENCE)
+	if(abs(begin) <= TOLERENCE)
 		begin = 0;
-	if(end * end <= TOLERENCE * TOLERENCE)
+	if(abs(end) <= TOLERENCE)
 		end = 0;
-	if(begin * end < 0){//cut
-		double ta, tb, tc, pa, pb, pc;
-		CP_Partition* t_bp = face;
-		ta =t_bp->end.m_y - t_bp->begin.m_y;
-		tb =t_bp->begin.m_x - t_bp->end.m_x;
-		tc = -ta * t_bp->begin.m_x - tb * t_bp->begin.m_y;
+	if(begin * end < 0){
+		//cut
+		const CP_Partition& t_bp = *face;
 
-		pa =p->end.m_y - p->begin.m_y;
-		pb =p->begin.m_x - p->end.m_x;
-		pc = - pa * p->begin.m_x - pb * p->begin.m_y;
+		CP_Vec2 t_vec, p_vec;
+		CP_Line2 t_line, p_line;
+		const CP_Point2 point_intersection = t_bp.intersection(*p, t_vec, p_vec, t_line, p_line);
+		const double& ta = t_line.a, & tb = t_line.b, & tc = t_line.c;
+		const double& pa = p_line.a, & pb = p_line.b, & pc = p_line.c;
 
-		double x =  (-tc * pb + tb * pc) / (ta * pb - tb * pa);
-		double y =  (tc * pa - ta * pc) / (ta * pb - tb * pa);
-
-		if(begin < 0){
-			p->begin.m_x = x;
-			p->begin.m_y = y;
-		}
-		else{
-			p->end.m_x = x;
-			p->end.m_y = y;
-		}
+		if(begin < 0)
+			p->begin = point_intersection;
+		else
+			p->end = point_intersection;
 		return true;
 	}
 	else if(begin + end > 0)
 		return true;
 	else if(begin + end < 0){
 		return false;
-
 	}
 	else{
 		// The position of p coincides with the straight line of face

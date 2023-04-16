@@ -1903,10 +1903,11 @@ bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 	double begin = face_vec.cross_product(begin_vec);
 	double end = face_vec.cross_product(end_vec);
 
-	if(abs(begin) <= TOLERENCE)
+	if(abs(begin) <= TOLERENCE) // begin 이 0보다 작으면?
 		begin = 0;
-	if(abs(end) <= TOLERENCE)
+	if(abs(end) <= TOLERENCE)// end가 0보다 작으면?
 		end = 0;
+
 	if(begin * end < 0){
 		//cut
 		const CP_Partition& t_bp = *face;
@@ -1987,7 +1988,9 @@ bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *resul
 		dy = -1;
 
 	double face_begin = 0;
-	double face_end = (face->end.m_x - face->begin.m_x) * dx + (face->end.m_y - face->begin.m_y) * dy;
+	double face_end = std::abs(face->end.m_x - face->begin.m_x) + std::abs(face->end.m_y - face->begin.m_y);
+
+	// what does this even mean?
 	double p_begin = (p->begin.m_x - face->begin.m_x) * dx + (p->begin.m_y - face->begin.m_y) * dy;
 	double p_end = (p->end.m_x - face->begin.m_x) * dx + (p->end.m_y - face->begin.m_y) * dy;
 

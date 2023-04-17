@@ -1869,9 +1869,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
 		CP_Partition *polygon_face = new CP_Partition(node->partition_original);
-
-		CP_Partition partition_spl;
-		if(gb_p_in_cellPolygon(cell, polygon_face, partition_spl)){
+		if(gb_p_in_cellPolygon(cell, polygon_face)){
 
 			if(child == node->rightChild)
 				polygon_face->flip();
@@ -2020,11 +2018,8 @@ bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *resul
 
 //is_partition_in_region dl
 bool gb_p_in_cellPolygon(
-	const CP_BSPNode* const T, const CP_Partition* const partition, 
-	CP_Partition& partition_spl
+	const CP_BSPNode* const T, const CP_Partition* const partition
 ){
-	partition_spl = *partition;
-
 	// [직선의 방정식의 steepest-axis 찾기] Start
 	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
 	// - 더 긴 쪽으로 하기 위함..
@@ -2069,7 +2064,7 @@ bool gb_p_in_cellPolygon(
 				else
 					if(currentMin > min){
 						min = currentMin;
-						partition_spl.begin = point;
+						//partition_spl.begin = point;
 					}
 			}
 			else if(x_or_y == 1){
@@ -2079,7 +2074,7 @@ bool gb_p_in_cellPolygon(
 				else
 					if(currentMin > min){
 						min = currentMin;
-						partition_spl.begin = point;
+						//partition_spl.begin = point;
 					}
 			}
 		}
@@ -2091,7 +2086,7 @@ bool gb_p_in_cellPolygon(
 				else
 					if(currentMax < max){
 						max = currentMax;
-						partition_spl.end = point;
+						//partition_spl.end = point;
 					}
 			}
 			else if(x_or_y == 1){
@@ -2101,7 +2096,7 @@ bool gb_p_in_cellPolygon(
 				else
 					if(currentMax < max){
 						max = currentMax;
-						partition_spl.end = point;
+						//partition_spl.end = point;
 					}
 			}
 		}

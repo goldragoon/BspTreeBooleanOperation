@@ -2054,51 +2054,35 @@ bool gb_p_in_cellPolygon(
 				return false;
 			}
 		}
-
-		if (cross_product_tp > TOLERENCE)
+		// 만약 두 개의 벡터가 평행하지 않은 경우...
+		else if (cross_product_tp > TOLERENCE)
 		{
-			if(x_or_y == 0){
-				double currentMin = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						//partition_spl.begin = point;
-					}
+			// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
+			double currentMin = !x_or_y ?
+				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+
+			if (currentMin >= max) {
+				return false;
 			}
-			else if(x_or_y == 1){
-				double currentMin = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMin >= max)
-					return false;
-				else
-					if(currentMin > min){
-						min = currentMin;
-						//partition_spl.begin = point;
-					}
-			}
+			else
+				if (currentMin > min) {
+					min = currentMin;
+				}
 		}
-		else{
-			if(x_or_y == 0){
-				double currentMax = (point.m_x - partition->begin.m_x) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						//partition_spl.end = point;
-					}
+		else { // (cross_product_tp < -TOLERENCE)
+			// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
+			double currentMax = !x_or_y ?
+				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+
+			if (currentMax <= min) {
+				return false;
 			}
-			else if(x_or_y == 1){
-				double currentMax = (point.m_y - partition->begin.m_y) * mean_xy[x_or_y];
-				if(currentMax <= min)
-					return false;
-				else
-					if(currentMax < max){
-						max = currentMax;
-						//partition_spl.end = point;
-					}
-			}
+			else
+				if (currentMax < max) {
+					max = currentMax;
+				}
 		}
 	}
 

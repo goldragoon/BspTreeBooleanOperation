@@ -1785,9 +1785,8 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		CP_Partition* p = new CP_Partition(node->partition_original); // build에 사용된 원본..
 
 		bool no_useful = false;
-		for(unsigned int i = 0; i < cell->polygon.size(); i++){
-			CP_Partition *face = cell->polygon[i];
-			if(!gb_cutPolygonFace(p, face)){
+		for(auto& cell_polygon : cell->polygon){
+			if(!gb_cutPolygonFace(p, cell_polygon)){
 				no_useful = true;
 				break;
 			}

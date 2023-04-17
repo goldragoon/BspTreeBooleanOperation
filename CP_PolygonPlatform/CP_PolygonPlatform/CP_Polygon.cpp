@@ -1794,23 +1794,17 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		
 		if(!no_useful){
 			//Determine whether it contributes to the polygon of the node
-			CP_Partition* node_face = new CP_Partition(*p);
 			if(child == node->rightChild){
-				if(cell->side == CP_BSPNode::Sideness::INSIDE){
-					node->rightIn.push_back(node_face);
-				}
-				else{
-					node->rightOut.push_back(node_face);
-				}
-
+				if(cell->side == CP_BSPNode::Sideness::INSIDE)
+					node->rightIn.push_back(p);
+				else
+					node->rightOut.push_back(p);
 			}
 			else{
-				if(cell->side == CP_BSPNode::Sideness::INSIDE){
-					node->leftIn.push_back(node_face);
-				}
-				else{
-					node->leftOut.push_back(node_face);
-				}
+				if(cell->side == CP_BSPNode::Sideness::INSIDE)
+					node->leftIn.push_back(p);
+				else
+					node->leftOut.push_back(p);
 			}
 		}
 

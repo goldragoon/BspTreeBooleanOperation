@@ -1859,7 +1859,7 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
 		CP_Partition polygon_face(node->partition_original);
-		if(gb_p_in_cellPolygon(cell, &polygon_face)) {
+		if(gb_p_in_cellPolygon(cell, polygon_face)) {
 			if(child == node->rightChild)
 				polygon_face.flip();
 
@@ -1998,12 +1998,12 @@ bool gb_cutParallelFace(const CP_Partition &p, const CP_Partition &face, CP_Part
 
 //is_partition_in_region dl
 bool gb_p_in_cellPolygon(
-	const CP_BSPNode* const T, const CP_Partition* const partition
+	const CP_BSPNode* const T, const CP_Partition& partition
 ){
 	// [직선의 방정식의 steepest-axis 찾기] Start
 	// - 왜냐하면, 어디서 잘라야 하는지 저장할 때, vector가 X, Y축에 parallel 할 수 있기 때문에
 	// - 더 긴 쪽으로 하기 위함..
-	const CP_Vec2 diff = partition->end - partition->begin;
+	const CP_Vec2 diff = partition.end - partition.begin;
 	const double& dx = diff.m_x, & dy = diff.m_y;
 	const double mean_xy[2] = {
 		dx > 0 ? 1 : -1,
@@ -2021,12 +2021,12 @@ bool gb_p_in_cellPolygon(
 
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
-		CP_Point2 point = t_bp.intersection(*partition, t_vec, p_vec, t_line, p_line);
+		CP_Point2 point = t_bp.intersection(partition, t_vec, p_vec, t_line, p_line);
 		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
 
 		if (equal_float(cross_product_tp, 0)) {
 
-			CP_Vec2 v = partition->begin - t_bp.begin;
+			CP_Vec2 v = partition.begin - t_bp.begin;
 			if (t_vec.cross_product(v) >= 0) {
 				continue;
 			}
@@ -2039,8 +2039,8 @@ bool gb_p_in_cellPolygon(
 		{
 			// p 벡터가 t벡터에 대해서 CCW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMin = !x_or_y ?
-				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
 			if (currentMin >= max) {
 				return false;
@@ -2053,8 +2053,8 @@ bool gb_p_in_cellPolygon(
 		else { // (cross_product_tp < -TOLERENCE)
 			// p 벡터가 t벡터에 대해서 CW 방향으로 rotation 되어있을 경우 (1)번 cross product 참고
 			double currentMax = !x_or_y ?
-				(point.m_x - partition->begin.m_x) * mean_xy[x_or_y] : // == 0
-				(point.m_y - partition->begin.m_y) * mean_xy[x_or_y];  // == 1
+				(point.m_x - partition.begin.m_x) * mean_xy[x_or_y] : // == 0
+				(point.m_y - partition.begin.m_y) * mean_xy[x_or_y];  // == 1
 
 			if (currentMax <= min) {
 				return false;

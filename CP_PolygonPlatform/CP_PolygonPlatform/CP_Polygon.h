@@ -729,7 +729,7 @@ extern CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp
 
 extern void gb_partitionBspt(
 	const CP_BSPNode* const T, const CP_Partition& partition, 
-	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight, CP_BSPNode* parent, 
+	CP_BSPNode* &B_inLeft, CP_BSPNode* &B_inRight,
 	const CP_Partition& splited_partition);
 
 // The original method of judging the positional relationship between T and P when dividing Bsptree takes O(n^ 2)

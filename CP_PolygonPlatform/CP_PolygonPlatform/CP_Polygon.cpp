@@ -1262,7 +1262,7 @@ CP_BSPNode* gb_mergeBSPTree_non_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPNode* p
 		B->is_partition_in_region(tree->partition_original, partition_splited);
 
 		CP_BSPNode* B_inRight = NULL, * B_inLeft = NULL;
-		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, tree, partition_splited);
+		gb_partitionBspt(B, tree->partition_original, B_inLeft, B_inRight, partition_splited);
 		if (left) tree->parent->leftChild = tree;
 		else tree->parent->rightChild = tree;
 		B_inLeft->parent = tree;
@@ -1305,7 +1305,7 @@ CP_BSPNode* gb_mergeBSPTree_root(CP_BSPNode* A, CP_BSPNode* B, CP_BSPOp op) {
 	CP_BSPNode *B_inRight = NULL, *B_inLeft = NULL;
 	gb_partitionBspt(
 		B, new_root_node->partition_original,  // input variables.
-		B_inLeft, B_inRight, new_root_node, // output variables.
+		B_inLeft, B_inRight, // output variables.
 		new_root_node->partition_original.infinite_expansion() // input variable.
 	);
 	B_inLeft->parent = new_root_node;
@@ -1384,8 +1384,6 @@ void gb_partitionBspt(
 	const CP_BSPNode* const T, // partition할 BSP 'T'.
 	const CP_Partition& partition, // BSP를 자를 원본 파티션 'P'. 
 	CP_BSPNode* & B_inLeft, CP_BSPNode*& B_inRight, 
-	CP_BSPNode* parent, // T의 현재/미래 부모 노드. (미래 부모 노드를 넣을 경우에는 반드시.. 호출하는 곳에서 잘 정리해 줄 것)
-
 	// partition 'P'를 reqursive 하게 잘라나가는 중간 과정의 결과가 저장되는 곳.
 	// A. 루트 노드에서 호출될 때는 partition line을 infinite하게 연장한 게 입력됨.
 	// B. 
@@ -1432,7 +1430,7 @@ void gb_partitionBspt(
 		B_inRight->partition_original = T->partition_original;
 		B_inRight->partition_abstract = T->partition_abstract;
 		//B_inRight->assign_coincidents(T);
-		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, parent, spl_partitionL);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft, B_inRight->leftChild, spl_partitionL);
 		break;
 	case P_T_POS_POS:
 		// T가 P의 Positive(Inside) 영역에 완전히 포함되는 경우..
@@ -1441,7 +1439,7 @@ void gb_partitionBspt(
 		B_inLeft->partition_original = T->partition_original;
 		B_inLeft->partition_abstract = T->partition_abstract;
 		//B_inLeft->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, parent, spl_partitionL);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight, spl_partitionL);
 		break;
 	case P_T_NEG_POS:
 		B_inLeft = new CP_BSPNode();
@@ -1449,7 +1447,7 @@ void gb_partitionBspt(
 		B_inLeft->partition_original = T->partition_original;
 		B_inLeft->partition_abstract = T->partition_abstract;
 		//B_inLeft->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, parent, spl_partitionR);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight, spl_partitionR);
 		break;
 	case P_T_NEG_NEG:
 		B_inRight = new CP_BSPNode();
@@ -1457,7 +1455,7 @@ void gb_partitionBspt(
 		B_inRight->partition_original = T->partition_original;
 		B_inRight->partition_abstract = T->partition_abstract;
 		//B_inRight->assign_coincidents(T); // DEPRECATED (since that CP_BSPNode::pos_coincidence is no longer maintained)
-		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, parent, spl_partitionR);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft, B_inRight->rightChild, spl_partitionR);
 		break;
 	case P_T_BOTH_POS:
 	{
@@ -1517,8 +1515,8 @@ void gb_partitionBspt(
 			}
 		}
 #endif
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, spl_partitionL);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, spl_partitionR);
 		break;
 	}
 	case P_T_BOTH_NEG:
@@ -1572,8 +1570,8 @@ void gb_partitionBspt(
 			}
 		}
 #endif
-		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, parent, spl_partitionL);
-		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, parent, spl_partitionR);
+		gb_partitionBspt(T->leftChild, partition, B_inLeft->leftChild, B_inRight->leftChild, spl_partitionL);
+		gb_partitionBspt(T->rightChild, partition, B_inLeft->rightChild, B_inRight->rightChild, spl_partitionR);
 		break;
 	}
 	}

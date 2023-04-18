@@ -1780,8 +1780,7 @@ bool gb_generateCellPolygon(CP_BSPNode *cell){
 		child = node;
 		node = node->parent;
 
-		CP_Partition* p = new CP_Partition(node->partition_original); // build에 사용된 원본..
-
+		CP_Partition p(node->partition_original); // build에 사용된 원본..
 		bool no_useful = false;
 		for(auto& cell_polygon : cell->polygon){
 			if(!gb_cutPolygonFace(p, cell_polygon)){
@@ -1859,15 +1858,13 @@ bool gb_generateCellPolygonPre(CP_BSPNode *cell)
 		node = node->parent;
 
 		//Determine whether it contributes to the shape of the restricted cell polygon	
-		CP_Partition *polygon_face = new CP_Partition(node->partition_original);
-		if(gb_p_in_cellPolygon(cell, polygon_face)){
-
+		CP_Partition polygon_face(node->partition_original);
+		if(gb_p_in_cellPolygon(cell, &polygon_face)) {
 			if(child == node->rightChild)
-				polygon_face->flip();
+				polygon_face.flip();
 
 			cell->polygon.push_back(polygon_face);
 		}
-
 	}
 	return true;
 }
@@ -1884,11 +1881,11 @@ bool gb_generateCellPolygons(CP_BSPNode *node){
 }
 
 // p를 f로 잘라버린다.(inplace)
-bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
+bool gb_cutPolygonFace(CP_Partition &p, const CP_Partition &face){
 
-	CP_Vec2 face_vec = face->end - face->begin;
-	CP_Vec2 begin_vec = p->begin - face->end;
-	CP_Vec2 end_vec = p->end - face->end;
+	CP_Vec2 face_vec = face.end - face.begin;
+	CP_Vec2 begin_vec = p.begin - face.end;
+	CP_Vec2 end_vec = p.end - face.end;
 	double begin = face_vec.cross_product(begin_vec);
 	double end = face_vec.cross_product(end_vec);
 
@@ -1899,18 +1896,18 @@ bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face){
 
 	if(begin * end < 0){
 		//cut
-		const CP_Partition& t_bp = *face;
+		const CP_Partition& t_bp = face;
 
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
-		const CP_Point2 point_intersection = t_bp.intersection(*p, t_vec, p_vec, t_line, p_line);
+		const CP_Point2 point_intersection = t_bp.intersection(p, t_vec, p_vec, t_line, p_line);
 		const double& ta = t_line.a, & tb = t_line.b, & tc = t_line.c;
 		const double& pa = p_line.a, & pb = p_line.b, & pc = p_line.c;
 
 		if(begin < 0)
-			p->begin = point_intersection;
+			p.begin = point_intersection;
 		else
-			p->end = point_intersection;
+			p.end = point_intersection;
 		return true;
 	}
 	else if(begin + end > 0)
@@ -1940,11 +1937,10 @@ bool gb_generateBSPTreeFaces(CP_BSPNode *node){
 bool gb_generateBSPTreeFace(CP_BSPNode *node){
 	if(node->leftIn.size() * node->rightOut.size() != 0){
 		for(unsigned int i = 0; i < node->leftIn.size(); i++){
-			CP_Partition *p =  node->leftIn[i];
-			CP_Partition *f;
+			const CP_Partition &p =  node->leftIn[i];
 			for(unsigned int j = 0; j < node->rightOut.size(); j++){
-				f = node->rightOut[j];
-				CP_Partition *result = new CP_Partition();
+				const CP_Partition &f = node->rightOut[j];
+				CP_Partition result;
 				if(gb_cutParallelFace(p, f, result)){
 					node->polygon.push_back(result);
 				}
@@ -1954,55 +1950,48 @@ bool gb_generateBSPTreeFace(CP_BSPNode *node){
 
 	if(node->leftOut.size() * node->rightIn.size() != 0){
 		for(unsigned int i = 0; i < node->leftOut.size(); i++){
-			CP_Partition *p =  node->leftOut[i];
-			
+			const CP_Partition &p =  node->leftOut[i];
 			for(unsigned int j = 0; j < node->rightIn.size(); j++){
-
-				CP_Partition* f = node->rightIn[j];
-				CP_Partition *result = new CP_Partition();
+				const CP_Partition &f = node->rightIn[j];
+				CP_Partition result;
 				if(gb_cutParallelFace(p, f, result))
 					node->polygon.push_back(result);
-
 			}
 		}
 	}
 	return true;
 }
 
-bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result){
-	int dx = 1, dy = 1;
-	if(face->end.m_x - face->begin.m_x < 0)
-		dx = -1;
-	if(face->end.m_y - face->begin.m_y < 0)
-		dy = -1;
+bool gb_cutParallelFace(const CP_Partition &p, const CP_Partition &face, CP_Partition &result){
+	CP_Vec2 face_vec = face.end - face.begin;
+	int dx = face_vec.m_x < 0 ? -1 : 1;
+	int dy = face_vec.m_y < 0 ? -1 : 1;
 
 	double face_begin = 0;
-	double face_end = std::abs(face->end.m_x - face->begin.m_x) + std::abs(face->end.m_y - face->begin.m_y);
+	double face_end = std::abs(face_vec.m_x) + std::abs(face_vec.m_y);
 
 	// what does this even mean?
-	double p_begin = (p->begin.m_x - face->begin.m_x) * dx + (p->begin.m_y - face->begin.m_y) * dy;
-	double p_end = (p->end.m_x - face->begin.m_x) * dx + (p->end.m_y - face->begin.m_y) * dy;
+	CP_Vec2 begin_vec = p.begin - face.begin;
+	CP_Vec2 end_vec = p.end - face.begin;
+	double p_begin = begin_vec.m_x * dx + begin_vec.m_y * dy;
+	double p_end = end_vec.m_x * dx + end_vec.m_y * dy;
 
 	if(p_end <= face_begin || p_begin >= face_end)
 		return false;
 	else if(p_begin <= face_begin && p_end >= face_end){
-		result->begin = face->begin;
-		result->end = face->end;
+		result = face;
 		return true;
 	}
 	else if(p_begin >= face_begin && p_end <= face_end){
-		result->begin = p->begin;
-		result->end = p->end;
+		result = p;
 		return true;
 	}
 	else if(p_begin <= face_begin && p_end > face_begin){
-		result->begin = face->begin;
-		result->end = p->end;
+		result = CP_Partition(face.begin, p.end);
 		return true;
 	}
 	else{
-		result->begin = p->begin;
-		result->end = face->end;
+		result = CP_Partition(p.begin, face.end);
 		return true;
 	}
 }
@@ -2028,16 +2017,16 @@ bool gb_p_in_cellPolygon(
 	double max = DBL_MAX;
 
 	for(unsigned int i = 0; i < T->polygon.size(); i++){
-		CP_Partition* t_bp = T->polygon[i];
+		const CP_Partition& t_bp = T->polygon[i];
 
 		CP_Vec2 t_vec, p_vec;
 		CP_Line2 t_line, p_line;
-		CP_Point2 point = t_bp->intersection(*partition, t_vec, p_vec, t_line, p_line);
+		CP_Point2 point = t_bp.intersection(*partition, t_vec, p_vec, t_line, p_line);
 		double cross_product_tp = t_vec.cross_product(p_vec); // --- (1) t_bp에 영향을 받는데..
 
 		if (equal_float(cross_product_tp, 0)) {
 
-			CP_Vec2 v = partition->begin - t_bp->begin;
+			CP_Vec2 v = partition->begin - t_bp.begin;
 			if (t_vec.cross_product(v) >= 0) {
 				continue;
 			}

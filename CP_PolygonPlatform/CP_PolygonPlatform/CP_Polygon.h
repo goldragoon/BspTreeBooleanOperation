@@ -528,11 +528,11 @@ public:
 #endif
 
 	// [Start] visualization/output purpose.
-	vector<CP_Partition*> polygon;
-	vector<CP_Partition*> leftIn;
-	vector<CP_Partition*> leftOut;
-	vector<CP_Partition*> rightIn;
-	vector<CP_Partition*> rightOut;
+	vector<CP_Partition> polygon;
+	vector<CP_Partition> leftIn;
+	vector<CP_Partition> leftOut;
+	vector<CP_Partition> rightIn;
+	vector<CP_Partition> rightOut;
 	// [End] visualization/output purpose.
 
 	/*
@@ -751,8 +751,8 @@ extern bool gb_p_in_cellPolygon(
 );
 extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
-extern bool gb_cutParallelFace(CP_Partition *p, CP_Partition *face, CP_Partition *result);
-extern bool gb_cutPolygonFace(CP_Partition *p, CP_Partition *face);
+extern bool gb_cutParallelFace(const CP_Partition& p, const CP_Partition& face, CP_Partition &result);
+extern bool gb_cutPolygonFace(CP_Partition& p, const CP_Partition& face);
 extern bool gb_treeHasInCell(CP_BSPNode* tree);
 extern bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
 extern bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);

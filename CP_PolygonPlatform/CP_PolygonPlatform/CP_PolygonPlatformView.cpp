@@ -406,13 +406,13 @@ void gb_drawBspNode(CDC* pDC, CP_BSPNode* tree, double scale, CP_Point2 translat
 	CP_Point2 pg;
 
 	for(unsigned int i = 0; i < node->polygon.size(); i++){
-		pg= node->polygon[i]->begin;
+		pg= node->polygon[i].begin;
 		gb_drawPointGlobal(pDC, pg, scale, translation, screenX, screenY, 255, 255, 255, size - 1);
 		gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
 		pDC->MoveTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));
 
 		//pg = node->partition->end;
-		pg = node->polygon[i]->end;
+		pg = node->polygon[i].end;
 		gb_drawPointGlobal(pDC, pg, scale, translation, screenX, screenY, 255, 255, 255, size - 1);
 		gb_pointConvertFromGlobalToScreen(ps, pg, scale, translation, screenX, screenY);
 		pDC->LineTo((int)(ps.m_x+0.5), (int)(ps.m_y+0.5));

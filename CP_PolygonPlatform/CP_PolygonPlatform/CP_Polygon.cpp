@@ -1336,6 +1336,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 		else{
 			switch(op){
 			case CP_BSPOp::UNION:
+				printf("[CP_BSPOp::UNION][T2 is %d]\n", T2->isCell());
 				return T2;
 			case CP_BSPOp::INTERSECTION:
 				return T1;

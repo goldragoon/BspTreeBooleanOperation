@@ -438,22 +438,26 @@ public:
 
 			// Note : begin -> end가 진행방향임.
 			if (dx1 + dy1 < dx2 + dy2) {
+				/*
 				printf("[coincidentPos -  PointSideness::LINE_NEG] \n");
 				printf("\t- partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
 					begin.m_x, begin.m_y,
 					end.m_x, end.m_y);
 				printf("\t- point : (%.4lf, %.4lf) \n",
 					point.m_x, point.m_y);
+					*/
 				return PointSideness::LINE_NEG; // point가 begin 보다 뒤에 있는 경우
 			}
-			else
+			else {
+				/*
 				printf("[coincidentPos -  PointSideness::LINE_POS] \n");
 				printf("\t- partition : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n",
-				begin.m_x, begin.m_y,
-				end.m_x, end.m_y);
+					begin.m_x, begin.m_y,
+					end.m_x, end.m_y);
 				printf("\t- point : (%.4lf, %.4lf) \n",
-				point.m_x, point.m_y);
+					point.m_x, point.m_y);*/
 				return PointSideness::LINE_POS; // point 가 end 보다 앞에 있는 경우
+			}
 		}
 		else {
 			// 입력 2D 정점 'point' 가 현재 partition 이 나타내는 2D line segment 위에 있음.
@@ -753,6 +757,8 @@ extern bool gb_generateBSPTreeFaces(CP_BSPNode *root);
 extern bool gb_generateBSPTreeFace(CP_BSPNode *node);
 extern bool gb_cutParallelFace(const CP_Partition& p, const CP_Partition& face, CP_Partition &result);
 extern bool gb_cutPolygonFace(CP_Partition& p, const CP_Partition& face);
+
+// Just for checking.
 extern bool gb_treeHasInCell(CP_BSPNode* tree);
 extern bool gb_tree1OverlapWithTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);
 extern bool gb_tree1InTree2(CP_BSPNode* tree1, CP_BSPNode* tree2);

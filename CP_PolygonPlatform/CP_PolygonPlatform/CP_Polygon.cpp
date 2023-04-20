@@ -1662,9 +1662,11 @@ char gb_t_p_Position3(
 		// point_intersection가 실제로 partition위에 있는 점인지 검사하는 부분, 왜냐하면 line segment위에 있는 점이 아닐 수도 있기 때문에..
 		// - 삼차원에서는 직선의 방정식(line)이 polygon과 intersection 하는지 검사해야 함.
 		// - partitionL, partitoinR을 알맞게 잘라서 할당해줌.
-		if (partitionL.coincidentPos(point_intersection) == CP_Partition::PointSideness::LINE_IN) { 
 
-			double _cp = t_vec.cross_product(p_vec);
+		auto coincidence = partitionL.coincidentPos(point_intersection);
+		switch (coincidence) {
+		case CP_Partition::PointSideness::LINE_IN: {
+			const double _cp = t_vec.cross_product(p_vec);
 			if (_cp > TOLERENCE) {
 				partitionL.begin = point_intersection;
 				partitionR.end = point_intersection;
@@ -1676,18 +1678,22 @@ char gb_t_p_Position3(
 				printf("[gb_t_p_Position3] in here, t and p shouldn't be parallel\n");
 			}
 			*/
-			else { // (_cp < -TOLERENCE)
+			else { // it represents (_cp < -TOLERENCE)
 				partitionR.begin = point_intersection;
 				partitionL.end = point_intersection;
 				return P_T_BOTH_NEG;
 			}
+			break;
 		}
-		else { // PointSideness::LINE_NEG or PointSideness::LINE_POS
+		default:
+		{
+			// PointSideness::LINE_NEG or PointSideness::LINE_POS
 			//inside and disjoint
 
 			// Calculate the p direction
+			// 걍 기울기에 따라서..
 			double a, b;
-			if (std::abs(pa) > std::abs(pb)) { 
+			if (std::abs(pa) > std::abs(pb)) {
 				//y방향
 				a = std::abs(partitionL.begin.m_y - point_intersection.m_y);
 				b = std::abs(partitionL.end.m_y - point_intersection.m_y);
@@ -1699,8 +1705,8 @@ char gb_t_p_Position3(
 			}
 
 			double dirP = a - b;
-			if (dirP > 0) dirP = 1; // LINE_POS (partitionL <-> point_intersection)
-			else dirP = -1;			// LINE_NEG
+			if (dirP > 0) dirP = 1;
+			else dirP = -1;			
 
 			// Calculate the t direction
 			if (std::abs(ta) > std::abs(tb)) {
@@ -1718,6 +1724,8 @@ char gb_t_p_Position3(
 			double dirAP = a - b;
 			if (dirAP > 0) dirAP = 1; // LINE_POS
 			else dirAP = -1;		  // LINE_NEG
+			
+			printf("dirAP * dirP : %lf, coincidence : %d\n", dirAP * dirP, coincidence == CP_Partition::PointSideness::LINE_POS);
 
 			CP_Partition _p(partition.end, partition.begin); // temporary object for assignment.
 			if (partition.is_left_side(A->partition_abstract.begin)) {
@@ -1740,6 +1748,8 @@ char gb_t_p_Position3(
 					return P_T_POS_NEG;
 				}
 			}
+			break;
+		}
 		}
 	}
 }

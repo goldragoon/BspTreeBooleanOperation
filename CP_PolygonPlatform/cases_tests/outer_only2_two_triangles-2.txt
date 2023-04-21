@@ -1,0 +1,35 @@
+# Polygon Data
+2023- 4-12 15:25:49
+
+Tolerance 1e-06
+
+Coordinate 1 0 0
+
+A Polygon
+
+Pointsize 3
+66.3333 4
+-466.667 311.728
+-466.667 -303.728
+
+Regionsize 1
+Region 0
+Loopsize 1
+Loop 0
+PointIDsize 3
+0 1 2 
+
+B Polygon
+
+Pointsize 3
+355.333 0
+-177.667 307.728
+-177.667 -307.728
+
+Regionsize 1
+Region 0
+Loopsize 1
+Loop 0
+PointIDsize 3
+0 1 2 
+

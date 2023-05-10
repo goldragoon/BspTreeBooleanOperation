@@ -10,6 +10,12 @@
 
 using namespace std;
 
+void print_partition(const CP_Partition &_partition, const std::string _name = "partition") {
+	printf("\t%s : (%.4lf, %.4lf) -> (%.4lf, %.4lf)\n", _name.c_str(),
+		_partition.begin.m_x, _partition.begin.m_y,
+		_partition.end.m_x, _partition.end.m_y);
+}
+
 bool equal_float(double x, double y, double epsilon) {
 	if (fabs(x - y) <= epsilon)
 		return true; //they are same

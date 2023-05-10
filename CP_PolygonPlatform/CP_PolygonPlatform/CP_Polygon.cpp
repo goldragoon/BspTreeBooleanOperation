@@ -1953,23 +1953,18 @@ bool gb_generateBSPTreeFaces(CP_BSPNode *node){
 
 bool gb_generateBSPTreeFace(CP_BSPNode *node){
 	if(node->leftIn.size() * node->rightOut.size() != 0){
-		for(unsigned int i = 0; i < node->leftIn.size(); i++){
-			const CP_Partition &p =  node->leftIn[i];
-			for(unsigned int j = 0; j < node->rightOut.size(); j++){
-				const CP_Partition &f = node->rightOut[j];
+		for(const CP_Partition& p : node->leftIn){
+			for(const CP_Partition& f : node->rightOut){
 				CP_Partition result;
-				if(gb_cutParallelFace(p, f, result)){
+				if(gb_cutParallelFace(p, f, result))
 					node->polygon.push_back(result);
-				}
 			}
 		}
 	}
 
 	if(node->leftOut.size() * node->rightIn.size() != 0){
-		for(unsigned int i = 0; i < node->leftOut.size(); i++){
-			const CP_Partition &p =  node->leftOut[i];
-			for(unsigned int j = 0; j < node->rightIn.size(); j++){
-				const CP_Partition &f = node->rightIn[j];
+		for (const CP_Partition& p : node->leftOut) {
+			for (const CP_Partition& f : node->rightIn) {
 				CP_Partition result;
 				if(gb_cutParallelFace(p, f, result))
 					node->polygon.push_back(result);

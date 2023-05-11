@@ -1367,7 +1367,7 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 				return node;
 				
 				/*
-				T1->complement(); // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
+				// (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
 				return T1;
 				*/
 			}
@@ -1380,10 +1380,16 @@ CP_BSPNode* gb_mergeTreeWithCell(CP_BSPNode* T1, CP_BSPNode* T2, CP_BSPOp op){
 				return T2;
 			case CP_BSPOp::SUBTRACTION:
 				return T1;
-				//return T2; // (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
+
+				/*
+				// (Q : why naylor's algorithm not working on complicate CSG tree:multiple loops are joined?)
+				T2->complement();
+				return T2; 
+				*/
 			}
 		}
 	}
+	throw std::runtime_error("should not reach here!");
 	return NULL;
 }
 
